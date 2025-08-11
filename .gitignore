@@ -1,0 +1,75 @@
+# Visual Studio generated files
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Build results
+bin/
+obj/
+
+# Rider
+.idea/
+
+# NuGet packages
+*.nupkg
+packages/
+# The packages folder can be restored by NuGet, so no need to include
+
+# Publish outputs
+publish/
+
+# Resharper
+_ReSharper*/
+
+# Windows image file caches
+Thumbs.db
+ehthumbs.db
+
+# Visual Studio Code workspace files
+.vscode/
+
+# User-specific files
+*.rsuser
+*.sln.ide
+
+# Logs
+*.log
+
+# Temporary files
+*.tmp
+*.temp
+
+# Backup files
+*~
+*.bak
+
+# JetBrains Rider
+.idea/
+
+# JetBrains Rider local history
+.idea/.idea.*
+
+# MonoDevelop
+*.userprefs
+
+# DotCover
+*.dotCover
+
+# IIS Express
+/.vs/
+config/
+
+# User-specific files
+*.local
+
+# StyleCop
+StyleCopReport.xml
+
+# Node.js dependencies (if any, for example if you use frontend tooling)
+node_modules/
+
+# Others
+*.dbmdl
+*.pdb
