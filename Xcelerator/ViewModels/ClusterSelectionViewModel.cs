@@ -100,6 +100,18 @@ namespace Xcelerator.ViewModels
         {
             if (cluster == null) return;
 
+            // Clear stored credentials for this cluster
+            cluster.AccessKey = string.Empty;
+            cluster.SecretKey = string.Empty;
+
+            // If this cluster was selected for login, clear the login form
+            if (SelectedClusterForLogin?.Name == cluster.Name)
+            {
+                SelectedClusterForLogin = null;
+                AccessKey = string.Empty;
+                SecretKey = string.Empty;
+            }
+
             cluster.IsSelected = false;
             SelectedClusters.Remove(cluster);
             _mainViewModel.Credentials.SelectedClusters.Remove(cluster);
