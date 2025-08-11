@@ -24,7 +24,6 @@ namespace Xcelerator.ViewModels
 
             SelectClusterCommand = new RelayCommand<Cluster>(SelectCluster);
             DeselectClusterCommand = new RelayCommand<Cluster>(DeselectCluster);
-            ContinueCommand = new RelayCommand(Continue, CanContinue);
             TagClickCommand = new RelayCommand<Cluster>(TagClick);
             SignInCommand = new RelayCommand(SignIn, CanSignIn);
         }
@@ -43,7 +42,6 @@ namespace Xcelerator.ViewModels
 
         public ICommand SelectClusterCommand { get; }
         public ICommand DeselectClusterCommand { get; }
-        public ICommand ContinueCommand { get; }
         public ICommand TagClickCommand { get; }
         public ICommand SignInCommand { get; }
 
@@ -90,6 +88,10 @@ namespace Xcelerator.ViewModels
 
             if (!SelectedClusters.Any(c => c.Name == cluster.Name))
             {
+                // Ensure the cluster has no existing credentials when first selected
+                cluster.AccessKey = string.Empty;
+                cluster.SecretKey = string.Empty;
+                
                 cluster.IsSelected = true;
                 SelectedClusters.Add(cluster);
                 _mainViewModel.Credentials.SelectedClusters.Add(cluster);
@@ -117,15 +119,7 @@ namespace Xcelerator.ViewModels
             _mainViewModel.Credentials.SelectedClusters.Remove(cluster);
         }
 
-        private void Continue()
-        {
-            _mainViewModel.NavigateToLoginCommand.Execute(null);
-        }
 
-        private bool CanContinue()
-        {
-            return SelectedClusters.Any();
-        }
 
         private void TagClick(Cluster? cluster)
         {
@@ -141,9 +135,26 @@ namespace Xcelerator.ViewModels
             else
             {
                 // Show login form for this specific cluster
+                // Clear any previous login form data to ensure isolation
+                if (SelectedClusterForLogin != null && SelectedClusterForLogin.Name != cluster.Name)
+                {
+                    // Save any unsaved credentials from the previous cluster
+                    SavePartialCredentials();
+                }
+                
                 SelectedClusterForLogin = cluster;
-                AccessKey = string.Empty;
-                SecretKey = string.Empty;
+                
+                // Load existing credentials for this cluster if they exist, otherwise clear
+                if (cluster.HasCredentials)
+                {
+                    AccessKey = cluster.AccessKey;
+                    SecretKey = cluster.SecretKey;
+                }
+                else
+                {
+                    AccessKey = string.Empty;
+                    SecretKey = string.Empty;
+                }
             }
         }
 
@@ -151,13 +162,18 @@ namespace Xcelerator.ViewModels
         {
             if (SelectedClusterForLogin != null && CanSignIn())
             {
-                // Store credentials for this cluster
+                // Store credentials for this specific cluster
                 SelectedClusterForLogin.AccessKey = AccessKey;
                 SelectedClusterForLogin.SecretKey = SecretKey;
 
                 // Set credentials for main view model
                 _mainViewModel.Credentials.AccessKey = AccessKey;
                 _mainViewModel.Credentials.SecretKey = SecretKey;
+
+                // Clear the login form to ensure isolation
+                AccessKey = string.Empty;
+                SecretKey = string.Empty;
+                SelectedClusterForLogin = null;
 
                 // Navigate to dashboard
                 _mainViewModel.NavigateToDashboardCommand.Execute(null);
@@ -167,6 +183,16 @@ namespace Xcelerator.ViewModels
         private bool CanSignIn()
         {
             return !string.IsNullOrWhiteSpace(AccessKey) && !string.IsNullOrWhiteSpace(SecretKey);
+        }
+
+        // Method to save partial credentials when switching clusters
+        private void SavePartialCredentials()
+        {
+            if (SelectedClusterForLogin != null && (!string.IsNullOrWhiteSpace(AccessKey) || !string.IsNullOrWhiteSpace(SecretKey)))
+            {
+                SelectedClusterForLogin.AccessKey = AccessKey;
+                SelectedClusterForLogin.SecretKey = SecretKey;
+            }
         }
     }
 }

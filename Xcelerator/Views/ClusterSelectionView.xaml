@@ -161,13 +161,12 @@
                 BorderBrush="#FFE0E0E0" 
                 BorderThickness="0,0,1,0" Margin="0,0,110,0">
             <Grid Margin="16">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="*"/>
-                    <RowDefinition Height="Auto"/>
-                </Grid.RowDefinitions>
+                                 <Grid.RowDefinitions>
+                     <RowDefinition Height="Auto"/>
+                     <RowDefinition Height="Auto"/>
+                     <RowDefinition Height="Auto"/>
+                     <RowDefinition Height="*"/>
+                 </Grid.RowDefinitions>
 
                 <!-- App Title -->
                 <TextBlock Grid.Row="0" 
@@ -246,12 +245,7 @@
                     </WrapPanel>
                 </ScrollViewer>
 
-                <!-- Continue Button -->
-                <Button Grid.Row="4" 
-                        Content="Continue" 
-                        Style="{StaticResource ModernButtonStyle}"
-                        Command="{Binding ContinueCommand}"
-                        HorizontalAlignment="Stretch"/>
+                
             </Grid>
         </Border>
 
