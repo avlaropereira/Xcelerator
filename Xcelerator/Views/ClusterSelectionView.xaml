@@ -6,7 +6,7 @@
              xmlns:local="clr-namespace:Xcelerator.Views"
              mc:Ignorable="d" 
              d:DesignHeight="650" d:DesignWidth="1000">
-    
+
     <UserControl.Resources>
         <!-- Modern Button Style -->
         <Style x:Key="ModernButtonStyle" TargetType="Button">
@@ -83,7 +83,7 @@
 
     <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="300"/>
+            <ColumnDefinition Width="250"/>
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
 
@@ -91,8 +91,8 @@
         <Border Grid.Column="0" 
                 Background="#FFF8F9FA" 
                 BorderBrush="#FFE0E0E0" 
-                BorderThickness="0,0,1,0">
-            <Grid Margin="20">
+                BorderThickness="0,0,1,0" Margin="0,0,110,0">
+            <Grid Margin="16">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
@@ -104,10 +104,10 @@
                 <!-- App Title -->
                 <TextBlock Grid.Row="0" 
                            Text="Xcelerator" 
-                           FontSize="24" 
+                           FontSize="20" 
                            FontWeight="Bold" 
                            Foreground="#FF2D2D30"
-                           Margin="0,0,0,20"/>
+                           Margin="0,0,0,16"/>
 
                 <!-- Cluster Label -->
                 <TextBlock Grid.Row="1" 
@@ -183,8 +183,8 @@
         </Border>
 
         <!-- Center Area -->
-        <Grid Grid.Column="1" 
-              Background="Transparent">
+        <Grid 
+              Background="Transparent" Grid.ColumnSpan="2" Margin="145,0,0,0">
             <TextBlock Text="Xcelerator" 
                        FontSize="48" 
                        FontWeight="Bold" 
