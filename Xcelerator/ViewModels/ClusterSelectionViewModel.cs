@@ -26,6 +26,8 @@ namespace Xcelerator.ViewModels
             DeselectClusterCommand = new RelayCommand<Cluster>(DeselectCluster);
             TagClickCommand = new RelayCommand<Cluster>(TagClick);
             SignInCommand = new RelayCommand(SignIn, CanSignIn);
+            GoBackFromDashboardCommand = new RelayCommand(GoBackFromDashboard);
+            SelectModuleCommand = new RelayCommand<string>(SelectModule);
         }
 
         public ObservableCollection<Cluster> AvailableClusters
@@ -44,11 +46,17 @@ namespace Xcelerator.ViewModels
         public ICommand DeselectClusterCommand { get; }
         public ICommand TagClickCommand { get; }
         public ICommand SignInCommand { get; }
+        public ICommand GoBackFromDashboardCommand { get; }
+        public ICommand SelectModuleCommand { get; }
 
         public Cluster? SelectedClusterForLogin
         {
             get => _selectedClusterForLogin;
-            set => SetProperty(ref _selectedClusterForLogin, value);
+            set 
+            { 
+                SetProperty(ref _selectedClusterForLogin, value);
+                OnPropertyChanged(nameof(ShowLoginForm));
+            }
         }
 
         public string AccessKey
@@ -61,6 +69,29 @@ namespace Xcelerator.ViewModels
         {
             get => _secretKey;
             set => SetProperty(ref _secretKey, value);
+        }
+
+        public bool IsInDashboardMode
+        {
+            get => SelectedClusterForLogin?.IsInDashboardMode ?? false;
+        }
+
+        public bool ShowLoginForm 
+        { 
+            get => SelectedClusterForLogin != null && !IsInDashboardMode; 
+        }
+
+        public string SelectedModule
+        {
+            get => SelectedClusterForLogin?.SelectedModule ?? string.Empty;
+            set
+            {
+                if (SelectedClusterForLogin != null)
+                {
+                    SelectedClusterForLogin.SelectedModule = value;
+                    OnPropertyChanged();
+                }
+            }
         }
 
         private void InitializeClusters()
@@ -102,9 +133,11 @@ namespace Xcelerator.ViewModels
         {
             if (cluster == null) return;
 
-            // Clear stored credentials for this cluster
+            // Clear stored credentials and dashboard state for this cluster
             cluster.AccessKey = string.Empty;
             cluster.SecretKey = string.Empty;
+            cluster.SelectedModule = string.Empty;
+            cluster.IsInDashboardMode = false;
 
             // If this cluster was selected for login, clear the login form
             if (SelectedClusterForLogin?.Name == cluster.Name)
@@ -112,6 +145,8 @@ namespace Xcelerator.ViewModels
                 SelectedClusterForLogin = null;
                 AccessKey = string.Empty;
                 SecretKey = string.Empty;
+                OnPropertyChanged(nameof(IsInDashboardMode));
+                OnPropertyChanged(nameof(ShowLoginForm));
             }
 
             cluster.IsSelected = false;
@@ -125,12 +160,15 @@ namespace Xcelerator.ViewModels
         {
             if (cluster == null) return;
 
-            // If cluster has credentials, navigate directly to dashboard
+            // If cluster has credentials, show dashboard mode
             if (cluster.HasCredentials)
             {
                 _mainViewModel.Credentials.AccessKey = cluster.AccessKey;
                 _mainViewModel.Credentials.SecretKey = cluster.SecretKey;
-                _mainViewModel.NavigateToDashboardCommand.Execute(null);
+                cluster.IsInDashboardMode = true;
+                SelectedClusterForLogin = cluster;
+                OnPropertyChanged(nameof(IsInDashboardMode));
+                OnPropertyChanged(nameof(ShowLoginForm));
             }
             else
             {
@@ -143,6 +181,9 @@ namespace Xcelerator.ViewModels
                 }
                 
                 SelectedClusterForLogin = cluster;
+                cluster.IsInDashboardMode = false;
+                OnPropertyChanged(nameof(IsInDashboardMode));
+                OnPropertyChanged(nameof(ShowLoginForm));
                 
                 // Load existing credentials for this cluster if they exist, otherwise clear
                 if (cluster.HasCredentials)
@@ -170,13 +211,12 @@ namespace Xcelerator.ViewModels
                 _mainViewModel.Credentials.AccessKey = AccessKey;
                 _mainViewModel.Credentials.SecretKey = SecretKey;
 
-                // Clear the login form to ensure isolation
+                // Clear the login form and switch to dashboard mode
                 AccessKey = string.Empty;
                 SecretKey = string.Empty;
-                SelectedClusterForLogin = null;
-
-                // Navigate to dashboard
-                _mainViewModel.NavigateToDashboardCommand.Execute(null);
+                SelectedClusterForLogin.IsInDashboardMode = true;
+                OnPropertyChanged(nameof(IsInDashboardMode));
+                OnPropertyChanged(nameof(ShowLoginForm));
             }
         }
 
@@ -192,6 +232,26 @@ namespace Xcelerator.ViewModels
             {
                 SelectedClusterForLogin.AccessKey = AccessKey;
                 SelectedClusterForLogin.SecretKey = SecretKey;
+            }
+        }
+
+        private void GoBackFromDashboard()
+        {
+            if (SelectedClusterForLogin != null)
+            {
+                SelectedClusterForLogin.IsInDashboardMode = false;
+            }
+            SelectedClusterForLogin = null;
+            OnPropertyChanged(nameof(IsInDashboardMode));
+            OnPropertyChanged(nameof(ShowLoginForm));
+        }
+
+        private void SelectModule(string? moduleName)
+        {
+            if (!string.IsNullOrEmpty(moduleName) && SelectedClusterForLogin != null)
+            {
+                SelectedClusterForLogin.SelectedModule = moduleName;
+                OnPropertyChanged(nameof(SelectedModule));
             }
         }
     }

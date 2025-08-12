@@ -7,6 +7,8 @@ namespace Xcelerator.Models
         public bool IsSelected { get; set; }
         public string AccessKey { get; set; } = string.Empty;
         public string SecretKey { get; set; } = string.Empty;
+        public string SelectedModule { get; set; } = string.Empty;
+        public bool IsInDashboardMode { get; set; } = false;
 
         public Cluster(string name, string displayName = "")
         {

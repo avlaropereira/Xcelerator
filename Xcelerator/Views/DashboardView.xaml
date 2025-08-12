@@ -13,16 +13,16 @@
             <Setter Property="Background" Value="Transparent"/>
             <Setter Property="Foreground" Value="#FF2D2D30"/>
             <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Padding" Value="16,12"/>
+            <Setter Property="Padding" Value="20,12"/>
             <Setter Property="FontSize" Value="14"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
-            <Setter Property="HorizontalContentAlignment" Value="Left"/>
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
             <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
                         <Border Background="{TemplateBinding Background}" 
-                                CornerRadius="6"
+                                CornerRadius="8"
                                 BorderThickness="{TemplateBinding BorderThickness}"
                                 BorderBrush="{TemplateBinding BorderBrush}">
                             <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" 
@@ -75,88 +75,71 @@
     </UserControl.Resources>
 
     <Grid>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="300"/>
-            <ColumnDefinition Width="*"/>
-        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
 
-        <!-- Left Panel -->
-        <Border Grid.Column="0" 
-                Background="#FFF8F9FA" 
+        <!-- Top Navigation Area -->
+        <Border Grid.Row="0" 
+                Background="White" 
                 BorderBrush="#FFE0E0E0" 
-                BorderThickness="0,0,1,0">
-            <Grid Margin="20">
+                BorderThickness="0,0,0,1"
+                Padding="20">
+            <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="*"/>
                     <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
 
-                <!-- App Title -->
-                <TextBlock Grid.Row="0" 
-                           Text="Xcelerator" 
-                           FontSize="24" 
-                           FontWeight="Bold" 
-                           Foreground="#FF2D2D30"
-                           Margin="0,0,0,20"/>
-
-                <!-- Navigation Buttons -->
-                <StackPanel Grid.Row="1" 
-                            Orientation="Vertical">
+                <!-- First Row of Options -->
+                <StackPanel Grid.Row="0" 
+                            Orientation="Horizontal" 
+                            HorizontalAlignment="Center"
+                            Margin="0,0,0,10">
                     <Button Content="ContactOrchestrator" 
                             Style="{StaticResource NavigationButtonStyle}"
                             Command="{Binding SelectModuleCommand}"
-                            CommandParameter="ContactOrchestrator"/>
+                            CommandParameter="ContactOrchestrator"
+                            Margin="0,0,20,0"/>
                     <Button Content="ContactForge" 
                             Style="{StaticResource NavigationButtonStyle}"
                             Command="{Binding SelectModuleCommand}"
-                            CommandParameter="ContactForge"/>
-                    <Button Content="AgentForge" 
-                            Style="{StaticResource NavigationButtonStyle}"
-                            Command="{Binding SelectModuleCommand}"
-                            CommandParameter="AgentForge"/>
+                            CommandParameter="ContactForge"
+                            Margin="0,0,20,0"/>
                     <Button Content="ConnectGrid" 
                             Style="{StaticResource NavigationButtonStyle}"
                             Command="{Binding SelectModuleCommand}"
                             CommandParameter="ConnectGrid"/>
+                </StackPanel>
+
+                <!-- Second Row of Options -->
+                <StackPanel Grid.Row="1" 
+                            Orientation="Horizontal" 
+                            HorizontalAlignment="Center">
+                    <Button Content="AgentForge" 
+                            Style="{StaticResource NavigationButtonStyle}"
+                            Command="{Binding SelectModuleCommand}"
+                            CommandParameter="AgentForge"
+                            Margin="0,0,20,0"/>
                     <Button Content="PulseOps" 
                             Style="{StaticResource NavigationButtonStyle}"
                             Command="{Binding SelectModuleCommand}"
                             CommandParameter="PulseOps"/>
                 </StackPanel>
-
-                <!-- Back Button -->
-                <Button Grid.Row="2" 
-                        Content="Go Back" 
-                        Style="{StaticResource BackButtonStyle}"
-                        Command="{Binding GoBackCommand}"
-                        HorizontalAlignment="Stretch"
-                        Margin="0,20,0,0"/>
             </Grid>
         </Border>
 
-        <!-- Right Area - Content Placeholder -->
-        <Grid Grid.Column="1" 
+        <!-- Main Content Area -->
+        <Grid Grid.Row="1" 
               Background="White">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="*"/>
-            </Grid.RowDefinitions>
-
-            <!-- Header -->
-            <Border Grid.Row="0" 
-                    Background="#FFF8F9FA" 
-                    BorderBrush="#FFE0E0E0" 
-                    BorderThickness="0,0,0,1"
-                    Padding="20">
-                <TextBlock Text="Dashboard" 
-                           FontSize="20" 
-                           FontWeight="SemiBold" 
-                           Foreground="#FF2D2D30"/>
-            </Border>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
 
             <!-- Content Area -->
-            <Grid Grid.Row="1" 
+            <Grid Grid.Column="0" 
                   Background="White">
                 <TextBlock Text="Welcome to Xcelerator Dashboard" 
                            FontSize="24" 
@@ -173,6 +156,17 @@
                            VerticalAlignment="Bottom"
                            Margin="0,0,0,100"/>
             </Grid>
+
+            <!-- Back Button (Right Side) -->
+            <Button Grid.Column="1" 
+                    Content="←" 
+                    Style="{StaticResource BackButtonStyle}"
+                    Command="{Binding GoBackCommand}"
+                    Width="50"
+                    Height="50"
+                    FontSize="20"
+                    Margin="20"
+                    VerticalAlignment="Top"/>
         </Grid>
     </Grid>
 </UserControl>
