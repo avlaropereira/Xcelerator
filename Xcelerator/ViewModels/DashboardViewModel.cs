@@ -14,7 +14,6 @@ namespace Xcelerator.ViewModels
         {
             _mainViewModel = mainViewModel;
             
-            GoBackCommand = new RelayCommand(GoBack);
             SelectModuleCommand = new RelayCommand<string>(SelectModule);
         }
 
@@ -27,7 +26,6 @@ namespace Xcelerator.ViewModels
             set => SetProperty(ref _selectedModule, value);
         }
 
-        public ICommand GoBackCommand { get; }
         public ICommand SelectModuleCommand { get; }
 
         /// <summary>
@@ -42,14 +40,7 @@ namespace Xcelerator.ViewModels
             "PulseOps"
         };
 
-        /// <summary>
-        /// Go back to cluster selection
-        /// </summary>
-        private void GoBack()
-        {
-            // Clear the current view to return to cluster selection
-            // This will be handled by the parent PanelViewModel
-        }
+
 
         /// <summary>
         /// Select a module

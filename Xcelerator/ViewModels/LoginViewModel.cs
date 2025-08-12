@@ -23,7 +23,6 @@ namespace Xcelerator.ViewModels
             SecretKey = cluster.SecretKey ?? string.Empty;
             
             SignInCommand = new RelayCommand(SignIn, CanSignIn);
-            GoBackCommand = new RelayCommand(GoBack);
         }
 
         /// <summary>
@@ -58,7 +57,6 @@ namespace Xcelerator.ViewModels
         public string ClusterDisplayName => _cluster.DisplayName;
 
         public ICommand SignInCommand { get; }
-        public ICommand GoBackCommand { get; }
 
         /// <summary>
         /// Handle sign in process
@@ -94,13 +92,6 @@ namespace Xcelerator.ViewModels
             return !string.IsNullOrWhiteSpace(AccessKey) && !string.IsNullOrWhiteSpace(SecretKey);
         }
 
-        /// <summary>
-        /// Go back to cluster selection
-        /// </summary>
-        private void GoBack()
-        {
-            // Clear the current view to return to cluster selection
-            // This will be handled by the parent PanelViewModel
-        }
+
     }
 }

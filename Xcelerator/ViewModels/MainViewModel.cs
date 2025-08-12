@@ -12,10 +12,6 @@ namespace Xcelerator.ViewModels
         {
             _credentials = new LoginCredentials();
             _currentPage = new PanelViewModel(this);
-            
-            NavigateToLoginCommand = new RelayCommand(NavigateToLogin, CanNavigateToLogin);
-            NavigateToDashboardCommand = new RelayCommand(NavigateToDashboard);
-            NavigateBackCommand = new RelayCommand(NavigateBack);
         }
 
         public object CurrentPage
@@ -30,32 +26,7 @@ namespace Xcelerator.ViewModels
             set => SetProperty(ref _credentials, value);
         }
 
-        public ICommand NavigateToLoginCommand { get; }
-        public ICommand NavigateToDashboardCommand { get; }
-        public ICommand NavigateBackCommand { get; }
 
-        private void NavigateToLogin()
-        {
-            // This method is no longer needed as login is handled by PanelViewModel
-            // The PanelViewModel will handle login navigation internally
-        }
-
-        private bool CanNavigateToLogin()
-        {
-            return Credentials.SelectedClusters.Any();
-        }
-
-        private void NavigateToDashboard()
-        {
-            // This method is no longer needed as dashboard navigation is handled by PanelViewModel
-            // The PanelViewModel will handle dashboard navigation internally
-        }
-
-        private void NavigateBack()
-        {
-            // This method is no longer needed as navigation is handled by PanelViewModel
-            // The PanelViewModel will handle all internal navigation
-        }
     }
 
     public class RelayCommand : ICommand

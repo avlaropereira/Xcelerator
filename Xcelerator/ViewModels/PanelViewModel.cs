@@ -28,8 +28,6 @@ namespace Xcelerator.ViewModels
             SelectClusterCommand = new RelayCommand<Cluster>(SelectCluster);
             DeselectClusterCommand = new RelayCommand<Cluster>(DeselectCluster);
             TagClickCommand = new RelayCommand<Cluster>(TagClick);
-            NavigateToDashboardCommand = new RelayCommand(NavigateToDashboard);
-            NavigateToLoginCommand = new RelayCommand(NavigateToLogin);
         }
 
         #region Properties
@@ -77,8 +75,6 @@ namespace Xcelerator.ViewModels
         public ICommand SelectClusterCommand { get; }
         public ICommand DeselectClusterCommand { get; }
         public ICommand TagClickCommand { get; }
-        public ICommand NavigateToDashboardCommand { get; }
-        public ICommand NavigateToLoginCommand { get; }
 
         #endregion
 
