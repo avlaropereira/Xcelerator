@@ -45,13 +45,17 @@
 
     </UserControl.Resources>
 
+    <!-- Dashboard Layout - Top navigation + main content area -->
     <Grid>
+        <!-- Row Definitions -->
         <Grid.RowDefinitions>
+            <!-- Fixed-height navigation bar at top -->
             <RowDefinition Height="Auto"/>
+            <!-- Flexible main content area -->
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <!-- Top Navigation Area -->
+        <!-- Top Navigation Area - Fixed at top with module selection buttons -->
         <Border Grid.Row="0" 
                 Background="White" 
                 BorderBrush="#FFE0E0E0" 
@@ -95,11 +99,11 @@
             </Grid>
         </Border>
 
-        <!-- Main Content Area -->
+        <!-- Main Content Area - Fills remaining space below navigation -->
         <Grid Grid.Row="1" 
               Background="White">
 
-            <!-- Content Area -->
+            <!-- Dashboard Content - Centered welcome message and module display -->
             <Grid Background="White">
                 <TextBlock Text="Welcome to Xcelerator Dashboard" 
                            FontSize="24" 

@@ -120,13 +120,17 @@
         <converters:CountToVisibilityInvertedConverter x:Key="CountToVisibilityInvertedConverter"/>
     </UserControl.Resources>
 
+    <!-- Main Layout Grid - Responsive two-column layout -->
     <Grid>
+        <!-- Column Definitions -->
         <Grid.ColumnDefinitions>
+            <!-- Fixed-width left panel for cluster selection -->
             <ColumnDefinition Width="250"/>
+            <!-- Flexible right panel for dynamic content -->
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
 
-        <!-- Left Panel - Cluster Selection -->
+        <!-- Left Panel - Fixed-width cluster selection area -->
         <Border Grid.Column="0" 
                 Background="#FFF8F9FA" 
                 BorderBrush="#FFE0E0E0" 
@@ -219,20 +223,14 @@
             </Grid>
         </Border>
 
-        <!-- Right Area - Dynamic Content -->
+        <!-- Right Area - Dynamic content that fills all available space -->
         <Grid Grid.Column="1" 
                Background="Transparent">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="*"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="*"/>
-            </Grid.RowDefinitions>
-
-            <!-- Dynamic Content Area -->
-            <ContentControl Grid.Row="1" 
-                            Content="{Binding CurrentViewModel}"
-                            HorizontalAlignment="Center"
-                            VerticalAlignment="Center">
+            
+            <!-- Dynamic Content Area - Stretches to fill entire right panel -->
+            <ContentControl Content="{Binding CurrentViewModel}"
+                            HorizontalAlignment="Stretch"
+                            VerticalAlignment="Stretch">
                 <ContentControl.Resources>
                     <!-- Data Templates for View-ViewModel mapping -->
                     <DataTemplate DataType="{x:Type viewmodels:DashboardViewModel}">
@@ -245,14 +243,13 @@
             </ContentControl>
 
             <!-- Default Center Text (shown when no clusters selected) -->
-            <TextBlock Grid.Row="1" 
-                        Text="Xcelerator" 
-                        FontSize="48" 
-                        FontWeight="Bold" 
-                        Foreground="#FF2D2D30"
-                        HorizontalAlignment="Center" 
-                        VerticalAlignment="Center"
-                        Visibility="{Binding SelectedClusters.Count, Converter={StaticResource CountToVisibilityInvertedConverter}}"/>
+            <TextBlock Text="Xcelerator" 
+                       FontSize="48" 
+                       FontWeight="Bold" 
+                       Foreground="#FF2D2D30"
+                       HorizontalAlignment="Center" 
+                       VerticalAlignment="Center"
+                       Visibility="{Binding SelectedClusters.Count, Converter={StaticResource CountToVisibilityInvertedConverter}}"/>
         </Grid>
     </Grid>
 </UserControl>

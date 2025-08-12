@@ -106,13 +106,15 @@
         </Style>
     </UserControl.Resources>
 
-    <!-- Login Form Container -->
+    <!-- Login Form Container - Centered in available space -->
     <Border Background="White" 
             CornerRadius="12"
             BorderBrush="#FFE0E0E0"
             BorderThickness="1"
             Width="386"
-            Height="400">
+            Height="400"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center">
         <Border.Effect>
             <DropShadowEffect Color="Black" 
                               Direction="270" 
