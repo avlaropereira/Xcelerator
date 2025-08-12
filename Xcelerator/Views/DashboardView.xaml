@@ -42,36 +42,7 @@
             </Setter>
         </Style>
 
-        <!-- Back Button Style -->
-        <Style x:Key="BackButtonStyle" TargetType="Button">
-            <Setter Property="Background" Value="#FF6C757D"/>
-            <Setter Property="Foreground" Value="White"/>
-            <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Padding" Value="16,8"/>
-            <Setter Property="FontWeight" Value="SemiBold"/>
-            <Setter Property="Cursor" Value="Hand"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="Button">
-                        <Border Background="{TemplateBinding Background}" 
-                                CornerRadius="6"
-                                BorderThickness="{TemplateBinding BorderThickness}"
-                                BorderBrush="{TemplateBinding BorderBrush}">
-                            <ContentPresenter HorizontalAlignment="Center" 
-                                              VerticalAlignment="Center"/>
-                        </Border>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter Property="Background" Value="#FF5A6268"/>
-                            </Trigger>
-                            <Trigger Property="IsPressed" Value="True">
-                                <Setter Property="Background" Value="#FF495057"/>
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
+
     </UserControl.Resources>
 
     <Grid>
@@ -92,40 +63,34 @@
                     <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
 
-                <!-- First Row of Options -->
-                <StackPanel Grid.Row="0" 
-                            Orientation="Horizontal" 
-                            HorizontalAlignment="Center"
-                            Margin="0,0,0,10">
+                <StackPanel Grid.Row="0"
+            Orientation="Horizontal"
+            HorizontalAlignment="Center"
+            Margin="0,0,0,10">
                     <Button Content="ContactOrchestrator" 
-                            Style="{StaticResource NavigationButtonStyle}"
-                            Command="{Binding SelectModuleCommand}"
-                            CommandParameter="ContactOrchestrator"
-                            Margin="0,0,20,0"/>
+            Style="{StaticResource NavigationButtonStyle}"
+            Command="{Binding SelectModuleCommand}"
+            CommandParameter="ContactOrchestrator"
+            Margin="0,0,20,0"/>
                     <Button Content="ContactForge" 
-                            Style="{StaticResource NavigationButtonStyle}"
-                            Command="{Binding SelectModuleCommand}"
-                            CommandParameter="ContactForge"
-                            Margin="0,0,20,0"/>
+            Style="{StaticResource NavigationButtonStyle}"
+            Command="{Binding SelectModuleCommand}"
+            CommandParameter="ContactForge"
+            Margin="0,0,20,0"/>
                     <Button Content="ConnectGrid" 
-                            Style="{StaticResource NavigationButtonStyle}"
-                            Command="{Binding SelectModuleCommand}"
-                            CommandParameter="ConnectGrid"/>
-                </StackPanel>
-
-                <!-- Second Row of Options -->
-                <StackPanel Grid.Row="1" 
-                            Orientation="Horizontal" 
-                            HorizontalAlignment="Center">
+            Style="{StaticResource NavigationButtonStyle}"
+            Command="{Binding SelectModuleCommand}"
+            CommandParameter="ConnectGrid"
+            Margin="0,0,20,0"/>
                     <Button Content="AgentForge" 
-                            Style="{StaticResource NavigationButtonStyle}"
-                            Command="{Binding SelectModuleCommand}"
-                            CommandParameter="AgentForge"
-                            Margin="0,0,20,0"/>
+            Style="{StaticResource NavigationButtonStyle}"
+            Command="{Binding SelectModuleCommand}"
+            CommandParameter="AgentForge"
+            Margin="0,0,20,0"/>
                     <Button Content="PulseOps" 
-                            Style="{StaticResource NavigationButtonStyle}"
-                            Command="{Binding SelectModuleCommand}"
-                            CommandParameter="PulseOps"/>
+            Style="{StaticResource NavigationButtonStyle}"
+            Command="{Binding SelectModuleCommand}"
+            CommandParameter="PulseOps"/>
                 </StackPanel>
             </Grid>
         </Border>
@@ -133,14 +98,9 @@
         <!-- Main Content Area -->
         <Grid Grid.Row="1" 
               Background="White">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="Auto"/>
-            </Grid.ColumnDefinitions>
 
             <!-- Content Area -->
-            <Grid Grid.Column="0" 
-                  Background="White">
+            <Grid Background="White">
                 <TextBlock Text="Welcome to Xcelerator Dashboard" 
                            FontSize="24" 
                            FontWeight="Bold" 
@@ -157,16 +117,7 @@
                            Margin="0,0,0,100"/>
             </Grid>
 
-            <!-- Back Button (Right Side) -->
-            <Button Grid.Column="1" 
-                    Content="←" 
-                    Style="{StaticResource BackButtonStyle}"
-                    Command="{Binding GoBackCommand}"
-                    Width="50"
-                    Height="50"
-                    FontSize="20"
-                    Margin="20"
-                    VerticalAlignment="Top"/>
+
         </Grid>
     </Grid>
 </UserControl>

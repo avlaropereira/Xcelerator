@@ -106,18 +106,6 @@
     </Window.Style>
     
     <Grid Background="#FFF8F9FA">
-        <ContentControl Content="{Binding CurrentPage}">
-            <ContentControl.Resources>
-                <DataTemplate DataType="{x:Type viewmodels:ClusterSelectionViewModel}">
-                    <views:ClusterSelectionView/>
-                </DataTemplate>
-                <DataTemplate DataType="{x:Type viewmodels:LoginViewModel}">
-                    <views:LoginView/>
-                </DataTemplate>
-                <DataTemplate DataType="{x:Type viewmodels:DashboardViewModel}">
-                    <views:DashboardView/>
-                </DataTemplate>
-            </ContentControl.Resources>
-        </ContentControl>
+        <views:MainWindowView DataContext="{Binding}"/>
     </Grid>
 </Window>

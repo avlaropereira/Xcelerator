@@ -2,6 +2,9 @@ using System.Windows.Input;
 
 namespace Xcelerator.ViewModels
 {
+    /// <summary>
+    /// ViewModel for the DashboardView that manages module selection and navigation
+    /// </summary>
     public class DashboardViewModel : BaseViewModel
     {
         private readonly MainViewModel _mainViewModel;
@@ -15,6 +18,9 @@ namespace Xcelerator.ViewModels
             SelectModuleCommand = new RelayCommand<string>(SelectModule);
         }
 
+        /// <summary>
+        /// Currently selected module
+        /// </summary>
         public string SelectedModule
         {
             get => _selectedModule;
@@ -24,6 +30,9 @@ namespace Xcelerator.ViewModels
         public ICommand GoBackCommand { get; }
         public ICommand SelectModuleCommand { get; }
 
+        /// <summary>
+        /// Available modules for selection
+        /// </summary>
         public string[] AvailableModules { get; } = new[]
         {
             "ContactOrchestrator",
@@ -33,11 +42,18 @@ namespace Xcelerator.ViewModels
             "PulseOps"
         };
 
+        /// <summary>
+        /// Go back to cluster selection
+        /// </summary>
         private void GoBack()
         {
-            _mainViewModel.NavigateBackCommand.Execute(null);
+            // Clear the current view to return to cluster selection
+            // This will be handled by the parent PanelViewModel
         }
 
+        /// <summary>
+        /// Select a module
+        /// </summary>
         private void SelectModule(string? module)
         {
             if (module != null)

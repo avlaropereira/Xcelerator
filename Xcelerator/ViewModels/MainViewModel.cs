@@ -11,7 +11,7 @@ namespace Xcelerator.ViewModels
         public MainViewModel()
         {
             _credentials = new LoginCredentials();
-            _currentPage = new ClusterSelectionViewModel(this);
+            _currentPage = new PanelViewModel(this);
             
             NavigateToLoginCommand = new RelayCommand(NavigateToLogin, CanNavigateToLogin);
             NavigateToDashboardCommand = new RelayCommand(NavigateToDashboard);
@@ -36,7 +36,8 @@ namespace Xcelerator.ViewModels
 
         private void NavigateToLogin()
         {
-            CurrentPage = new LoginViewModel(this);
+            // This method is no longer needed as login is handled by PanelViewModel
+            // The PanelViewModel will handle login navigation internally
         }
 
         private bool CanNavigateToLogin()
@@ -46,19 +47,14 @@ namespace Xcelerator.ViewModels
 
         private void NavigateToDashboard()
         {
-            CurrentPage = new DashboardViewModel(this);
+            // This method is no longer needed as dashboard navigation is handled by PanelViewModel
+            // The PanelViewModel will handle dashboard navigation internally
         }
 
         private void NavigateBack()
         {
-            if (CurrentPage is LoginViewModel)
-            {
-                CurrentPage = new ClusterSelectionViewModel(this);
-            }
-            else if (CurrentPage is DashboardViewModel)
-            {
-                CurrentPage = new LoginViewModel(this);
-            }
+            // This method is no longer needed as navigation is handled by PanelViewModel
+            // The PanelViewModel will handle all internal navigation
         }
     }
 

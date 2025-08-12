@@ -3,60 +3,104 @@ using Xcelerator.Models;
 
 namespace Xcelerator.ViewModels
 {
+    /// <summary>
+    /// ViewModel for the LoginView that handles authentication for a specific cluster
+    /// </summary>
     public class LoginViewModel : BaseViewModel
     {
         private readonly MainViewModel _mainViewModel;
+        private readonly Cluster _cluster;
         private string _accessKey = string.Empty;
         private string _secretKey = string.Empty;
 
-        public LoginViewModel(MainViewModel mainViewModel)
+        public LoginViewModel(MainViewModel mainViewModel, Cluster cluster)
         {
             _mainViewModel = mainViewModel;
+            _cluster = cluster;
+            
+            // Load existing credentials if available
+            AccessKey = cluster.AccessKey ?? string.Empty;
+            SecretKey = cluster.SecretKey ?? string.Empty;
             
             SignInCommand = new RelayCommand(SignIn, CanSignIn);
             GoBackCommand = new RelayCommand(GoBack);
         }
 
+        /// <summary>
+        /// Access key for authentication
+        /// </summary>
         public string AccessKey
         {
             get => _accessKey;
             set
             {
                 SetProperty(ref _accessKey, value);
-                _mainViewModel.Credentials.AccessKey = value;
+                _cluster.AccessKey = value;
             }
         }
 
+        /// <summary>
+        /// Secret key for authentication
+        /// </summary>
         public string SecretKey
         {
             get => _secretKey;
             set
             {
                 SetProperty(ref _secretKey, value);
-                _mainViewModel.Credentials.SecretKey = value;
+                _cluster.SecretKey = value;
             }
         }
+
+        /// <summary>
+        /// Display name of the cluster being authenticated
+        /// </summary>
+        public string ClusterDisplayName => _cluster.DisplayName;
 
         public ICommand SignInCommand { get; }
         public ICommand GoBackCommand { get; }
 
+        /// <summary>
+        /// Handle sign in process
+        /// </summary>
         private void SignIn()
         {
-            // For demo purposes, accept any non-empty credentials
             if (CanSignIn())
             {
-                _mainViewModel.NavigateToDashboardCommand.Execute(null);
+                // Store credentials in the cluster
+                _cluster.AccessKey = AccessKey;
+                _cluster.SecretKey = SecretKey;
+
+                // Set credentials for main view model
+                _mainViewModel.Credentials.AccessKey = AccessKey;
+                _mainViewModel.Credentials.SecretKey = SecretKey;
+
+                // Switch to dashboard mode
+                _cluster.IsInDashboardMode = true;
+                
+                // Notify the parent PanelViewModel to switch to dashboard
+                if (_mainViewModel.CurrentPage is PanelViewModel panelViewModel)
+                {
+                    panelViewModel.OnLoginCompleted(_cluster);
+                }
             }
         }
 
+        /// <summary>
+        /// Check if sign in is possible
+        /// </summary>
         private bool CanSignIn()
         {
             return !string.IsNullOrWhiteSpace(AccessKey) && !string.IsNullOrWhiteSpace(SecretKey);
         }
 
+        /// <summary>
+        /// Go back to cluster selection
+        /// </summary>
         private void GoBack()
         {
-            _mainViewModel.NavigateBackCommand.Execute(null);
+            // Clear the current view to return to cluster selection
+            // This will be handled by the parent PanelViewModel
         }
     }
 }
