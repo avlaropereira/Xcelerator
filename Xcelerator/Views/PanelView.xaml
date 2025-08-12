@@ -6,6 +6,7 @@
              xmlns:local="clr-namespace:Xcelerator.Views"
              xmlns:viewmodels="clr-namespace:Xcelerator.ViewModels"
              xmlns:converters="clr-namespace:Xcelerator.Converters"
+             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
              mc:Ignorable="d" 
              d:DesignHeight="650" d:DesignWidth="1000">
 
@@ -45,15 +46,17 @@
             </Setter>
         </Style>
 
-        <!-- Cluster Tag Style -->
-        <Style x:Key="ClusterTagStyle" TargetType="Border">
-            <Setter Property="Background" Value="#FFE3F2FD"/>
-            <Setter Property="BorderBrush" Value="#FF2196F3"/>
-            <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="CornerRadius" Value="16"/>
-            <Setter Property="Padding" Value="12,6"/>
-            <Setter Property="Margin" Value="0,2"/>
-        </Style>
+                 <!-- Cluster Tag Style -->
+         <Style x:Key="ClusterTagStyle" TargetType="Border">
+             <Setter Property="Background" Value="#FFE3F2FD"/>
+             <Setter Property="BorderBrush" Value="#FF2196F3"/>
+             <Setter Property="BorderThickness" Value="1"/>
+             <Setter Property="CornerRadius" Value="16"/>
+             <Setter Property="Padding" Value="12,6"/>
+             <Setter Property="Margin" Value="0,2"/>
+             <Setter Property="HorizontalAlignment" Value="Stretch"/>
+             <Setter Property="MinWidth" Value="200"/>
+         </Style>
 
         <!-- Cluster List Item Style -->
         <Style x:Key="ClusterListItemStyle" TargetType="ListBoxItem">
@@ -176,45 +179,52 @@
                     </ListBox.ItemTemplate>
                 </ListBox>
 
-                <!-- Selected Clusters -->
-                <ScrollViewer Grid.Row="3" 
-                              VerticalScrollBarVisibility="Auto"
-                              Margin="0,0,0,16">
-                    <WrapPanel>
-                        <ItemsControl ItemsSource="{Binding SelectedClusters}">
+                                 <!-- Selected Clusters -->
+                 <ScrollViewer Grid.Row="3" 
+                               VerticalScrollBarVisibility="Auto"
+                               Margin="0,0,0,16">
+                     <WrapPanel>
+                         <ItemsControl ItemsSource="{Binding SelectedClusters}" 
+                                       HorizontalAlignment="Stretch">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
-                                    <Border Style="{StaticResource ClusterTagStyle}">
-                                        <Grid>
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="*"/>
-                                                <ColumnDefinition Width="Auto"/>
-                                            </Grid.ColumnDefinitions>
-                                            <Button Grid.Column="0" 
-                                                     Content="{Binding DisplayName}"
-                                                     FontSize="12"
-                                                     FontWeight="SemiBold"
-                                                     Foreground="#FF1976D2"
-                                                     Background="Transparent"
-                                                     BorderThickness="0"
-                                                     HorizontalContentAlignment="Left"
-                                                     Command="{Binding DataContext.TagClickCommand, 
-                                                               RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                                     CommandParameter="{Binding}"/>
-                                            <Button Grid.Column="1" 
-                                                     Content="✕" 
-                                                     Width="16" 
-                                                     Height="16"
-                                                     Background="Transparent"
-                                                     BorderThickness="0"
-                                                     Foreground="#FF1976D2"
-                                                     FontSize="10"
-                                                     Margin="8,0,0,0"
-                                                     Command="{Binding DataContext.DeselectClusterCommand, 
-                                                               RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                                     CommandParameter="{Binding}"/>
-                                        </Grid>
-                                    </Border>
+                                     <Border Style="{StaticResource ClusterTagStyle}" 
+                                             HorizontalAlignment="Stretch">
+                                         <Grid>
+                                             <Grid.ColumnDefinitions>
+                                                 <!-- Content: Takes most of the space -->
+                                                 <ColumnDefinition Width="*"/>
+                                                 <!-- Close Button: Fixed width -->
+                                                 <ColumnDefinition Width="Auto"/>
+                                             </Grid.ColumnDefinitions>
+                                             <Button Grid.Column="0" 
+                                                 Content="{Binding DisplayName}"
+                                                 FontSize="15"
+                                                 FontWeight="SemiBold"
+                                                 Foreground="#FF1976D2"
+                                                 Background="Transparent"
+                                                 BorderThickness="0"
+                                                 HorizontalContentAlignment="Left"
+                                                 HorizontalAlignment="Stretch"
+                                                 Command="{Binding DataContext.TagClickCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                 CommandParameter="{Binding}"/>
+                                             <Button Grid.Column="1" 
+                                                  BorderThickness="0"
+                                                  Foreground="Red"
+                                                  Width="24"
+                                                  Height="24"
+                                                  Padding="0"
+                                                  BorderBrush="{x:Null}"
+                                                  Background="{x:Null}"
+                                                  Style="{StaticResource MaterialDesignFloatingActionButton}"
+                                                  HorizontalAlignment="Center"
+                                                  VerticalAlignment="Center"
+                                                  Command="{Binding DataContext.DeselectClusterCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                  CommandParameter="{Binding}">
+                                                <materialDesign:PackIcon Kind="TrashCan" Width="16" Height="16" />
+                                            </Button>
+                                         </Grid>
+                                     </Border>
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
