@@ -48,50 +48,14 @@ namespace Xcelerator.ViewModels
         }
 
         /// <summary>
-        /// Cluster display name
-        /// </summary>
-        public string ClusterName => _cluster?.DisplayName ?? "Unknown";
-
-        /// <summary>
         /// User name from token
         /// </summary>
         public string UserName => _tokenData?.Name ?? _tokenData?.GivenName ?? "User";
 
         /// <summary>
-        /// Token expiration time
-        /// </summary>
-        public string TokenExpiration => _tokenData != null 
-            ? DateTimeOffset.FromUnixTimeSeconds(_tokenData.Expiration).ToLocalTime().ToString("g") 
-            : "N/A";
-
-        /// <summary>
-        /// Tenant ID from token
-        /// </summary>
-        public string TenantId => _tokenData?.TenantId ?? "N/A";
-
-        /// <summary>
         /// Business Unit from token
         /// </summary>
         public string BusinessUnit => _tokenData?.IcBUId.ToString() ?? "N/A";
-
-        /// <summary>
-        /// Roles from token
-        /// </summary>
-        public string Roles => _tokenData?.Role?.SecondaryRoles != null && _tokenData.Role.SecondaryRoles.Any() 
-            ? string.Join(", ", _tokenData.Role.SecondaryRoles) 
-            : _tokenData?.Role?.LegacyId ?? "N/A";
-
-        /// <summary>
-        /// Agent and Cluster Info from token
-        /// </summary>
-        public string AgentInfo => _tokenData != null 
-            ? $"Agent: {_tokenData.IcAgentId}, Cluster: {_tokenData.IcClusterId}"
-            : "N/A";
-
-        /// <summary>
-        /// Resource server base URI
-        /// </summary>
-        public string ResourceServerUri => _cluster?.ResourceServerBaseUri ?? "N/A";
 
         public ICommand SelectModuleCommand { get; }
 
