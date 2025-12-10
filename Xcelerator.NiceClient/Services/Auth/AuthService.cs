@@ -15,7 +15,7 @@ namespace Xcelerator.NiceClient.Services.Auth
         public async Task<AuthToken> AuthenticateAsync(string tokenUrl, string basicAuthHeader, string username, string password)
         {
             // 1. Setup the Request
-            var request = new HttpRequestMessage(HttpMethod.Post, tokenUrl);
+            var request = new HttpRequestMessage(HttpMethod.Post, tokenUrl + "/auth/token");
 
             // 2. Add Authorization Header (Matches your $headers.Add("Authorization"...))
             // We assume 'basicAuthHeader' passed in includes "Basic " prefix, or we add it if missing

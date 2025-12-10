@@ -67,61 +67,93 @@
                     <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
 
-                <StackPanel Grid.Row="0"
-            Orientation="Horizontal"
-            HorizontalAlignment="Center"
-            Margin="0,0,0,10">
-                    <Button Content="ContactOrchestrator" 
-            Style="{StaticResource NavigationButtonStyle}"
-            Command="{Binding SelectModuleCommand}"
-            CommandParameter="ContactOrchestrator"
-            Margin="0,0,20,0"/>
-                    <Button Content="ContactForge" 
-            Style="{StaticResource NavigationButtonStyle}"
-            Command="{Binding SelectModuleCommand}"
-            CommandParameter="ContactForge"
-            Margin="0,0,20,0"/>
-                    <Button Content="ConnectGrid" 
-            Style="{StaticResource NavigationButtonStyle}"
-            Command="{Binding SelectModuleCommand}"
-            CommandParameter="ConnectGrid"
-            Margin="0,0,20,0"/>
-                    <Button Content="AgentForge" 
-            Style="{StaticResource NavigationButtonStyle}"
-            Command="{Binding SelectModuleCommand}"
-            CommandParameter="AgentForge"
-            Margin="0,0,20,0"/>
-                    <Button Content="PulseOps" 
-            Style="{StaticResource NavigationButtonStyle}"
-            Command="{Binding SelectModuleCommand}"
-            CommandParameter="PulseOps"/>
-                </StackPanel>
+                <Grid Grid.Row="0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Left Side: Agent & Cluster Info -->
+                    <StackPanel Grid.Column="0" 
+                                Orientation="Horizontal"
+                                VerticalAlignment="Center"
+                                Margin="0,0,20,10">
+                        <TextBlock Text="Agent &amp; Cluster Info: "
+                                   FontSize="12"
+                                   FontWeight="SemiBold"
+                                   Foreground="#FF666666"
+                                   VerticalAlignment="Center"
+                                   Margin="0,0,10,0"/>
+                        <TextBlock FontSize="12" Foreground="#FF2D2D30" VerticalAlignment="Center">
+                            <Run Text="Agent: "/>
+                            <Run Text="{Binding TokenData.IcAgentId, Mode=OneWay}" FontWeight="SemiBold"/>
+                            <Run Text=" | Cluster: "/>
+                            <Run Text="{Binding TokenData.IcClusterId, Mode=OneWay}" FontWeight="SemiBold"/>
+                            <Run Text=" | User: "/>
+                            <Run Text="{Binding UserName, Mode=OneWay}" FontWeight="SemiBold"/>
+                            <Run Text=" | BU: "/>
+                            <Run Text="{Binding BusinessUnit, Mode=OneWay}" FontWeight="SemiBold"/>
+                        </TextBlock>
+                    </StackPanel>
+
+                    <!-- Center: Module Selection Buttons -->
+                    <StackPanel Grid.Column="1"
+                                Orientation="Horizontal"
+                                HorizontalAlignment="Center"
+                                Margin="0,0,0,10">
+                        <Button Content="ContactOrchestrator" 
+                                Style="{StaticResource NavigationButtonStyle}"
+                                Command="{Binding SelectModuleCommand}"
+                                CommandParameter="ContactOrchestrator"
+                                Margin="0,0,20,0"/>
+                        <Button Content="ContactForge" 
+                                Style="{StaticResource NavigationButtonStyle}"
+                                Command="{Binding SelectModuleCommand}"
+                                CommandParameter="ContactForge"
+                                Margin="0,0,20,0"/>
+                        <Button Content="ConnectGrid" 
+                                Style="{StaticResource NavigationButtonStyle}"
+                                Command="{Binding SelectModuleCommand}"
+                                CommandParameter="ConnectGrid"
+                                Margin="0,0,20,0"/>
+                        <Button Content="AgentForge" 
+                                Style="{StaticResource NavigationButtonStyle}"
+                                Command="{Binding SelectModuleCommand}"
+                                CommandParameter="AgentForge"
+                                Margin="0,0,20,0"/>
+                        <Button Content="PulseOps" 
+                                Style="{StaticResource NavigationButtonStyle}"
+                                Command="{Binding SelectModuleCommand}"
+                                CommandParameter="PulseOps"/>
+                    </StackPanel>
+                </Grid>
             </Grid>
         </Border>
 
         <!-- Main Content Area - Fills remaining space below navigation -->
         <Grid Grid.Row="1" 
-              Background="White">
+              Background="White"
+              Margin="20">
 
             <!-- Dashboard Content - Centered welcome message and module display -->
-            <Grid Background="White">
-                <TextBlock Text="Welcome to Xcelerator Dashboard" 
-                           FontSize="24" 
-                           FontWeight="Bold" 
-                           Foreground="#FF2D2D30"
-                           HorizontalAlignment="Center" 
-                           VerticalAlignment="Center"/>
-                
-                <!-- Selected Module Display -->
-                <TextBlock Text="{Binding SelectedModule, StringFormat='Selected Module: {0}'}" 
-                           FontSize="16" 
-                           Foreground="#FF666666"
-                           HorizontalAlignment="Center" 
-                           VerticalAlignment="Bottom"
-                           Margin="0,0,0,100"/>
+            <Grid>
+                <StackPanel HorizontalAlignment="Center" 
+                            VerticalAlignment="Center">
+                    <TextBlock Text="Welcome to Xcelerator Dashboard" 
+                               FontSize="24" 
+                               FontWeight="Bold" 
+                               Foreground="#FF2D2D30"
+                               HorizontalAlignment="Center" 
+                               Margin="0,0,0,20"/>
+                    
+                    <!-- Selected Module Display -->
+                    <TextBlock Text="{Binding SelectedModule, StringFormat='Selected Module: {0}'}" 
+                               FontSize="16" 
+                               Foreground="#FF666666"
+                               HorizontalAlignment="Center"
+                               Margin="0,0,0,0"/>
+                </StackPanel>
             </Grid>
-
-
         </Grid>
     </Grid>
 </UserControl>

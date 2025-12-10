@@ -1,4 +1,7 @@
 using System.Windows.Input;
+using Xcelerator.Models;
+using Xcelerator.NiceClient.Models;
+using Xcelerator.NiceClient.Services.Auth;
 
 namespace Xcelerator.ViewModels
 {
@@ -8,13 +11,22 @@ namespace Xcelerator.ViewModels
     public class DashboardViewModel : BaseViewModel
     {
         private readonly MainViewModel _mainViewModel;
+        private readonly Cluster? _cluster;
         private string _selectedModule = string.Empty;
+        private UserTokenPayload? _tokenData;
 
-        public DashboardViewModel(MainViewModel mainViewModel)
+        public DashboardViewModel(MainViewModel mainViewModel, Cluster? cluster = null)
         {
             _mainViewModel = mainViewModel;
+            _cluster = cluster;
             
             SelectModuleCommand = new RelayCommand<string>(SelectModule);
+
+            // Decode token if cluster is provided
+            if (_cluster != null && !string.IsNullOrEmpty(_cluster.AuthToken))
+            {
+                _tokenData = JwtDecoder.DecodeToken(_cluster.AuthToken);
+            }
         }
 
         /// <summary>
@@ -26,6 +38,61 @@ namespace Xcelerator.ViewModels
             set => SetProperty(ref _selectedModule, value);
         }
 
+        /// <summary>
+        /// Decoded token data
+        /// </summary>
+        public UserTokenPayload? TokenData
+        {
+            get => _tokenData;
+            private set => SetProperty(ref _tokenData, value);
+        }
+
+        /// <summary>
+        /// Cluster display name
+        /// </summary>
+        public string ClusterName => _cluster?.DisplayName ?? "Unknown";
+
+        /// <summary>
+        /// User name from token
+        /// </summary>
+        public string UserName => _tokenData?.Name ?? _tokenData?.GivenName ?? "User";
+
+        /// <summary>
+        /// Token expiration time
+        /// </summary>
+        public string TokenExpiration => _tokenData != null 
+            ? DateTimeOffset.FromUnixTimeSeconds(_tokenData.Expiration).ToLocalTime().ToString("g") 
+            : "N/A";
+
+        /// <summary>
+        /// Tenant ID from token
+        /// </summary>
+        public string TenantId => _tokenData?.TenantId ?? "N/A";
+
+        /// <summary>
+        /// Business Unit from token
+        /// </summary>
+        public string BusinessUnit => _tokenData?.IcBUId.ToString() ?? "N/A";
+
+        /// <summary>
+        /// Roles from token
+        /// </summary>
+        public string Roles => _tokenData?.Role?.SecondaryRoles != null && _tokenData.Role.SecondaryRoles.Any() 
+            ? string.Join(", ", _tokenData.Role.SecondaryRoles) 
+            : _tokenData?.Role?.LegacyId ?? "N/A";
+
+        /// <summary>
+        /// Agent and Cluster Info from token
+        /// </summary>
+        public string AgentInfo => _tokenData != null 
+            ? $"Agent: {_tokenData.IcAgentId}, Cluster: {_tokenData.IcClusterId}"
+            : "N/A";
+
+        /// <summary>
+        /// Resource server base URI
+        /// </summary>
+        public string ResourceServerUri => _cluster?.ResourceServerBaseUri ?? "N/A";
+
         public ICommand SelectModuleCommand { get; }
 
         /// <summary>
@@ -36,6 +103,13 @@ namespace Xcelerator.ViewModels
             if (module != null)
             {
                 SelectedModule = module;
+                
+                // Store selected module in cluster for persistence
+                if (_cluster != null)
+                {
+                    _cluster.SelectedModule = module;
+                }
+                
                 // Here you would typically navigate to the specific module page
                 // For now, we'll just update the selected module
             }
