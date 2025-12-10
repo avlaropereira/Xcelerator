@@ -21,6 +21,7 @@ xmlns:converters="clr-namespace:Xcelerator.Converters">
 
             <!-- Converters -->
             <converters:StringToVisibilityConverter x:Key="StringToVisibilityConverter"/>
+            <converters:InverseBooleanConverter x:Key="InverseBooleanConverter"/>
 
             <!-- Global DataTemplates for View-ViewModel mapping -->
             <DataTemplate DataType="{x:Type viewmodels:PanelViewModel}">

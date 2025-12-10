@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using System.Windows.Input;
 using Xcelerator.Models;
+using Xcelerator.NiceClient.Services.Auth;
 
 namespace Xcelerator.ViewModels
 {
@@ -10,14 +11,16 @@ namespace Xcelerator.ViewModels
     public class PanelViewModel : BaseViewModel
     {
         private readonly MainViewModel _mainViewModel;
+        private readonly IAuthService _authService;
         private ObservableCollection<Cluster> _availableClusters;
         private ObservableCollection<Cluster> _selectedClusters;
         private BaseViewModel? _currentViewModel;
         private Cluster? _selectedClusterForLogin;
 
-        public PanelViewModel(MainViewModel mainViewModel)
+        public PanelViewModel(MainViewModel mainViewModel, IAuthService authService)
         {
             _mainViewModel = mainViewModel;
+            _authService = authService;
             _availableClusters = new ObservableCollection<Cluster>();
             _selectedClusters = new ObservableCollection<Cluster>();
 
@@ -210,7 +213,7 @@ namespace Xcelerator.ViewModels
         {
             if (SelectedClusterForLogin != null)
             {
-                var loginViewModel = new LoginViewModel(_mainViewModel, SelectedClusterForLogin);
+                var loginViewModel = new LoginViewModel(_mainViewModel, SelectedClusterForLogin, _authService);
                 CurrentViewModel = loginViewModel;
             }
         }

@@ -192,10 +192,25 @@
 
             <!-- Sign In Button -->
             <Button Grid.Row="7" 
-                    Content="Sign in" 
                     Style="{StaticResource ModernButtonStyle}"
                     Command="{Binding SignInCommand}"
-                    HorizontalAlignment="Stretch"/>
+                    IsEnabled="{Binding IsAuthenticating, Converter={StaticResource InverseBooleanConverter}}"
+                    HorizontalAlignment="Stretch">
+                <Button.Content>
+                    <TextBlock>
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="Text" Value="Sign in"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsAuthenticating}" Value="True">
+                                        <Setter Property="Text" Value="Authenticating..."/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+                </Button.Content>
+            </Button>
         </Grid>
     </Border>
 </UserControl>
