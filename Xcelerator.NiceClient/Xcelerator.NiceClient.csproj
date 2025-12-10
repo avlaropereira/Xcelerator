@@ -11,7 +11,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Services\Nice\Admin\" />
+    <Folder Include="Services\Nice\" />
   </ItemGroup>
 
 </Project>

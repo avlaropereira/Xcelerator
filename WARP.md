@@ -4,7 +4,7 @@ This file provides guidance to WARP (warp.dev) when working with code in this re
 
 ## Project Overview
 
-Xcelerator is a WPF desktop application built with .NET 8 that provides a multi-cluster management interface with authentication and modular dashboard navigation. The application follows MVVM architecture and uses Material Design for styling.
+Xcelerator is a WPF desktop application built with .NET 8 that provides a multi-cluster management interface with OAuth2 token-based authentication and modular dashboard navigation. The application follows MVVM architecture with dependency injection, uses Material Design for styling, and includes a separate API client library (Xcelerator.NiceClient) for NICE platform integration.
 
 ## Development Commands
 
@@ -34,6 +34,29 @@ start Xcelerator.sln
 
 ## Architecture
 
+### Solution Structure
+
+The solution consists of two projects:
+- **Xcelerator** - Main WPF application with UI and ViewModels
+- **Xcelerator.NiceClient** - Reusable API client library for NICE platform services
+
+### Dependency Injection and Hosting
+
+The application uses `Microsoft.Extensions.Hosting` for dependency injection:
+- `App.xaml.cs` configures the DI container in the constructor
+- `IHost AppHost` provides access to registered services
+- ViewModels and services are registered and resolved via DI
+- HttpClient is configured with typed clients for API services
+
+**Service Registration (App.xaml.cs):**
+```csharp
+builder.Services.AddHttpClient<IAuthService, AuthService>();
+builder.Services.AddSingleton<MainViewModel>();
+builder.Services.AddTransient<DashboardViewModel>();
+builder.Services.AddTransient<LoginViewModel>();
+builder.Services.AddTransient<PanelViewModel>();
+```
+
 ### MVVM Pattern Implementation
 
 The application uses a strict MVVM (Model-View-ViewModel) pattern with the following structure:
@@ -46,9 +69,10 @@ The application uses a strict MVVM (Model-View-ViewModel) pattern with the follo
 
 **Key Navigation Pattern:**
 1. User selects clusters in `PanelViewModel`
-2. Clicking a cluster tag triggers `TagClick` → shows `LoginViewModel` or `DashboardViewModel` depending on whether the cluster has stored credentials
-3. After successful login, `LoginViewModel.SignIn()` calls `PanelViewModel.OnLoginCompleted()` which switches to `DashboardViewModel`
-4. Each cluster independently stores its own credentials, selected module, and dashboard state
+2. Clicking a cluster tag triggers `TagClick` → shows `LoginViewModel` or `DashboardViewModel` depending on whether the cluster has a valid auth token
+3. `LoginViewModel` calls `IAuthService.AuthenticateAsync()` asynchronously
+4. On successful authentication, token is stored in the cluster and `LoginViewModel` calls `PanelViewModel.OnLoginCompleted()` which switches to `DashboardViewModel`
+5. Each cluster independently stores its own credentials, auth token, selected module, and dashboard state
 
 ### State Management
 
