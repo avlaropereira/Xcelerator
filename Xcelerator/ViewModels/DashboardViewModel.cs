@@ -29,20 +29,6 @@ namespace Xcelerator.ViewModels
         public ICommand SelectModuleCommand { get; }
 
         /// <summary>
-        /// Available modules for selection
-        /// </summary>
-        public string[] AvailableModules { get; } = new[]
-        {
-            "ContactOrchestrator",
-            "ContactForge", 
-            "AgentForge",
-            "ConnectGrid",
-            "PulseOps"
-        };
-
-
-
-        /// <summary>
         /// Select a module
         /// </summary>
         private void SelectModule(string? module)

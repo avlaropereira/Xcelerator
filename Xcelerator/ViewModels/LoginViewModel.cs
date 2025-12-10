@@ -91,7 +91,5 @@ namespace Xcelerator.ViewModels
         {
             return !string.IsNullOrWhiteSpace(AccessKey) && !string.IsNullOrWhiteSpace(SecretKey);
         }
-
-
     }
 }
