@@ -195,7 +195,9 @@
                     Style="{StaticResource ModernButtonStyle}"
                     Command="{Binding SignInCommand}"
                     IsEnabled="{Binding IsAuthenticating, Converter={StaticResource InverseBooleanConverter}}"
-                    HorizontalAlignment="Stretch">
+                    HorizontalAlignment="Stretch"
+                    Height="48"
+                    FontSize="16">
                 <Button.Content>
                     <TextBlock>
                         <TextBlock.Style>

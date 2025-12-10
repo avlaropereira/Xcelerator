@@ -102,10 +102,10 @@
                               Margin="0">
                     <StackPanel Orientation="Horizontal"
                                 HorizontalAlignment="Center">
-                        <Button Content="ContactOrchestrator" 
+                        <Button Content="LiveLogMonitor" 
                                 Style="{StaticResource NavigationButtonStyle}"
                                 Command="{Binding SelectModuleCommand}"
-                                CommandParameter="ContactOrchestrator"
+                                CommandParameter="LiveLogMonitor"
                                 FontSize="15"
                                 Padding="15,10"
                                 Margin="0,0,10,0"/>

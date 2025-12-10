@@ -22,7 +22,7 @@ using Xcelerator.Services;
 using Xcelerator.Models;
 
 public class MyViewModel : BaseViewModel
-{
+{   
     private readonly IAuthenticatedHttpClientFactory _httpClientFactory;
     private readonly Cluster _cluster;
 
