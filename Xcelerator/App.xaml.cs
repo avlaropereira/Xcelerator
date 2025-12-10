@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System.Windows;
-using Xcelerator.NiceClient.Services;
+using Xcelerator.NiceClient.Services.Nice.Admin;
 using Xcelerator.ViewModels;
 
 namespace Xcelerator
@@ -18,7 +18,7 @@ namespace Xcelerator
             var builder = Host.CreateApplicationBuilder();
 
             // --- 1. Register the NICE Services ---
-            builder.Services.AddHttpClient<INiceAdminService, NiceAdminService>();
+            builder.Services.AddHttpClient<IAdminService, AdminService>();
 
             // --- 2. Register ViewModels ---
             builder.Services.AddSingleton<MainViewModel>();

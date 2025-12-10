@@ -132,6 +132,7 @@
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
 
             <!-- Login Logo Placeholder -->
@@ -178,10 +179,19 @@
             <PasswordBox Grid.Row="5" 
                          x:Name="SecretKeyPasswordBox"
                          Style="{StaticResource ModernPasswordBoxStyle}"
-                         Margin="0,0,0,24"/>
+                         Margin="0,0,0,12"/>
+
+            <!-- Error Message -->
+            <TextBlock Grid.Row="6"
+                       Text="{Binding ErrorMessage}"
+                       FontSize="12"
+                       Foreground="#FFD13438"
+                       TextWrapping="Wrap"
+                       Margin="0,0,0,12"
+                       Visibility="{Binding ErrorMessage, Converter={StaticResource StringToVisibilityConverter}}"/>
 
             <!-- Sign In Button -->
-            <Button Grid.Row="6" 
+            <Button Grid.Row="7" 
                     Content="Sign in" 
                     Style="{StaticResource ModernButtonStyle}"
                     Command="{Binding SignInCommand}"

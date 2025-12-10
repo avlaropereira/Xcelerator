@@ -2,14 +2,14 @@
 using System.Net.Http.Json;
 using Xcelerator.NiceClient.Models;
 
-namespace Xcelerator.NiceClient.Services
+namespace Xcelerator.NiceClient.Services.Nice.Admin
 {
-    public class NiceAdminService : INiceAdminService
+    public class AdminService : IAdminService
     {
         private readonly HttpClient _httpClient;
 
         // HttpClient is injected automatically by the framework
-        public NiceAdminService(HttpClient httpClient)
+        public AdminService(HttpClient httpClient)
         {
             _httpClient = httpClient;
         }
