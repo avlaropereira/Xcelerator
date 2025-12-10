@@ -117,9 +117,16 @@ namespace Xcelerator.ViewModels
 
             if (!SelectedClusters.Any(c => c.Name == cluster.Name))
             {
-                // Ensure the cluster has no existing credentials when first selected
+                // Ensure the cluster starts completely clean when first selected
                 cluster.AccessKey = string.Empty;
                 cluster.SecretKey = string.Empty;
+                cluster.AuthToken = string.Empty;
+                cluster.TokenType = string.Empty;
+                cluster.RefreshToken = string.Empty;
+                cluster.ResourceServerBaseUri = string.Empty;
+                cluster.TokenExpirationTime = null;
+                cluster.SelectedModule = string.Empty;
+                cluster.IsInDashboardMode = false;
                 
                 cluster.IsSelected = true;
                 SelectedClusters.Add(cluster);
@@ -166,8 +173,9 @@ namespace Xcelerator.ViewModels
 
             SelectedClusterForLogin = cluster;
 
-            // If cluster has credentials, show dashboard mode
-            if (cluster.HasCredentials)
+            // If cluster has valid token, show dashboard mode
+            // Otherwise show login form even if it has credentials (token might be expired)
+            if (cluster.HasValidToken)
             {
                 _mainViewModel.Credentials.AccessKey = cluster.AccessKey;
                 _mainViewModel.Credentials.SecretKey = cluster.SecretKey;
@@ -187,7 +195,7 @@ namespace Xcelerator.ViewModels
         /// </summary>
         public void OnLoginCompleted(Cluster cluster)
         {
-            if (cluster.HasCredentials)
+            if (cluster.HasValidToken)
             {
                 _mainViewModel.Credentials.AccessKey = cluster.AccessKey;
                 _mainViewModel.Credentials.SecretKey = cluster.SecretKey;

@@ -24,9 +24,19 @@ namespace Xcelerator.ViewModels
             _cluster = cluster;
             _authService = authService;
             
-            // Load existing credentials if available
-            AccessKey = cluster.AccessKey ?? string.Empty;
-            SecretKey = cluster.SecretKey ?? string.Empty;
+            // Only load existing credentials if the cluster has a valid token
+            // This ensures failed authentication attempts don't persist credentials
+            if (cluster.HasValidToken)
+            {
+                AccessKey = cluster.AccessKey ?? string.Empty;
+                SecretKey = cluster.SecretKey ?? string.Empty;
+            }
+            else
+            {
+                // Start with clean inputs for new or failed authentication
+                AccessKey = string.Empty;
+                SecretKey = string.Empty;
+            }
             
             SignInCommand = new RelayCommand(SignIn, CanSignIn);
         }
@@ -143,6 +153,11 @@ namespace Xcelerator.ViewModels
                 {
                     // Clear invalid credentials and token from cluster
                     ClearClusterAuthentication();
+                    
+                    // Clear the input fields as well
+                    AccessKey = string.Empty;
+                    SecretKey = string.Empty;
+                    
                     ErrorMessage = "Authentication failed. The credentials provided are not valid.";
                 }
             }
@@ -150,6 +165,10 @@ namespace Xcelerator.ViewModels
             {
                 // Clear invalid credentials and token from cluster
                 ClearClusterAuthentication();
+                
+                // Clear the input fields as well
+                AccessKey = string.Empty;
+                SecretKey = string.Empty;
                 
                 // Handle authentication failure
                 ErrorMessage = "Authentication failed. The credentials provided are not valid. Please check your Access Key and Secret Key.";
@@ -161,6 +180,10 @@ namespace Xcelerator.ViewModels
             {
                 // Clear credentials and token from cluster on unexpected errors
                 ClearClusterAuthentication();
+                
+                // Clear the input fields as well
+                AccessKey = string.Empty;
+                SecretKey = string.Empty;
                 
                 // Handle unexpected errors
                 ErrorMessage = "An unexpected error occurred during authentication. Please try again.";
