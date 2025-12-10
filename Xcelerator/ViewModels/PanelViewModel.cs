@@ -1,4 +1,6 @@
 using System.Collections.ObjectModel;
+using System.IO;
+using System.Text.Json;
 using System.Windows.Input;
 using Xcelerator.Models;
 using Xcelerator.NiceClient.Services.Auth;
@@ -89,10 +91,35 @@ namespace Xcelerator.ViewModels
         private void InitializeClusters()
         {
             AvailableClusters.Clear();
-            // Add sample clusters
-            for (int i = 1; i <= 20; i++)
+            
+            try
             {
-                AvailableClusters.Add(new Cluster($"sc{i}", $"SC{i}"));
+                string clusterJsonPath = @"C:\XceleratorTool\Resources\cluster.json";
+                
+                if (File.Exists(clusterJsonPath))
+                {
+                    string jsonContent = File.ReadAllText(clusterJsonPath);
+                    var clusterConfigs = JsonSerializer.Deserialize<List<ClusterConfig>>(jsonContent);
+                    
+                    if (clusterConfigs != null)
+                    {
+                        foreach (var config in clusterConfigs)
+                        {
+                            var cluster = new Cluster(config.Name, config.Name)
+                            {
+                                ApiBaseURL = config.ApiBaseURL,
+                                Login = config.Login,
+                                TypeOfCluster = config.TypeOfCluster
+                            };
+                            AvailableClusters.Add(cluster);
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                // Log error and use fallback data
+                System.Diagnostics.Debug.WriteLine($"Error loading clusters from JSON: {ex.Message}");
             }
         }
 

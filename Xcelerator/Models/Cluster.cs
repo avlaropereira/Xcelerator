@@ -4,6 +4,9 @@ namespace Xcelerator.Models
     {
         public string Name { get; set; } = string.Empty;
         public string DisplayName { get; set; } = string.Empty;
+        public string ApiBaseURL { get; set; } = string.Empty;
+        public string Login { get; set; } = string.Empty;
+        public string TypeOfCluster { get; set; } = string.Empty;
         public bool IsSelected { get; set; }
         public string AccessKey { get; set; } = string.Empty;
         public string SecretKey { get; set; } = string.Empty;
