@@ -40,7 +40,6 @@ namespace Xcelerator.ViewModels
             set
             {
                 SetProperty(ref _accessKey, value);
-                _cluster.AccessKey = value;
                 ClearErrorMessage();
             }
         }
@@ -54,7 +53,6 @@ namespace Xcelerator.ViewModels
             set
             {
                 SetProperty(ref _secretKey, value);
-                _cluster.SecretKey = value;
                 ClearErrorMessage();
             }
         }
@@ -112,9 +110,21 @@ namespace Xcelerator.ViewModels
                 // Check if authentication was successful
                 if (authToken != null && !string.IsNullOrEmpty(authToken.AccessToken))
                 {
-                    // Store credentials and token in the cluster
+                    // Store credentials and token in the cluster ONLY on successful authentication
                     _cluster.AccessKey = AccessKey;
                     _cluster.SecretKey = SecretKey;
+                    
+                    // Store authentication token information
+                    _cluster.AuthToken = authToken.AccessToken;
+                    _cluster.TokenType = authToken.TokenType;
+                    _cluster.RefreshToken = authToken.RefreshToken;
+                    _cluster.ResourceServerBaseUri = authToken.ResourceServerBaseUri;
+                    
+                    // Calculate token expiration time (current time + expires_in seconds)
+                    if (authToken.ExpiresIn > 0)
+                    {
+                        _cluster.TokenExpirationTime = DateTime.UtcNow.AddSeconds(authToken.ExpiresIn);
+                    }
 
                     // Set credentials for main view model
                     _mainViewModel.Credentials.AccessKey = AccessKey;
@@ -131,11 +141,16 @@ namespace Xcelerator.ViewModels
                 }
                 else
                 {
+                    // Clear invalid credentials and token from cluster
+                    ClearClusterAuthentication();
                     ErrorMessage = "Authentication failed. The credentials provided are not valid.";
                 }
             }
             catch (HttpRequestException ex)
             {
+                // Clear invalid credentials and token from cluster
+                ClearClusterAuthentication();
+                
                 // Handle authentication failure
                 ErrorMessage = "Authentication failed. The credentials provided are not valid. Please check your Access Key and Secret Key.";
                 
@@ -144,6 +159,9 @@ namespace Xcelerator.ViewModels
             }
             catch (Exception ex)
             {
+                // Clear credentials and token from cluster on unexpected errors
+                ClearClusterAuthentication();
+                
                 // Handle unexpected errors
                 ErrorMessage = "An unexpected error occurred during authentication. Please try again.";
                 
@@ -197,6 +215,20 @@ namespace Xcelerator.ViewModels
         private void ClearErrorMessage()
         {
             ErrorMessage = string.Empty;
+        }
+
+        /// <summary>
+        /// Clears all authentication data from the cluster
+        /// </summary>
+        private void ClearClusterAuthentication()
+        {
+            _cluster.AccessKey = string.Empty;
+            _cluster.SecretKey = string.Empty;
+            _cluster.AuthToken = string.Empty;
+            _cluster.TokenType = string.Empty;
+            _cluster.RefreshToken = string.Empty;
+            _cluster.ResourceServerBaseUri = string.Empty;
+            _cluster.TokenExpirationTime = null;
         }
     }
 }

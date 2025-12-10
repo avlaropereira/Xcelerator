@@ -134,9 +134,14 @@ namespace Xcelerator.ViewModels
         {
             if (cluster == null) return;
 
-            // Clear stored credentials and dashboard state for this cluster
+            // Clear stored credentials, token, and dashboard state for this cluster
             cluster.AccessKey = string.Empty;
             cluster.SecretKey = string.Empty;
+            cluster.AuthToken = string.Empty;
+            cluster.TokenType = string.Empty;
+            cluster.RefreshToken = string.Empty;
+            cluster.ResourceServerBaseUri = string.Empty;
+            cluster.TokenExpirationTime = null;
             cluster.SelectedModule = string.Empty;
             cluster.IsInDashboardMode = false;
 

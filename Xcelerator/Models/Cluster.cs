@@ -10,6 +10,13 @@ namespace Xcelerator.Models
         public string SelectedModule { get; set; } = string.Empty;
         public bool IsInDashboardMode { get; set; } = false;
 
+        // Authentication token information
+        public string AuthToken { get; set; } = string.Empty;
+        public string TokenType { get; set; } = string.Empty;
+        public string RefreshToken { get; set; } = string.Empty;
+        public string ResourceServerBaseUri { get; set; } = string.Empty;
+        public DateTime? TokenExpirationTime { get; set; }
+
         public Cluster(string name, string displayName = "")
         {
             Name = name;
@@ -17,5 +24,8 @@ namespace Xcelerator.Models
         }
 
         public bool HasCredentials => !string.IsNullOrWhiteSpace(AccessKey) && !string.IsNullOrWhiteSpace(SecretKey);
+        
+        public bool HasValidToken => !string.IsNullOrWhiteSpace(AuthToken) && 
+                                      (TokenExpirationTime == null || TokenExpirationTime > DateTime.UtcNow);
     }
 }

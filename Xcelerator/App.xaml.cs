@@ -3,6 +3,7 @@ using Microsoft.Extensions.Hosting;
 using System.Windows;
 using Xcelerator.NiceClient.Services.Auth;
 using Xcelerator.NiceClient.Services.Nice.Admin;
+using Xcelerator.Services;
 using Xcelerator.ViewModels;
 
 namespace Xcelerator
@@ -21,6 +22,12 @@ namespace Xcelerator
             // --- 1. Register the NICE Services ---
             builder.Services.AddHttpClient<IAuthService, AuthService>();
             builder.Services.AddHttpClient<IAdminService, AdminService>();
+            
+            // Register HttpClient factory for general use
+            builder.Services.AddHttpClient();
+            
+            // Register authenticated HttpClient factory
+            builder.Services.AddSingleton<IAuthenticatedHttpClientFactory, AuthenticatedHttpClientFactory>();
 
             // --- 2. Register ViewModels ---
             builder.Services.AddSingleton<MainViewModel>();
