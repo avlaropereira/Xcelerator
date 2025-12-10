@@ -108,10 +108,12 @@ namespace Xcelerator.ViewModels
             try
             {
                 // Authenticate using the AuthService
-                // Note: The AuthService expects basicAuthHeader, username, and password
-                // AccessKey is used as basicAuthHeader (Base64 encoded credentials)
+                // Note: The AuthService expects tokenUrl, basicAuthHeader, username, and password
+                // Use the cluster's Login property as the token URL
+                // AccessKey is used as username
                 // SecretKey is used as password
                 var authToken = await _authService.AuthenticateAsync(
+                    tokenUrl: _cluster.Login,
                     basicAuthHeader: "Basic SW50ZXJuYWxAaW5Db250YWN0IEluYy46UVVFNVFrTkdSRE0zUWpFME5FUkRSamczUlVORFJVTkRRakU0TlRrek5UYz0=",
                     username: AccessKey,
                     password: SecretKey

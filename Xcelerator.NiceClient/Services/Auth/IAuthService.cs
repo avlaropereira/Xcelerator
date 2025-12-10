@@ -12,11 +12,12 @@ namespace Xcelerator.NiceClient.Services.Auth
         /// <summary>
         /// Authenticates using the "password" grant type.
         /// </summary>
+        /// <param name="tokenUrl">The token URL endpoint for authentication</param>
         /// <param name="basicAuthHeader">The base64 encoded string "Basic XXXXX"</param>
         /// <param name="username">NICE Username</param>
         /// <param name="password">NICE Password</param>
         /// <returns>The authentication token and base URL</returns>
-        Task<AuthToken> AuthenticateAsync(string basicAuthHeader, string username, string password);
+        Task<AuthToken> AuthenticateAsync(string tokenUrl, string basicAuthHeader, string username, string password);
     }
 }
     

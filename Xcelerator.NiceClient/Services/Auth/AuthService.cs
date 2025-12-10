@@ -7,18 +7,15 @@ namespace Xcelerator.NiceClient.Services.Auth
     {
         private readonly HttpClient _httpClient;
 
-        // Use the token URL from your script
-        private const string TokenUrl = "https://cxone.staging.niceincontact.com/auth/token";
-
         public AuthService(HttpClient httpClient)
         {
             _httpClient = httpClient;
         }
 
-        public async Task<AuthToken> AuthenticateAsync(string basicAuthHeader, string username, string password)
+        public async Task<AuthToken> AuthenticateAsync(string tokenUrl, string basicAuthHeader, string username, string password)
         {
             // 1. Setup the Request
-            var request = new HttpRequestMessage(HttpMethod.Post, TokenUrl);
+            var request = new HttpRequestMessage(HttpMethod.Post, tokenUrl);
 
             // 2. Add Authorization Header (Matches your $headers.Add("Authorization"...))
             // We assume 'basicAuthHeader' passed in includes "Basic " prefix, or we add it if missing
