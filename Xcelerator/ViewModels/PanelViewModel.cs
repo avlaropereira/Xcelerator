@@ -1,6 +1,8 @@
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.IO;
 using System.Text.Json;
+using System.Windows.Data;
 using System.Windows.Input;
 using Xcelerator.Models;
 using Xcelerator.NiceClient.Services.Auth;
@@ -18,6 +20,9 @@ namespace Xcelerator.ViewModels
         private ObservableCollection<Cluster> _selectedClusters;
         private BaseViewModel? _currentViewModel;
         private Cluster? _selectedClusterForLogin;
+        private string _searchText = string.Empty;
+        private int _matchCount = 0;
+        private ICollectionView? _filteredClusters;
 
         public PanelViewModel(MainViewModel mainViewModel, IAuthService authService)
         {
@@ -28,6 +33,14 @@ namespace Xcelerator.ViewModels
 
             InitializeClusters();
             LoadSelectedClusters();
+
+            // Setup filtered collection view
+            _filteredClusters = CollectionViewSource.GetDefaultView(_availableClusters);
+            if (_filteredClusters != null)
+            {
+                _filteredClusters.Filter = ClusterFilter;
+            }
+            UpdateMatchCount();
 
             // Initialize commands
             SelectClusterCommand = new RelayCommand<Cluster>(SelectCluster);
@@ -71,6 +84,39 @@ namespace Xcelerator.ViewModels
         {
             get => _selectedClusterForLogin;
             set => SetProperty(ref _selectedClusterForLogin, value);
+        }
+
+        /// <summary>
+        /// Search text for filtering clusters
+        /// </summary>
+        public string SearchText
+        {
+            get => _searchText;
+            set
+            {
+                if (SetProperty(ref _searchText, value))
+                {
+                    RefreshFilter();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Number of clusters matching the filter
+        /// </summary>
+        public int MatchCount
+        {
+            get => _matchCount;
+            private set => SetProperty(ref _matchCount, value);
+        }
+
+        /// <summary>
+        /// Filtered collection view of clusters
+        /// </summary>
+        public ICollectionView? FilteredClusters
+        {
+            get => _filteredClusters;
+            private set => SetProperty(ref _filteredClusters, value);
         }
 
         #endregion
@@ -255,6 +301,46 @@ namespace Xcelerator.ViewModels
             {
                 var loginViewModel = new LoginViewModel(_mainViewModel, SelectedClusterForLogin, _authService);
                 CurrentViewModel = loginViewModel;
+            }
+        }
+
+        #endregion
+
+        #region Cluster Filtering
+
+        /// <summary>
+        /// Filter predicate for clusters
+        /// </summary>
+        private bool ClusterFilter(object item)
+        {
+            if (item is not Cluster cluster || string.IsNullOrWhiteSpace(SearchText))
+                return true;
+
+            return cluster.DisplayName.Contains(SearchText, StringComparison.OrdinalIgnoreCase);
+        }
+
+        /// <summary>
+        /// Refresh the filter and update match count
+        /// </summary>
+        private void RefreshFilter()
+        {
+            _filteredClusters?.Refresh();
+            UpdateMatchCount();
+        }
+
+        /// <summary>
+        /// Update the match count based on filtered items
+        /// </summary>
+        private void UpdateMatchCount()
+        {
+            if (_filteredClusters != null)
+            {
+                int count = 0;
+                foreach (var item in _filteredClusters)
+                {
+                    count++;
+                }
+                MatchCount = count;
             }
         }
 

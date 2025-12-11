@@ -144,6 +144,8 @@
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
 
@@ -163,10 +165,55 @@
                            Foreground="#FF2D2D30"
                            Margin="0,0,0,8"/>
 
+                <!-- Search Box -->
+                <Border Grid.Row="2"
+                        Background="White"
+                        BorderBrush="#FFE0E0E0"
+                        BorderThickness="1"
+                        CornerRadius="4"
+                        Margin="0,0,0,8">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        
+                        <!-- Search Icon -->
+                        <TextBlock Grid.Column="0"
+                                   Text="??"
+                                   FontSize="12"
+                                   Foreground="#FF999999"
+                                   VerticalAlignment="Center"
+                                   Margin="6,0,4,0"/>
+                        
+                        <!-- Search TextBox -->
+                        <TextBox Grid.Column="1"
+                                 x:Name="SearchTextBox"
+                                 Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
+                                 BorderThickness="0"
+                                 Background="Transparent"
+                                 VerticalAlignment="Center"
+                                 Padding="0,6"
+                                 FontSize="11"
+                                 Foreground="#FF2D2D30"/>
+                    </Grid>
+                </Border>
+
+                <!-- Match Count -->
+                <TextBlock Grid.Row="3"
+                           FontSize="10"
+                           Foreground="#FF0078D4"
+                           FontWeight="SemiBold"
+                           HorizontalAlignment="Right"
+                           Margin="0,0,0,8">
+                    <Run Text="{Binding MatchCount, Mode=OneWay}"/>
+                    <Run Text=" matches"/>
+                </TextBlock>
+
                 <!-- Available Clusters -->
-                <ListBox Grid.Row="2" 
+                <ListBox Grid.Row="4" 
                          x:Name="AvailableClustersList"
-                         ItemsSource="{Binding AvailableClusters}"
+                         ItemsSource="{Binding FilteredClusters}"
                          ItemContainerStyle="{StaticResource ClusterListItemStyle}"
                          MaxHeight="200"
                          Margin="0,0,0,16">
@@ -180,7 +227,7 @@
                 </ListBox>
 
                                  <!-- Selected Clusters -->
-                 <ScrollViewer Grid.Row="3" 
+                 <ScrollViewer Grid.Row="5" 
                                VerticalScrollBarVisibility="Auto"
                                Margin="0,0,0,16">
                      <WrapPanel>
