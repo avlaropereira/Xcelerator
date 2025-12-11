@@ -34,9 +34,6 @@ namespace Xcelerator.ViewModels
             _dashboardViewModel = dashboardViewModel;
             _cluster = cluster;
 
-            // Initialize commands
-            BackToDashboardCommand = new RelayCommand(BackToDashboard);
-
             // Initialize machine list with sample data
             _allMachines = new ObservableCollection<string>();
             InitializeMachineList();
@@ -162,30 +159,6 @@ namespace Xcelerator.ViewModels
         {
             get => _filteredMachines;
             private set => SetProperty(ref _filteredMachines, value);
-        }
-
-        #endregion
-
-        #region Commands
-
-        public ICommand BackToDashboardCommand { get; }
-
-        #endregion
-
-        #region Command Methods
-
-        /// <summary>
-        /// Navigate back to the dashboard
-        /// </summary>
-        private void BackToDashboard()
-        {
-            // Clear the module view to return to dashboard home
-            if (_cluster != null)
-            {
-                _cluster.SelectedModule = string.Empty;
-            }
-            _dashboardViewModel.SelectedModule = string.Empty;
-            _dashboardViewModel.CurrentModuleViewModel = null;
         }
 
         #endregion

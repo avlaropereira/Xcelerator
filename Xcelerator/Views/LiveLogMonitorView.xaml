@@ -189,80 +189,33 @@
         </Border>
 
         <!-- Log Display Area -->
-        <Grid Grid.Row="1"
-              Grid.Column="1"
-              Margin="15,0,0,0">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="*"/>
-                <RowDefinition Height="Auto"/>
-            </Grid.RowDefinitions>
+        <Border Grid.Row="1"
+                Grid.Column="1"
+                Background="White" 
+                BorderBrush="#FFE0E0E0" 
+                BorderThickness="1"
+                CornerRadius="8"
+                Margin="15,0,0,0">
+            <Grid>
+                <!-- Log Output TextBox -->
+                <ScrollViewer VerticalScrollBarVisibility="Auto" 
+                              HorizontalScrollBarVisibility="Auto"
+                              Padding="10">
+                    <TextBlock Text="{Binding LogContent}"
+                               FontFamily="Consolas"
+                               FontSize="12"
+                               Foreground="#FF2D2D30"
+                               TextWrapping="Wrap"/>
+                </ScrollViewer>
 
-            <!-- Log Content -->
-            <Border Grid.Row="0"
-                    Background="White" 
-                    BorderBrush="#FFE0E0E0" 
-                    BorderThickness="1"
-                    CornerRadius="8"
-                    Margin="0,0,0,15">
-                <Grid>
-                    <!-- Log Output TextBox -->
-                    <ScrollViewer VerticalScrollBarVisibility="Auto" 
-                                  HorizontalScrollBarVisibility="Auto"
-                                  Padding="10">
-                        <TextBlock Text="{Binding LogContent}"
-                                   FontFamily="Consolas"
-                                   FontSize="12"
-                                   Foreground="#FF2D2D30"
-                                   TextWrapping="Wrap"/>
-                    </ScrollViewer>
-
-                    <!-- Placeholder when no logs -->
-                    <TextBlock Text="No logs available. Start monitoring to see live logs."
-                               FontSize="14"
-                               Foreground="#FF999999"
-                               HorizontalAlignment="Center"
-                               VerticalAlignment="Center"
-                               Visibility="{Binding HasLogs, Converter={StaticResource InverseBooleanToVisibilityConverter}}"/>
-                </Grid>
-            </Border>
-
-            <!-- Back to Dashboard Button -->
-            <Button Grid.Row="1"
-                    Content="? Back to Dashboard"
-                    Command="{Binding BackToDashboardCommand}"
-                    Background="#FF0078D4"
-                    Foreground="White"
-                    BorderThickness="0"
-                    FontSize="14"
-                    FontWeight="SemiBold"
-                    Padding="20,12"
-                    HorizontalAlignment="Stretch"
-                    Cursor="Hand">
-                <Button.Style>
-                    <Style TargetType="Button">
-                        <Setter Property="Template">
-                            <Setter.Value>
-                                <ControlTemplate TargetType="Button">
-                                    <Border Background="{TemplateBinding Background}" 
-                                            CornerRadius="6"
-                                            Padding="{TemplateBinding Padding}">
-                                        <ContentPresenter HorizontalAlignment="Center" 
-                                                          VerticalAlignment="Center"/>
-                                    </Border>
-                                    <ControlTemplate.Triggers>
-                                        <Trigger Property="IsMouseOver" Value="True">
-                                            <Setter Property="Background" Value="#FF106EBE"/>
-                                        </Trigger>
-                                        <Trigger Property="IsPressed" Value="True">
-                                            <Setter Property="Background" Value="#FF005A9E"/>
-                                        </Trigger>
-                                    </ControlTemplate.Triggers>
-                                </ControlTemplate>
-                            </Setter.Value>
-                        </Setter>
-                    </Style>
-                </Button.Style>
-            </Button>
-        </Grid>
+                <!-- Placeholder when no logs -->
+                <TextBlock Text="No logs available. Start monitoring to see live logs."
+                           FontSize="14"
+                           Foreground="#FF999999"
+                           HorizontalAlignment="Center"
+                           VerticalAlignment="Center"
+                           Visibility="{Binding HasLogs, Converter={StaticResource InverseBooleanToVisibilityConverter}}"/>
+            </Grid>
+        </Border>
     </Grid>
 </UserControl>
