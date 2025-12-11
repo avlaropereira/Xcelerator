@@ -4,11 +4,21 @@ namespace Xcelerator.Models
     {
         public string Name { get; set; } = string.Empty;
         public string DisplayName { get; set; } = string.Empty;
+        public string ApiBaseURL { get; set; } = string.Empty;
+        public string Login { get; set; } = string.Empty;
+        public string TypeOfCluster { get; set; } = string.Empty;
         public bool IsSelected { get; set; }
         public string AccessKey { get; set; } = string.Empty;
         public string SecretKey { get; set; } = string.Empty;
         public string SelectedModule { get; set; } = string.Empty;
         public bool IsInDashboardMode { get; set; } = false;
+
+        // Authentication token information
+        public string AuthToken { get; set; } = string.Empty;
+        public string TokenType { get; set; } = string.Empty;
+        public string RefreshToken { get; set; } = string.Empty;
+        public string ResourceServerBaseUri { get; set; } = string.Empty;
+        public DateTime? TokenExpirationTime { get; set; }
 
         public Cluster(string name, string displayName = "")
         {
@@ -17,5 +27,8 @@ namespace Xcelerator.Models
         }
 
         public bool HasCredentials => !string.IsNullOrWhiteSpace(AccessKey) && !string.IsNullOrWhiteSpace(SecretKey);
+        
+        public bool HasValidToken => !string.IsNullOrWhiteSpace(AuthToken) && 
+                                      (TokenExpirationTime == null || TokenExpirationTime > DateTime.UtcNow);
     }
 }

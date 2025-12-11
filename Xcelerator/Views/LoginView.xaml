@@ -132,6 +132,7 @@
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
 
             <!-- Login Logo Placeholder -->
@@ -178,14 +179,40 @@
             <PasswordBox Grid.Row="5" 
                          x:Name="SecretKeyPasswordBox"
                          Style="{StaticResource ModernPasswordBoxStyle}"
-                         Margin="0,0,0,24"/>
+                         Margin="0,0,0,12"/>
+
+            <!-- Error Message -->
+            <TextBlock Grid.Row="6"
+                       Text="{Binding ErrorMessage}"
+                       FontSize="12"
+                       Foreground="#FFD13438"
+                       TextWrapping="Wrap"
+                       Margin="0,0,0,12"
+                       Visibility="{Binding ErrorMessage, Converter={StaticResource StringToVisibilityConverter}}"/>
 
             <!-- Sign In Button -->
-            <Button Grid.Row="6" 
-                    Content="Sign in" 
+            <Button Grid.Row="7" 
                     Style="{StaticResource ModernButtonStyle}"
                     Command="{Binding SignInCommand}"
-                    HorizontalAlignment="Stretch"/>
+                    IsEnabled="{Binding IsAuthenticating, Converter={StaticResource InverseBooleanConverter}}"
+                    HorizontalAlignment="Stretch"
+                    Height="48"
+                    FontSize="16">
+                <Button.Content>
+                    <TextBlock>
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="Text" Value="Sign in"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsAuthenticating}" Value="True">
+                                        <Setter Property="Text" Value="Authenticating..."/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+                </Button.Content>
+            </Button>
         </Grid>
     </Border>
 </UserControl>

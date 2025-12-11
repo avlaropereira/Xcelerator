@@ -1,6 +1,9 @@
 using System.Collections.ObjectModel;
+using System.IO;
+using System.Text.Json;
 using System.Windows.Input;
 using Xcelerator.Models;
+using Xcelerator.NiceClient.Services.Auth;
 
 namespace Xcelerator.ViewModels
 {
@@ -10,14 +13,16 @@ namespace Xcelerator.ViewModels
     public class PanelViewModel : BaseViewModel
     {
         private readonly MainViewModel _mainViewModel;
+        private readonly IAuthService _authService;
         private ObservableCollection<Cluster> _availableClusters;
         private ObservableCollection<Cluster> _selectedClusters;
         private BaseViewModel? _currentViewModel;
         private Cluster? _selectedClusterForLogin;
 
-        public PanelViewModel(MainViewModel mainViewModel)
+        public PanelViewModel(MainViewModel mainViewModel, IAuthService authService)
         {
             _mainViewModel = mainViewModel;
+            _authService = authService;
             _availableClusters = new ObservableCollection<Cluster>();
             _selectedClusters = new ObservableCollection<Cluster>();
 
@@ -86,10 +91,35 @@ namespace Xcelerator.ViewModels
         private void InitializeClusters()
         {
             AvailableClusters.Clear();
-            // Add sample clusters
-            for (int i = 1; i <= 20; i++)
+            
+            try
             {
-                AvailableClusters.Add(new Cluster($"sc{i}", $"SC{i}"));
+                string clusterJsonPath = @"C:\XceleratorTool\Resources\cluster.json";
+                
+                if (File.Exists(clusterJsonPath))
+                {
+                    string jsonContent = File.ReadAllText(clusterJsonPath);
+                    var clusterConfigs = JsonSerializer.Deserialize<List<ClusterConfig>>(jsonContent);
+                    
+                    if (clusterConfigs != null)
+                    {
+                        foreach (var config in clusterConfigs)
+                        {
+                            var cluster = new Cluster(config.Name, config.Name)
+                            {
+                                ApiBaseURL = config.ApiBaseURL,
+                                Login = config.Login,
+                                TypeOfCluster = config.TypeOfCluster
+                            };
+                            AvailableClusters.Add(cluster);
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                // Log error and use fallback data
+                System.Diagnostics.Debug.WriteLine($"Error loading clusters from JSON: {ex.Message}");
             }
         }
 
@@ -114,9 +144,16 @@ namespace Xcelerator.ViewModels
 
             if (!SelectedClusters.Any(c => c.Name == cluster.Name))
             {
-                // Ensure the cluster has no existing credentials when first selected
+                // Ensure the cluster starts completely clean when first selected
                 cluster.AccessKey = string.Empty;
                 cluster.SecretKey = string.Empty;
+                cluster.AuthToken = string.Empty;
+                cluster.TokenType = string.Empty;
+                cluster.RefreshToken = string.Empty;
+                cluster.ResourceServerBaseUri = string.Empty;
+                cluster.TokenExpirationTime = null;
+                cluster.SelectedModule = string.Empty;
+                cluster.IsInDashboardMode = false;
                 
                 cluster.IsSelected = true;
                 SelectedClusters.Add(cluster);
@@ -131,9 +168,14 @@ namespace Xcelerator.ViewModels
         {
             if (cluster == null) return;
 
-            // Clear stored credentials and dashboard state for this cluster
+            // Clear stored credentials, token, and dashboard state for this cluster
             cluster.AccessKey = string.Empty;
             cluster.SecretKey = string.Empty;
+            cluster.AuthToken = string.Empty;
+            cluster.TokenType = string.Empty;
+            cluster.RefreshToken = string.Empty;
+            cluster.ResourceServerBaseUri = string.Empty;
+            cluster.TokenExpirationTime = null;
             cluster.SelectedModule = string.Empty;
             cluster.IsInDashboardMode = false;
 
@@ -158,8 +200,9 @@ namespace Xcelerator.ViewModels
 
             SelectedClusterForLogin = cluster;
 
-            // If cluster has credentials, show dashboard mode
-            if (cluster.HasCredentials)
+            // If cluster has valid token, show dashboard mode
+            // Otherwise show login form even if it has credentials (token might be expired)
+            if (cluster.HasValidToken)
             {
                 _mainViewModel.Credentials.AccessKey = cluster.AccessKey;
                 _mainViewModel.Credentials.SecretKey = cluster.SecretKey;
@@ -179,7 +222,7 @@ namespace Xcelerator.ViewModels
         /// </summary>
         public void OnLoginCompleted(Cluster cluster)
         {
-            if (cluster.HasCredentials)
+            if (cluster.HasValidToken)
             {
                 _mainViewModel.Credentials.AccessKey = cluster.AccessKey;
                 _mainViewModel.Credentials.SecretKey = cluster.SecretKey;
@@ -195,7 +238,7 @@ namespace Xcelerator.ViewModels
         {
             if (SelectedClusterForLogin != null)
             {
-                var dashboardViewModel = new DashboardViewModel(_mainViewModel)
+                var dashboardViewModel = new DashboardViewModel(_mainViewModel, SelectedClusterForLogin)
                 {
                     SelectedModule = SelectedClusterForLogin.SelectedModule
                 };
@@ -210,7 +253,7 @@ namespace Xcelerator.ViewModels
         {
             if (SelectedClusterForLogin != null)
             {
-                var loginViewModel = new LoginViewModel(_mainViewModel, SelectedClusterForLogin);
+                var loginViewModel = new LoginViewModel(_mainViewModel, SelectedClusterForLogin, _authService);
                 CurrentViewModel = loginViewModel;
             }
         }

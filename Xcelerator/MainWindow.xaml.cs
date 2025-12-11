@@ -13,7 +13,7 @@ namespace Xcelerator
         public MainWindow()
         {
             InitializeComponent();
-            DataContext = new MainViewModel();
+            // DataContext is set by App.xaml.cs using dependency injection
         }
 
         private void TitleBar_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)

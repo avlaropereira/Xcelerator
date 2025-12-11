@@ -1,10 +1,10 @@
 ﻿<Application x:Class="Xcelerator.App"
-             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:local="clr-namespace:Xcelerator"
-             xmlns:views="clr-namespace:Xcelerator.Views"
-             xmlns:viewmodels="clr-namespace:Xcelerator.ViewModels"
-             StartupUri="MainWindow.xaml">
+xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+xmlns:local="clr-namespace:Xcelerator"
+xmlns:views="clr-namespace:Xcelerator.Views"
+xmlns:viewmodels="clr-namespace:Xcelerator.ViewModels"
+xmlns:converters="clr-namespace:Xcelerator.Converters">
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
@@ -18,6 +18,10 @@
                 <ResourceDictionary Source="pack://application:,,,/MaterialDesignColors;component/Themes/Recommended/Accent/MaterialDesignColor.Lime.xaml" />
 
             </ResourceDictionary.MergedDictionaries>
+
+            <!-- Converters -->
+            <converters:StringToVisibilityConverter x:Key="StringToVisibilityConverter"/>
+            <converters:InverseBooleanConverter x:Key="InverseBooleanConverter"/>
 
             <!-- Global DataTemplates for View-ViewModel mapping -->
             <DataTemplate DataType="{x:Type viewmodels:PanelViewModel}">
