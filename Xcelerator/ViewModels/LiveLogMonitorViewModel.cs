@@ -1,3 +1,7 @@
+using System.Collections.ObjectModel;
+using System.ComponentModel;
+using System.Text.RegularExpressions;
+using System.Windows.Data;
 using System.Windows.Input;
 using Xcelerator.Models;
 using Xcelerator.NiceClient.Models;
@@ -15,9 +19,14 @@ namespace Xcelerator.ViewModels
         private readonly Cluster? _cluster;
         private UserTokenPayload? _tokenData;
         private string _logContent = string.Empty;
-        private string _status = "Idle";
-        private bool _isMonitoring = false;
+        private string _status = "Ready";
         private bool _hasLogs = false;
+        private string _searchText = string.Empty;
+        private bool _isRegexMode = false;
+        private int _matchCount = 0;
+        private string? _selectedMachine;
+        private ObservableCollection<string> _allMachines;
+        private ICollectionView? _filteredMachines;
 
         public LiveLogMonitorViewModel(MainViewModel mainViewModel, DashboardViewModel dashboardViewModel, Cluster? cluster = null)
         {
@@ -27,8 +36,18 @@ namespace Xcelerator.ViewModels
 
             // Initialize commands
             BackToDashboardCommand = new RelayCommand(BackToDashboard);
-            StartMonitoringCommand = new RelayCommand(StartMonitoring, CanStartMonitoring);
-            StopMonitoringCommand = new RelayCommand(StopMonitoring, CanStopMonitoring);
+
+            // Initialize machine list with sample data
+            _allMachines = new ObservableCollection<string>();
+            InitializeMachineList();
+
+            // Setup filtered collection view
+            _filteredMachines = CollectionViewSource.GetDefaultView(_allMachines);
+            if (_filteredMachines != null)
+            {
+                _filteredMachines.Filter = MachineFilter;
+            }
+            UpdateMatchCount();
 
             // Decode token if cluster is provided
             if (_cluster != null && !string.IsNullOrEmpty(_cluster.AuthToken))
@@ -80,21 +99,6 @@ namespace Xcelerator.ViewModels
         }
 
         /// <summary>
-        /// Whether monitoring is currently active
-        /// </summary>
-        public bool IsMonitoring
-        {
-            get => _isMonitoring;
-            set
-            {
-                if (SetProperty(ref _isMonitoring, value))
-                {
-                    CommandManager.InvalidateRequerySuggested();
-                }
-            }
-        }
-
-        /// <summary>
         /// Whether there are logs to display
         /// </summary>
         public bool HasLogs
@@ -103,13 +107,68 @@ namespace Xcelerator.ViewModels
             set => SetProperty(ref _hasLogs, value);
         }
 
+        /// <summary>
+        /// Search text for filtering machines
+        /// </summary>
+        public string SearchText
+        {
+            get => _searchText;
+            set
+            {
+                if (SetProperty(ref _searchText, value))
+                {
+                    RefreshFilter();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Whether regex mode is enabled for search
+        /// </summary>
+        public bool IsRegexMode
+        {
+            get => _isRegexMode;
+            set
+            {
+                if (SetProperty(ref _isRegexMode, value))
+                {
+                    RefreshFilter();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Number of machines matching the filter
+        /// </summary>
+        public int MatchCount
+        {
+            get => _matchCount;
+            private set => SetProperty(ref _matchCount, value);
+        }
+
+        /// <summary>
+        /// Currently selected machine
+        /// </summary>
+        public string? SelectedMachine
+        {
+            get => _selectedMachine;
+            set => SetProperty(ref _selectedMachine, value);
+        }
+
+        /// <summary>
+        /// Filtered collection view of machines
+        /// </summary>
+        public ICollectionView? FilteredMachines
+        {
+            get => _filteredMachines;
+            private set => SetProperty(ref _filteredMachines, value);
+        }
+
         #endregion
 
         #region Commands
 
         public ICommand BackToDashboardCommand { get; }
-        public ICommand StartMonitoringCommand { get; }
-        public ICommand StopMonitoringCommand { get; }
 
         #endregion
 
@@ -120,12 +179,6 @@ namespace Xcelerator.ViewModels
         /// </summary>
         private void BackToDashboard()
         {
-            // Stop monitoring if active
-            if (IsMonitoring)
-            {
-                StopMonitoring();
-            }
-
             // Clear the module view to return to dashboard home
             if (_cluster != null)
             {
@@ -135,51 +188,87 @@ namespace Xcelerator.ViewModels
             _dashboardViewModel.CurrentModuleViewModel = null;
         }
 
+        #endregion
+
+        #region Machine Filtering
+
         /// <summary>
-        /// Start log monitoring
+        /// Initialize the machine list with sample data
         /// </summary>
-        private void StartMonitoring()
+        private void InitializeMachineList()
         {
-            IsMonitoring = true;
-            Status = "Monitoring...";
-            HasLogs = true;
-
-            // Add initial log entry
-            LogContent = $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] Log monitoring started for cluster: {ClusterName}\n";
-            LogContent += $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] Waiting for log events...\n";
-
-            // TODO: Implement actual log monitoring logic
-            // This is a placeholder - you would connect to your log service here
+            // Sample machine names - replace with actual data source
+            _allMachines.Add("machine-001-prod");
+            _allMachines.Add("machine-002-staging");
+            _allMachines.Add("machine-003-dev");
+            _allMachines.Add("server-alpha-001");
+            _allMachines.Add("server-beta-002");
+            _allMachines.Add("worker-node-01");
+            _allMachines.Add("worker-node-02");
+            _allMachines.Add("worker-node-03");
+            _allMachines.Add("database-primary");
+            _allMachines.Add("database-replica-01");
+            _allMachines.Add("cache-redis-001");
+            _allMachines.Add("cache-redis-002");
+            _allMachines.Add("api-gateway-001");
+            _allMachines.Add("api-gateway-002");
+            _allMachines.Add("load-balancer-01");
+            _allMachines.Add("monitoring-prometheus");
+            _allMachines.Add("monitoring-grafana");
+            _allMachines.Add("logging-elasticsearch");
+            _allMachines.Add("messaging-kafka-001");
+            _allMachines.Add("messaging-kafka-002");
         }
 
         /// <summary>
-        /// Check if monitoring can be started
+        /// Filter predicate for machines
         /// </summary>
-        private bool CanStartMonitoring()
+        private bool MachineFilter(object item)
         {
-            return !IsMonitoring;
+            if (item is not string machineName || string.IsNullOrWhiteSpace(SearchText))
+                return true;
+
+            if (IsRegexMode)
+            {
+                try
+                {
+                    return Regex.IsMatch(machineName, SearchText, RegexOptions.IgnoreCase);
+                }
+                catch (ArgumentException)
+                {
+                    // Invalid regex pattern, return false
+                    return false;
+                }
+            }
+            else
+            {
+                return machineName.Contains(SearchText, StringComparison.OrdinalIgnoreCase);
+            }
         }
 
         /// <summary>
-        /// Stop log monitoring
+        /// Refresh the filter and update match count
         /// </summary>
-        private void StopMonitoring()
+        private void RefreshFilter()
         {
-            IsMonitoring = false;
-            Status = "Stopped";
-
-            // Add stop log entry
-            LogContent += $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] Log monitoring stopped\n";
-
-            // TODO: Implement actual log monitoring cleanup
+            _filteredMachines?.Refresh();
+            UpdateMatchCount();
         }
 
         /// <summary>
-        /// Check if monitoring can be stopped
+        /// Update the match count based on filtered items
         /// </summary>
-        private bool CanStopMonitoring()
+        private void UpdateMatchCount()
         {
-            return IsMonitoring;
+            if (_filteredMachines != null)
+            {
+                int count = 0;
+                foreach (var item in _filteredMachines)
+                {
+                    count++;
+                }
+                MatchCount = count;
+            }
         }
 
         #endregion

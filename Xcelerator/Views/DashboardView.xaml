@@ -144,14 +144,15 @@
         <!-- Main Content Area - Fills remaining space below navigation -->
         <Grid Grid.Row="1" 
               Background="White"
-              Margin="20">
+              Margin="20"
+              x:Name="MainContentGrid">
 
             <!-- Module Content Area - Shows selected module view or welcome message -->
             <ContentPresenter Content="{Binding CurrentModuleViewModel}"
-                              Visibility="{Binding CurrentModuleViewModel, Converter={StaticResource NullToVisibilityConverter}}"/>
+                              Visibility="{Binding DataContext.CurrentModuleViewModel, ElementName=MainContentGrid, Converter={StaticResource NullToVisibilityConverter}}"/>
 
             <!-- Dashboard Welcome Content - Shown when no module is selected -->
-            <Grid Visibility="{Binding CurrentModuleViewModel, Converter={StaticResource NullToVisibilityInvertedConverter}}">
+            <Grid Visibility="{Binding DataContext.CurrentModuleViewModel, ElementName=MainContentGrid, Converter={StaticResource NullToVisibilityInvertedConverter}}">
                 <StackPanel HorizontalAlignment="Center" 
                             VerticalAlignment="Center">
                     <TextBlock Text="Welcome to Xcelerator Dashboard" 
