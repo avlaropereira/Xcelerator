@@ -1,0 +1,196 @@
+<UserControl x:Class="Xcelerator.Views.LiveLogMonitorView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:Xcelerator.Views"
+             mc:Ignorable="d" 
+             d:DesignHeight="650" d:DesignWidth="1000">
+    
+    <Grid Background="White">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Controls Panel -->
+        <Border Grid.Row="0" 
+                Background="#FFF5F5F5" 
+                CornerRadius="8"
+                Padding="15"
+                Margin="0,0,0,15">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <TextBlock Grid.Column="0"
+                           Text="Log Monitor Controls"
+                           FontSize="14"
+                           FontWeight="SemiBold"
+                           Foreground="#FF2D2D30"
+                           VerticalAlignment="Center"
+                           Margin="0,0,20,0"/>
+
+                <!-- Status Display -->
+                <StackPanel Grid.Column="1" 
+                            Orientation="Horizontal"
+                            HorizontalAlignment="Left"
+                            VerticalAlignment="Center">
+                    <TextBlock Text="Status: "
+                               FontSize="12"
+                               Foreground="#FF666666"
+                               VerticalAlignment="Center"
+                               Margin="0,0,5,0"/>
+                    <TextBlock Text="{Binding Status}"
+                               FontSize="12"
+                               FontWeight="SemiBold"
+                               Foreground="#FF2D2D30"
+                               VerticalAlignment="Center"/>
+                </StackPanel>
+
+                <!-- Action Buttons -->
+                <StackPanel Grid.Column="2"
+                            Orientation="Horizontal"
+                            HorizontalAlignment="Right">
+                    <Button Content="Start Monitoring"
+                            Command="{Binding StartMonitoringCommand}"
+                            Background="#FF0078D4"
+                            Foreground="White"
+                            BorderThickness="0"
+                            FontSize="12"
+                            FontWeight="SemiBold"
+                            Padding="15,8"
+                            Margin="0,0,10,0"
+                            Cursor="Hand">
+                        <Button.Style>
+                            <Style TargetType="Button">
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border Background="{TemplateBinding Background}" 
+                                                    CornerRadius="4"
+                                                    Padding="{TemplateBinding Padding}">
+                                                <ContentPresenter HorizontalAlignment="Center" 
+                                                                  VerticalAlignment="Center"/>
+                                            </Border>
+                                            <ControlTemplate.Triggers>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter Property="Background" Value="#FF106EBE"/>
+                                                </Trigger>
+                                                <Trigger Property="IsEnabled" Value="False">
+                                                    <Setter Property="Background" Value="#FFCCCCCC"/>
+                                                </Trigger>
+                                            </ControlTemplate.Triggers>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                            </Style>
+                        </Button.Style>
+                    </Button>
+
+                    <Button Content="Stop"
+                            Command="{Binding StopMonitoringCommand}"
+                            Background="#FFDC3545"
+                            Foreground="White"
+                            BorderThickness="0"
+                            FontSize="12"
+                            FontWeight="SemiBold"
+                            Padding="15,8"
+                            Margin="0,0,10,0"
+                            Cursor="Hand">
+                        <Button.Style>
+                            <Style TargetType="Button">
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border Background="{TemplateBinding Background}" 
+                                                    CornerRadius="4"
+                                                    Padding="{TemplateBinding Padding}">
+                                                <ContentPresenter HorizontalAlignment="Center" 
+                                                                  VerticalAlignment="Center"/>
+                                            </Border>
+                                            <ControlTemplate.Triggers>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter Property="Background" Value="#FFC82333"/>
+                                                </Trigger>
+                                                <Trigger Property="IsEnabled" Value="False">
+                                                    <Setter Property="Background" Value="#FFCCCCCC"/>
+                                                </Trigger>
+                                            </ControlTemplate.Triggers>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                            </Style>
+                        </Button.Style>
+                    </Button>
+
+                    <Button Content="← Back to Dashboard"
+                            Command="{Binding BackToDashboardCommand}"
+                            Background="Transparent"
+                            Foreground="#FF0078D4"
+                            BorderThickness="1"
+                            BorderBrush="#FF0078D4"
+                            FontSize="12"
+                            FontWeight="SemiBold"
+                            Padding="15,8"
+                            Cursor="Hand">
+                        <Button.Style>
+                            <Style TargetType="Button">
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border Background="{TemplateBinding Background}" 
+                                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                                    CornerRadius="4"
+                                                    Padding="{TemplateBinding Padding}">
+                                                <ContentPresenter HorizontalAlignment="Center" 
+                                                                  VerticalAlignment="Center"/>
+                                            </Border>
+                                            <ControlTemplate.Triggers>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter Property="Background" Value="#FFF0F0F0"/>
+                                                </Trigger>
+                                            </ControlTemplate.Triggers>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                            </Style>
+                        </Button.Style>
+                    </Button>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- Log Display Area -->
+        <Border Grid.Row="1" 
+                Background="White" 
+                BorderBrush="#FFE0E0E0" 
+                BorderThickness="1"
+                CornerRadius="8">
+            <Grid>
+                <!-- Log Output TextBox -->
+                <ScrollViewer VerticalScrollBarVisibility="Auto" 
+                              HorizontalScrollBarVisibility="Auto"
+                              Padding="10">
+                    <TextBlock Text="{Binding LogContent}"
+                               FontFamily="Consolas"
+                               FontSize="12"
+                               Foreground="#FF2D2D30"
+                               TextWrapping="Wrap"/>
+                </ScrollViewer>
+
+                <!-- Placeholder when no logs -->
+                <TextBlock Text="No logs available. Start monitoring to see live logs."
+                           FontSize="14"
+                           Foreground="#FF999999"
+                           HorizontalAlignment="Center"
+                           VerticalAlignment="Center"
+                           Visibility="{Binding HasLogs, Converter={StaticResource InverseBooleanToVisibilityConverter}}"/>
+            </Grid>
+        </Border>
+    </Grid>
+</UserControl>

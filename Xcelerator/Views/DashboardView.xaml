@@ -146,8 +146,12 @@
               Background="White"
               Margin="20">
 
-            <!-- Dashboard Content - Centered welcome message and module display -->
-            <Grid>
+            <!-- Module Content Area - Shows selected module view or welcome message -->
+            <ContentPresenter Content="{Binding CurrentModuleViewModel}"
+                              Visibility="{Binding CurrentModuleViewModel, Converter={StaticResource NullToVisibilityConverter}}"/>
+
+            <!-- Dashboard Welcome Content - Shown when no module is selected -->
+            <Grid Visibility="{Binding CurrentModuleViewModel, Converter={StaticResource NullToVisibilityInvertedConverter}}">
                 <StackPanel HorizontalAlignment="Center" 
                             VerticalAlignment="Center">
                     <TextBlock Text="Welcome to Xcelerator Dashboard" 
@@ -158,7 +162,7 @@
                                Margin="0,0,0,20"/>
                     
                     <!-- Selected Module Display -->
-                    <TextBlock Text="{Binding SelectedModule, StringFormat='Selected Module: {0}'}" 
+                    <TextBlock Text="Select a module from the navigation bar above" 
                                FontSize="16" 
                                Foreground="#FF666666"
                                HorizontalAlignment="Center"

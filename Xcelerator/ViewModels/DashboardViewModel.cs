@@ -11,13 +11,16 @@ namespace Xcelerator.ViewModels
     public class DashboardViewModel : BaseViewModel
     {
         private readonly MainViewModel _mainViewModel;
+        private readonly PanelViewModel _panelViewModel;
         private readonly Cluster? _cluster;
         private string _selectedModule = string.Empty;
         private UserTokenPayload? _tokenData;
+        private BaseViewModel? _currentModuleViewModel;
 
-        public DashboardViewModel(MainViewModel mainViewModel, Cluster? cluster = null)
+        public DashboardViewModel(MainViewModel mainViewModel, PanelViewModel panelViewModel, Cluster? cluster = null)
         {
             _mainViewModel = mainViewModel;
+            _panelViewModel = panelViewModel;
             _cluster = cluster;
             
             SelectModuleCommand = new RelayCommand<string>(SelectModule);
@@ -57,6 +60,15 @@ namespace Xcelerator.ViewModels
         /// </summary>
         public string BusinessUnit => _tokenData?.IcBUId.ToString() ?? "N/A";
 
+        /// <summary>
+        /// Current module view model being displayed
+        /// </summary>
+        public BaseViewModel? CurrentModuleViewModel
+        {
+            get => _currentModuleViewModel;
+            set => SetProperty(ref _currentModuleViewModel, value);
+        }
+
         public ICommand SelectModuleCommand { get; }
 
         /// <summary>
@@ -74,8 +86,19 @@ namespace Xcelerator.ViewModels
                     _cluster.SelectedModule = module;
                 }
                 
-                // Here you would typically navigate to the specific module page
-                // For now, we'll just update the selected module
+                // Load specific module view into the dashboard content area
+                if (module == "LiveLogMonitor")
+                {
+                    var liveLogMonitorViewModel = new LiveLogMonitorViewModel(_mainViewModel, this, _cluster);
+                    CurrentModuleViewModel = liveLogMonitorViewModel;
+                }
+                else
+                {
+                    // Clear module view for other modules (not yet implemented)
+                    CurrentModuleViewModel = null;
+                }
+                // Future: Add navigation for other modules
+                // else if (module == "ContactForge") { CurrentModuleViewModel = new ContactForgeViewModel(...); }
             }
         }
     }

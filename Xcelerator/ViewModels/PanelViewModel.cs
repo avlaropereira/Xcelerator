@@ -238,7 +238,7 @@ namespace Xcelerator.ViewModels
         {
             if (SelectedClusterForLogin != null)
             {
-                var dashboardViewModel = new DashboardViewModel(_mainViewModel, SelectedClusterForLogin)
+                var dashboardViewModel = new DashboardViewModel(_mainViewModel, this, SelectedClusterForLogin)
                 {
                     SelectedModule = SelectedClusterForLogin.SelectedModule
                 };
