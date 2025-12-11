@@ -4,6 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:Xcelerator.Views"
+             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
              mc:Ignorable="d" 
              d:DesignHeight="650" d:DesignWidth="1000">
     
@@ -72,6 +73,8 @@
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
 
                 <!-- Title -->
@@ -179,6 +182,107 @@
                                     </Trigger>
                                     <Trigger Property="IsMouseOver" Value="True">
                                         <Setter Property="Background" Value="#FFF0F0F0"/>
+                                    </Trigger>
+                                </Style.Triggers>
+                            </Style>
+                        </ListBox.ItemContainerStyle>
+                    </ListBox>
+                </Border>
+
+                <!-- Remote Machines Section -->
+                <TextBlock Grid.Row="4"
+                           Text="Remote Machines"
+                           FontSize="16"
+                           FontWeight="Bold"
+                           Foreground="#FF2D2D30"
+                           Margin="0,20,0,10"/>
+
+                <Border Grid.Row="5"
+                        Background="#FFFAFAFA"
+                        BorderBrush="#FFE0E0E0"
+                        BorderThickness="1"
+                        CornerRadius="4"
+                        MaxHeight="250">
+                    <ListBox ItemsSource="{Binding RemoteMachines}"
+                             SelectedItem="{Binding SelectedRemoteMachine}"
+                             BorderThickness="0"
+                             Background="Transparent"
+                             ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <Border Background="Transparent"
+                                        Padding="10,8"
+                                        Margin="0,1"
+                                        CornerRadius="4">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        
+                                        <!-- Remote Desktop Icon -->
+                                        <materialDesign:PackIcon Grid.Column="0"
+                                                                 Kind="RemoteDesktop"
+                                                                 Width="16"
+                                                                 Height="16"
+                                                                 Foreground="#FF666666"
+                                                                 Margin="0,0,8,0"
+                                                                 VerticalAlignment="Center"/>
+                                        
+                                        <!-- Machine Name -->
+                                        <TextBlock Grid.Column="1"
+                                                   Text="{Binding}"
+                                                   FontSize="13"
+                                                   FontWeight="Medium"
+                                                   Foreground="#FF2D2D30"
+                                                   VerticalAlignment="Center"/>
+                                        
+                                        <!-- Status Indicator Dot -->
+                                        <Ellipse Grid.Column="2"
+                                                 Width="8"
+                                                 Height="8"
+                                                 Margin="8,0,0,0"
+                                                 VerticalAlignment="Center"
+                                                 HorizontalAlignment="Right">
+                                            <Ellipse.Style>
+                                                <Style TargetType="Ellipse">
+                                                    <Setter Property="Fill" Value="#FFF44336"/>
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding IsSelected, RelativeSource={RelativeSource AncestorType=ListBoxItem}}" Value="True">
+                                                            <Setter Property="Fill" Value="#FF4CAF50"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Ellipse.Style>
+                                        </Ellipse>
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                        <ListBox.ItemContainerStyle>
+                            <Style TargetType="ListBoxItem">
+                                <Setter Property="Padding" Value="0"/>
+                                <Setter Property="Margin" Value="0"/>
+                                <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="ListBoxItem">
+                                            <Border Background="{TemplateBinding Background}"
+                                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                                    Padding="{TemplateBinding Padding}">
+                                                <ContentPresenter/>
+                                            </Border>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                                <Style.Triggers>
+                                    <Trigger Property="IsSelected" Value="True">
+                                        <Setter Property="Background" Value="#FFE3F2FD"/>
+                                    </Trigger>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter Property="Background" Value="#FFF5F5F5"/>
                                     </Trigger>
                                 </Style.Triggers>
                             </Style>

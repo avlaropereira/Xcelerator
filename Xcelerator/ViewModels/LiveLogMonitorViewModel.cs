@@ -27,6 +27,8 @@ namespace Xcelerator.ViewModels
         private string? _selectedMachine;
         private ObservableCollection<string> _allMachines;
         private ICollectionView? _filteredMachines;
+        private ObservableCollection<string> _remoteMachines;
+        private string? _selectedRemoteMachine;
 
         public LiveLogMonitorViewModel(MainViewModel mainViewModel, DashboardViewModel dashboardViewModel, Cluster? cluster = null)
         {
@@ -37,6 +39,17 @@ namespace Xcelerator.ViewModels
             // Initialize machine list with sample data
             _allMachines = new ObservableCollection<string>();
             InitializeMachineList();
+
+            // Initialize remote machines
+            _remoteMachines = new ObservableCollection<string>
+            {
+                "TOA-C34COR01",
+                "TOB-C34COR01",
+                "TOA-C34API01",
+                "TOB-C34API01",
+                "TOA-C34WEB01",
+                "TOB-C34WEB01"
+            };
 
             // Setup filtered collection view
             _filteredMachines = CollectionViewSource.GetDefaultView(_allMachines);
@@ -159,6 +172,24 @@ namespace Xcelerator.ViewModels
         {
             get => _filteredMachines;
             private set => SetProperty(ref _filteredMachines, value);
+        }
+
+        /// <summary>
+        /// Collection of remote machines available for log download
+        /// </summary>
+        public ObservableCollection<string> RemoteMachines
+        {
+            get => _remoteMachines;
+            private set => SetProperty(ref _remoteMachines, value);
+        }
+
+        /// <summary>
+        /// Currently selected remote machine for log download
+        /// </summary>
+        public string? SelectedRemoteMachine
+        {
+            get => _selectedRemoteMachine;
+            set => SetProperty(ref _selectedRemoteMachine, value);
         }
 
         #endregion

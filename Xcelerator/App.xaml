@@ -22,6 +22,7 @@ xmlns:converters="clr-namespace:Xcelerator.Converters">
             <!-- Converters -->
             <converters:StringToVisibilityConverter x:Key="StringToVisibilityConverter"/>
             <converters:InverseBooleanConverter x:Key="InverseBooleanConverter"/>
+            <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
             <converters:InverseBooleanToVisibilityConverter x:Key="InverseBooleanToVisibilityConverter"/>
             <converters:NullToVisibilityConverter x:Key="NullToVisibilityConverter"/>
             <converters:NullToVisibilityInvertedConverter x:Key="NullToVisibilityInvertedConverter"/>
