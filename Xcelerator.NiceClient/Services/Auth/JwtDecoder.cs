@@ -1,6 +1,4 @@
 using System.IdentityModel.Tokens.Jwt;
-using System.Text.Json;
-using Xcelerator.NiceClient.Models;
 
 namespace Xcelerator.NiceClient.Services.Auth
 {
@@ -9,10 +7,15 @@ namespace Xcelerator.NiceClient.Services.Auth
     /// </summary>
     public class JwtDecoder
     {
-        public static UserTokenPayload DecodeToken(string jwtString)
+        private static readonly string[] CentralPriority = { "icBUId", "icSPId", "icAgentId", "icClusterId", "name" };
+        private static readonly string[] UhPriority = { "icSPId", "icAgentId", "icBUId", "icClusterId", "name" };
+
+        public static Dictionary<string, string> DecodeToken(string jwtString, string clusterType)
         {
+            var results = new Dictionary<string, string>();
             // 1. Clean the string if it contains "Bearer "
-            var token = jwtString.Replace("Bearer ", "").Trim();
+            if (string.IsNullOrWhiteSpace(jwtString)) return results;
+            var token = jwtString.Replace("Bearer ", "", StringComparison.OrdinalIgnoreCase).Trim();
 
             var handler = new JwtSecurityTokenHandler();
 
@@ -25,15 +28,20 @@ namespace Xcelerator.NiceClient.Services.Auth
             // 3. Read the token
             var jwtToken = handler.ReadJwtToken(token);
 
-            // 4. Extract the payload (claims) to a JSON string
-            // We serialize the payload dictionary back to JSON so we can 
-            // strictly type it into our UserTokenPayload class.
-            var payloadJson = JsonSerializer.Serialize(jwtToken.Payload);
-
-            // 5. Deserialize into our strong type
-            var result = JsonSerializer.Deserialize<UserTokenPayload>(payloadJson);
-
-            return result;
+            // 4. Extract values directly (No Serialization needed!)
+            string[] priorityList = clusterType.Equals("UH") ? UhPriority : CentralPriority;
+            foreach (var key in priorityList)
+            {
+                // .TryGetValue is O(1) - extremely fast
+                if (jwtToken.Payload.TryGetValue(key, out var value) && value != null)
+                {
+                    // .ToString() here safely handles both:
+                    // - The Number 1008005
+                    // - The String "10738"
+                    results[key] = value.ToString();
+                }
+            }
+            return results;
         }
     }
 }

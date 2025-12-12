@@ -1,6 +1,5 @@
 using System.Windows.Input;
 using Xcelerator.Models;
-using Xcelerator.NiceClient.Models;
 using Xcelerator.NiceClient.Services.Auth;
 
 namespace Xcelerator.ViewModels
@@ -14,7 +13,7 @@ namespace Xcelerator.ViewModels
         private readonly PanelViewModel _panelViewModel;
         private readonly Cluster? _cluster;
         private string _selectedModule = string.Empty;
-        private UserTokenPayload? _tokenData;
+        private Dictionary<string, string> _tokenData;
         private BaseViewModel? _currentModuleViewModel;
 
         public DashboardViewModel(MainViewModel mainViewModel, PanelViewModel panelViewModel, Cluster? cluster = null)
@@ -28,7 +27,7 @@ namespace Xcelerator.ViewModels
             // Decode token if cluster is provided
             if (_cluster != null && !string.IsNullOrEmpty(_cluster.AuthToken))
             {
-                _tokenData = JwtDecoder.DecodeToken(_cluster.AuthToken);
+                _tokenData = JwtDecoder.DecodeToken(_cluster.AuthToken, _cluster.TypeOfCluster);
             }
         }
 
@@ -44,21 +43,74 @@ namespace Xcelerator.ViewModels
         /// <summary>
         /// Decoded token data
         /// </summary>
-        public UserTokenPayload? TokenData
+        public Dictionary<string, string>? TokenData
         {
             get => _tokenData;
-            private set => SetProperty(ref _tokenData, value);
+            private set
+            {
+                if (SetProperty(ref _tokenData, value))
+                {
+                    // Notify dependent properties when token data changes
+                    OnPropertyChanged(nameof(UserName));
+                    OnPropertyChanged(nameof(BusinessUnit));
+                    OnPropertyChanged(nameof(IcAgentId));
+                    OnPropertyChanged(nameof(IcClusterId));
+                }
+            }
         }
 
         /// <summary>
         /// User name from token
         /// </summary>
-        public string UserName => _tokenData?.Name ?? _tokenData?.GivenName ?? "User";
+        public string UserName
+        {
+            get
+            {
+                if (_tokenData == null) return "User";
+                if (_tokenData.TryGetValue("name", out var name)) return name;
+                if (_tokenData.TryGetValue("given_name", out var givenName)) return givenName;
+                return "User";
+            }
+        }
 
         /// <summary>
         /// Business Unit from token
         /// </summary>
-        public string BusinessUnit => _tokenData?.IcBUId.ToString() ?? "N/A";
+        public string BusinessUnit
+        {
+            get
+            {
+                if (_tokenData == null) return "N/A";
+                if (_tokenData.TryGetValue("icBUId", out var buId)) return buId;
+                return "N/A";
+            }
+        }
+
+        /// <summary>
+        /// Agent ID from token
+        /// </summary>
+        public string IcAgentId
+        {
+            get
+            {
+                if (_tokenData == null) return "N/A";
+                if (_tokenData.TryGetValue("icAgentId", out var agentId)) return agentId;
+                return "N/A";
+            }
+        }
+
+        /// <summary>
+        /// Cluster ID from token
+        /// </summary>
+        public string IcClusterId
+        {
+            get
+            {
+                if (_tokenData == null) return "N/A";
+                if (_tokenData.TryGetValue("icClusterId", out var clusterId)) return clusterId;
+                return "N/A";
+            }
+        }
 
         /// <summary>
         /// Current module view model being displayed
@@ -89,7 +141,7 @@ namespace Xcelerator.ViewModels
                 // Load specific module view into the dashboard content area
                 if (module == "LiveLogMonitor")
                 {
-                    var liveLogMonitorViewModel = new LiveLogMonitorViewModel(_mainViewModel, this, _cluster);
+                    var liveLogMonitorViewModel = new LiveLogMonitorViewModel(_mainViewModel, this, _cluster, _tokenData);
                     CurrentModuleViewModel = liveLogMonitorViewModel;
                 }
                 else

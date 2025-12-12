@@ -79,19 +79,19 @@
                                Margin="0,0,0,3"/>
                     <TextBlock FontSize="9" Foreground="#FF2D2D30" Margin="0,1">
                         <Run Text="Agent: "/>
-                        <Run Text="{Binding TokenData.IcAgentId, Mode=OneWay}" FontWeight="SemiBold"/>
+                        <Run Text="{Binding IcAgentId, Mode=OneWay, FallbackValue=N/A}" FontWeight="SemiBold"/>
                     </TextBlock>
                     <TextBlock FontSize="9" Foreground="#FF2D2D30" Margin="0,1">
                         <Run Text="Cluster: "/>
-                        <Run Text="{Binding TokenData.IcClusterId, Mode=OneWay}" FontWeight="SemiBold"/>
+                        <Run Text="{Binding IcClusterId, Mode=OneWay, FallbackValue=N/A}" FontWeight="SemiBold"/>
                     </TextBlock>
                     <TextBlock FontSize="9" Foreground="#FF2D2D30" Margin="0,1">
                         <Run Text="User: "/>
-                        <Run Text="{Binding UserName, Mode=OneWay}" FontWeight="SemiBold"/>
+                        <Run Text="{Binding UserName, Mode=OneWay, FallbackValue=User}" FontWeight="SemiBold"/>
                     </TextBlock>
                     <TextBlock FontSize="9" Foreground="#FF2D2D30" Margin="0,1">
                         <Run Text="BU: "/>
-                        <Run Text="{Binding BusinessUnit, Mode=OneWay}" FontWeight="SemiBold"/>
+                        <Run Text="{Binding BusinessUnit, Mode=OneWay, FallbackValue=N/A}" FontWeight="SemiBold"/>
                     </TextBlock>
                 </StackPanel>
 

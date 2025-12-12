@@ -4,8 +4,6 @@ using System.Text.RegularExpressions;
 using System.Windows.Data;
 using System.Windows.Input;
 using Xcelerator.Models;
-using Xcelerator.NiceClient.Models;
-using Xcelerator.NiceClient.Services.Auth;
 
 namespace Xcelerator.ViewModels
 {
@@ -17,7 +15,7 @@ namespace Xcelerator.ViewModels
         private readonly MainViewModel _mainViewModel;
         private readonly DashboardViewModel _dashboardViewModel;
         private readonly Cluster? _cluster;
-        private UserTokenPayload? _tokenData;
+        private Dictionary<string, string>? _tokenData;
         private string _logContent = string.Empty;
         private string _status = "Ready";
         private bool _hasLogs = false;
@@ -30,11 +28,12 @@ namespace Xcelerator.ViewModels
         private ObservableCollection<string> _remoteMachines;
         private string? _selectedRemoteMachine;
 
-        public LiveLogMonitorViewModel(MainViewModel mainViewModel, DashboardViewModel dashboardViewModel, Cluster? cluster = null)
+        public LiveLogMonitorViewModel(MainViewModel mainViewModel, DashboardViewModel dashboardViewModel, Cluster? cluster = null, Dictionary<string, string>? tokenData = null)
         {
             _mainViewModel = mainViewModel;
             _dashboardViewModel = dashboardViewModel;
             _cluster = cluster;
+            _tokenData = tokenData;
 
             // Initialize machine list with sample data
             _allMachines = new ObservableCollection<string>();
@@ -52,12 +51,6 @@ namespace Xcelerator.ViewModels
             }
             UpdateMatchCount();
 
-            // Decode token if cluster is provided
-            if (_cluster != null && !string.IsNullOrEmpty(_cluster.AuthToken))
-            {
-                _tokenData = JwtDecoder.DecodeToken(_cluster.AuthToken);
-            }
-
             // Set initial status
             Status = "Ready";
         }
@@ -67,7 +60,7 @@ namespace Xcelerator.ViewModels
         /// <summary>
         /// Decoded token data
         /// </summary>
-        public UserTokenPayload? TokenData
+        public Dictionary<string, string>? TokenData
         {
             get => _tokenData;
             private set => SetProperty(ref _tokenData, value);
@@ -76,7 +69,42 @@ namespace Xcelerator.ViewModels
         /// <summary>
         /// User name from token
         /// </summary>
-        public string UserName => _tokenData?.Name ?? _tokenData?.GivenName ?? "User";
+        public string UserName
+        {
+            get
+            {
+                if (_tokenData == null) return "User";
+                if (_tokenData.TryGetValue("name", out var name)) return name;
+                if (_tokenData.TryGetValue("given_name", out var givenName)) return givenName;
+                return "User";
+            }
+        }
+
+        /// <summary>
+        /// Agent ID from token
+        /// </summary>
+        public string IcAgentId
+        {
+            get
+            {
+                if (_tokenData == null) return "N/A";
+                if (_tokenData.TryGetValue("icAgentId", out var agentId)) return agentId;
+                return "N/A";
+            }
+        }
+
+        /// <summary>
+        /// Cluster ID from token
+        /// </summary>
+        public string IcClusterId
+        {
+            get
+            {
+                if (_tokenData == null) return "N/A";
+                if (_tokenData.TryGetValue("icClusterId", out var clusterId)) return clusterId;
+                return "N/A";
+            }
+        }
 
         /// <summary>
         /// Cluster name
