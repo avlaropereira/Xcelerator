@@ -2,7 +2,6 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Text.RegularExpressions;
 using System.Windows.Data;
-using System.Windows.Input;
 using Xcelerator.Models;
 
 namespace Xcelerator.ViewModels
@@ -275,7 +274,7 @@ namespace Xcelerator.ViewModels
             var cor01 = new RemoteMachineItem
             {
                 Name = $"{letters}-C{numbers}COR01",
-                DisplayName = $"{letters}-C{numbers}COR01 (Virtual Cluster)",
+                DisplayName = $"{letters}-C{numbers}COR01",
                 IsExpanded = false
             };
             
@@ -289,26 +288,58 @@ namespace Xcelerator.ViewModels
             
             _remoteMachines.Add(cor01);
             
-            // API01 - Standalone
-            _remoteMachines.Add(new RemoteMachineItem 
-            { 
-                Name = $"{letters}-C{numbers}API01", 
-                DisplayName = $"{letters}-C{numbers}API01" 
-            });
+            // API01 - API Services with sub-services
+            var api01 = new RemoteMachineItem
+            {
+                Name = $"{letters}-C{numbers}API01",
+                DisplayName = $"{letters}-C{numbers}API01",
+                IsExpanded = false
+            };
             
-            // WEB01 - Standalone
-            _remoteMachines.Add(new RemoteMachineItem 
-            { 
-                Name = $"{letters}-C{numbers}WEB01", 
-                DisplayName = $"{letters}-C{numbers}WEB01" 
-            });
+            // Add API01 API Services as children
+            api01.Children.Add(new RemoteMachineItem { Name = $"{letters}-C{numbers}API01-L7Healthcheck", DisplayName = "L7 Healthcheck" });
+            api01.Children.Add(new RemoteMachineItem { Name = $"{letters}-C{numbers}API01-DroneService", DisplayName = "Drone Service" });
+            api01.Children.Add(new RemoteMachineItem { Name = $"{letters}-C{numbers}API01-APIWebsite", DisplayName = "API Website" });
+            api01.Children.Add(new RemoteMachineItem { Name = $"{letters}-C{numbers}API01-AutoSite", DisplayName = "AutoSite" });
+            api01.Children.Add(new RemoteMachineItem { Name = $"{letters}-C{numbers}API01-DBCWS", DisplayName = "DBCWS" });
             
-            // MED01 - Standalone
-            _remoteMachines.Add(new RemoteMachineItem 
-            { 
-                Name = $"{letters}-C{numbers}MED01", 
-                DisplayName = $"{letters}-C{numbers}MED01" 
-            });
+            _remoteMachines.Add(api01);
+            
+            // WEB01 - Web Services with sub-services
+            var web01 = new RemoteMachineItem
+            {
+                Name = $"{letters}-C{numbers}WEB01",
+                DisplayName = $"{letters}-C{numbers}WEB01",
+                IsExpanded = false
+            };
+            
+            // Add WEB01 Web Services as children
+            web01.Children.Add(new RemoteMachineItem { Name = $"{letters}-C{numbers}WEB01-Agent", DisplayName = "Agent" });
+            web01.Children.Add(new RemoteMachineItem { Name = $"{letters}-C{numbers}WEB01-AuthenticationServer", DisplayName = "Authentication Server" });
+            web01.Children.Add(new RemoteMachineItem { Name = $"{letters}-C{numbers}WEB01-CacheSite", DisplayName = "Cache Site" });
+            web01.Children.Add(new RemoteMachineItem { Name = $"{letters}-C{numbers}WEB01-inContact", DisplayName = "inContact" });
+            web01.Children.Add(new RemoteMachineItem { Name = $"{letters}-C{numbers}WEB01-inControl", DisplayName = "inControl" });
+            web01.Children.Add(new RemoteMachineItem { Name = $"{letters}-C{numbers}WEB01-ReportService", DisplayName = "Report Service" });
+            web01.Children.Add(new RemoteMachineItem { Name = $"{letters}-C{numbers}WEB01-Security", DisplayName = "Security" });
+            web01.Children.Add(new RemoteMachineItem { Name = $"{letters}-C{numbers}WEB01-WebScripting", DisplayName = "WebScripting" });
+            web01.Children.Add(new RemoteMachineItem { Name = $"{letters}-C{numbers}WEB01-DBCWS", DisplayName = "DBCWS" });
+            
+            _remoteMachines.Add(web01);
+            
+            // MED01 - Media Services with sub-services
+            var med01 = new RemoteMachineItem
+            {
+                Name = $"{letters}-C{numbers}MED01",
+                DisplayName = $"{letters}-C{numbers}MED01",
+                IsExpanded = false
+            };
+            
+            // Add MED01 Media Services as children
+            med01.Children.Add(new RemoteMachineItem { Name = $"{letters}-C{numbers}MED01-MediaServer", DisplayName = "Media Server" });
+            med01.Children.Add(new RemoteMachineItem { Name = $"{letters}-C{numbers}MED01-DroneService", DisplayName = "Drone Service" });
+            med01.Children.Add(new RemoteMachineItem { Name = $"{letters}-C{numbers}MED01-DBCWS", DisplayName = "DBCWS" });
+            
+            _remoteMachines.Add(med01);
         }
 
         /// <summary>
