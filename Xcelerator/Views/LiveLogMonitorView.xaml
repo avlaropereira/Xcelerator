@@ -8,6 +8,11 @@
              mc:Ignorable="d" 
              d:DesignHeight="650" d:DesignWidth="1000">
     
+    <UserControl.Resources>
+        <!-- Namespace alias for TreeViewAssist -->
+        <BooleanToVisibilityConverter x:Key="LocalBooleanToVisibilityConverter"/>
+    </UserControl.Resources>
+    
     <Grid Background="White">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -213,7 +218,9 @@
                                 <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}"/>
                                 <Setter Property="Padding" Value="0"/>
                                 <Setter Property="Margin" Value="0"/>
-                                <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                                <Setter Property="Foreground" Value="#FF2D2D30"/>
+                                <Setter Property="VerticalContentAlignment" Value="Center"/>
+                                <Setter Property="materialDesign:TreeViewAssist.HasNoItemsExpanderVisibility" Value="Collapsed"/>
                                 <Setter Property="Template">
                                     <Setter.Value>
                                         <ControlTemplate TargetType="TreeViewItem">
