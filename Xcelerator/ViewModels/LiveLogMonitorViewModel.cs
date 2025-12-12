@@ -25,8 +25,8 @@ namespace Xcelerator.ViewModels
         private string? _selectedMachine;
         private ObservableCollection<string> _allMachines;
         private ICollectionView? _filteredMachines;
-        private ObservableCollection<string> _remoteMachines;
-        private string? _selectedRemoteMachine;
+        private ObservableCollection<RemoteMachineItem> _remoteMachines;
+        private RemoteMachineItem? _selectedRemoteMachine;
 
         public LiveLogMonitorViewModel(MainViewModel mainViewModel, DashboardViewModel dashboardViewModel, Cluster? cluster = null, Dictionary<string, string>? tokenData = null)
         {
@@ -40,7 +40,7 @@ namespace Xcelerator.ViewModels
             InitializeMachineList();
 
             // Initialize remote machines dynamically based on cluster name
-            _remoteMachines = new ObservableCollection<string>();
+            _remoteMachines = new ObservableCollection<RemoteMachineItem>();
             InitializeRemoteMachines();
 
             // Setup filtered collection view
@@ -198,7 +198,7 @@ namespace Xcelerator.ViewModels
         /// <summary>
         /// Collection of remote machines available for log download
         /// </summary>
-        public ObservableCollection<string> RemoteMachines
+        public ObservableCollection<RemoteMachineItem> RemoteMachines
         {
             get => _remoteMachines;
             private set => SetProperty(ref _remoteMachines, value);
@@ -207,7 +207,7 @@ namespace Xcelerator.ViewModels
         /// <summary>
         /// Currently selected remote machine for log download
         /// </summary>
-        public string? SelectedRemoteMachine
+        public RemoteMachineItem? SelectedRemoteMachine
         {
             get => _selectedRemoteMachine;
             set => SetProperty(ref _selectedRemoteMachine, value);
@@ -270,10 +270,45 @@ namespace Xcelerator.ViewModels
             
             // Generate machine names in format: {letters}-C{lastDigit}{type}
             // Example: SC10 -> SC-C0COR01, SC-C0API01, SC-C0WEB01, SC-C0MED01
-            _remoteMachines.Add($"{letters}-C{numbers}COR01");
-            _remoteMachines.Add($"{letters}-C{numbers}API01");
-            _remoteMachines.Add($"{letters}-C{numbers}WEB01");
-            _remoteMachines.Add($"{letters}-C{numbers}MED01");
+            
+            // COR01 - Virtual Cluster with sub-services
+            var cor01 = new RemoteMachineItem
+            {
+                Name = $"{letters}-C{numbers}COR01",
+                DisplayName = $"{letters}-C{numbers}COR01 (Virtual Cluster)",
+                IsExpanded = false
+            };
+            
+            // Add COR01 Virtual Cluster services as children
+            cor01.Children.Add(new RemoteMachineItem { Name = $"{letters}-C{numbers}COR01-FileServer", DisplayName = "File Server" });
+            cor01.Children.Add(new RemoteMachineItem { Name = $"{letters}-C{numbers}COR01-CoOpService", DisplayName = "CoOp Service" });
+            cor01.Children.Add(new RemoteMachineItem { Name = $"{letters}-C{numbers}COR01-SurvyService", DisplayName = "Survy Service" });
+            cor01.Children.Add(new RemoteMachineItem { Name = $"{letters}-C{numbers}COR01-FSDrivePublisher", DisplayName = "FS Drive Publisher" });
+            cor01.Children.Add(new RemoteMachineItem { Name = $"{letters}-C{numbers}COR01-DroneLetter", DisplayName = "Drone Letter" });
+            cor01.Children.Add(new RemoteMachineItem { Name = $"{letters}-C{numbers}COR01-DBCWS", DisplayName = "DBCWS" });
+            
+            _remoteMachines.Add(cor01);
+            
+            // API01 - Standalone
+            _remoteMachines.Add(new RemoteMachineItem 
+            { 
+                Name = $"{letters}-C{numbers}API01", 
+                DisplayName = $"{letters}-C{numbers}API01" 
+            });
+            
+            // WEB01 - Standalone
+            _remoteMachines.Add(new RemoteMachineItem 
+            { 
+                Name = $"{letters}-C{numbers}WEB01", 
+                DisplayName = $"{letters}-C{numbers}WEB01" 
+            });
+            
+            // MED01 - Standalone
+            _remoteMachines.Add(new RemoteMachineItem 
+            { 
+                Name = $"{letters}-C{numbers}MED01", 
+                DisplayName = $"{letters}-C{numbers}MED01" 
+            });
         }
 
         /// <summary>

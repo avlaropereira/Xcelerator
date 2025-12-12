@@ -203,91 +203,157 @@
                         BorderThickness="1"
                         CornerRadius="4"
                         MaxHeight="250">
-                    <ListBox ItemsSource="{Binding RemoteMachines}"
-                             SelectedItem="{Binding SelectedRemoteMachine}"
-                             BorderThickness="0"
-                             Background="Transparent"
-                             ScrollViewer.HorizontalScrollBarVisibility="Disabled">
-                        <ListBox.ItemTemplate>
-                            <DataTemplate>
-                                <Border Background="Transparent"
-                                        Padding="10,8"
-                                        Margin="0,1"
-                                        CornerRadius="4">
-                                    <Grid>
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="Auto"/>
-                                            <ColumnDefinition Width="*"/>
-                                            <ColumnDefinition Width="Auto"/>
-                                        </Grid.ColumnDefinitions>
-                                        
-                                        <!-- Remote Desktop Icon -->
-                                        <materialDesign:PackIcon Grid.Column="0"
-                                                                 Kind="RemoteDesktop"
-                                                                 Width="16"
-                                                                 Height="16"
-                                                                 Foreground="#FF666666"
-                                                                 Margin="0,0,8,0"
-                                                                 VerticalAlignment="Center"/>
-                                        
-                                        <!-- Machine Name -->
-                                        <TextBlock Grid.Column="1"
-                                                   Text="{Binding}"
-                                                   FontSize="13"
-                                                   FontWeight="Medium"
-                                                   Foreground="#FF2D2D30"
-                                                   VerticalAlignment="Center"/>
-                                        
-                                        <!-- Status Indicator Dot -->
-                                        <Ellipse Grid.Column="2"
-                                                 Width="8"
-                                                 Height="8"
-                                                 Margin="8,0,0,0"
-                                                 VerticalAlignment="Center"
-                                                 HorizontalAlignment="Right">
-                                            <Ellipse.Style>
-                                                <Style TargetType="Ellipse">
-                                                    <Setter Property="Fill" Value="#FFF44336"/>
-                                                    <Style.Triggers>
-                                                        <DataTrigger Binding="{Binding IsSelected, RelativeSource={RelativeSource AncestorType=ListBoxItem}}" Value="True">
-                                                            <Setter Property="Fill" Value="#FF4CAF50"/>
-                                                        </DataTrigger>
-                                                    </Style.Triggers>
-                                                </Style>
-                                            </Ellipse.Style>
-                                        </Ellipse>
-                                    </Grid>
-                                </Border>
-                            </DataTemplate>
-                        </ListBox.ItemTemplate>
-                        <ListBox.ItemContainerStyle>
-                            <Style TargetType="ListBoxItem">
+                    <TreeView ItemsSource="{Binding RemoteMachines}"
+                              BorderThickness="0"
+                              Background="Transparent"
+                              ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                        <TreeView.Resources>
+                            <!-- Style for TreeViewItem -->
+                            <Style TargetType="TreeViewItem">
+                                <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}"/>
                                 <Setter Property="Padding" Value="0"/>
                                 <Setter Property="Margin" Value="0"/>
                                 <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
                                 <Setter Property="Template">
                                     <Setter.Value>
-                                        <ControlTemplate TargetType="ListBoxItem">
-                                            <Border Background="{TemplateBinding Background}"
-                                                    BorderBrush="{TemplateBinding BorderBrush}"
-                                                    BorderThickness="{TemplateBinding BorderThickness}"
-                                                    Padding="{TemplateBinding Padding}">
-                                                <ContentPresenter/>
-                                            </Border>
+                                        <ControlTemplate TargetType="TreeViewItem">
+                                            <Grid>
+                                                <Grid.RowDefinitions>
+                                                    <RowDefinition Height="Auto"/>
+                                                    <RowDefinition Height="*"/>
+                                                </Grid.RowDefinitions>
+                                                
+                                                <!-- Item Content -->
+                                                <Border x:Name="ItemBorder"
+                                                        Grid.Row="0"
+                                                        Background="Transparent"
+                                                        Padding="8,6"
+                                                        Margin="0,1"
+                                                        CornerRadius="4">
+                                                    <Grid>
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="Auto"/>
+                                                            <ColumnDefinition Width="Auto"/>
+                                                            <ColumnDefinition Width="*"/>
+                                                            <ColumnDefinition Width="Auto"/>
+                                                        </Grid.ColumnDefinitions>
+                                                        
+                                                        <!-- Expander Toggle (only for items with children) -->
+                                                        <ToggleButton x:Name="Expander"
+                                                                      Grid.Column="0"
+                                                                      IsChecked="{Binding IsExpanded, Mode=TwoWay}"
+                                                                      ClickMode="Press"
+                                                                      Width="16"
+                                                                      Height="16"
+                                                                      Margin="0,0,4,0"
+                                                                      VerticalAlignment="Center"
+                                                                      Visibility="{Binding HasChildren, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                                            <ToggleButton.Style>
+                                                                <Style TargetType="ToggleButton">
+                                                                    <Setter Property="Template">
+                                                                        <Setter.Value>
+                                                                            <ControlTemplate TargetType="ToggleButton">
+                                                                                <Border Background="Transparent">
+                                                                                    <TextBlock x:Name="ExpanderIcon"
+                                                                                               Text="?"
+                                                                                               FontSize="10"
+                                                                                               Foreground="#FF666666"
+                                                                                               HorizontalAlignment="Center"
+                                                                                               VerticalAlignment="Center"
+                                                                                               RenderTransformOrigin="0.5,0.5">
+                                                                                        <TextBlock.RenderTransform>
+                                                                                            <RotateTransform Angle="0"/>
+                                                                                        </TextBlock.RenderTransform>
+                                                                                    </TextBlock>
+                                                                                </Border>
+                                                                                <ControlTemplate.Triggers>
+                                                                                    <Trigger Property="IsChecked" Value="True">
+                                                                                        <Setter TargetName="ExpanderIcon" Property="RenderTransform">
+                                                                                            <Setter.Value>
+                                                                                                <RotateTransform Angle="90"/>
+                                                                                            </Setter.Value>
+                                                                                        </Setter>
+                                                                                    </Trigger>
+                                                                                </ControlTemplate.Triggers>
+                                                                            </ControlTemplate>
+                                                                        </Setter.Value>
+                                                                    </Setter>
+                                                                </Style>
+                                                            </ToggleButton.Style>
+                                                        </ToggleButton>
+                                                        
+                                                        <!-- Remote Desktop Icon -->
+                                                        <materialDesign:PackIcon Grid.Column="1"
+                                                                                 Kind="RemoteDesktop"
+                                                                                 Width="16"
+                                                                                 Height="16"
+                                                                                 Foreground="#FF666666"
+                                                                                 Margin="0,0,8,0"
+                                                                                 VerticalAlignment="Center"/>
+                                                        
+                                                        <!-- Machine Name -->
+                                                        <TextBlock Grid.Column="2"
+                                                                   Text="{Binding DisplayName}"
+                                                                   FontSize="13"
+                                                                   FontWeight="Medium"
+                                                                   Foreground="#FF2D2D30"
+                                                                   VerticalAlignment="Center"/>
+                                                        
+                                                        <!-- Status Indicator Dot -->
+                                                        <Ellipse Grid.Column="3"
+                                                                 Width="8"
+                                                                 Height="8"
+                                                                 Margin="8,0,0,0"
+                                                                 VerticalAlignment="Center"
+                                                                 HorizontalAlignment="Right">
+                                                            <Ellipse.Style>
+                                                                <Style TargetType="Ellipse">
+                                                                    <Setter Property="Fill" Value="#FFF44336"/>
+                                                                    <Style.Triggers>
+                                                                        <DataTrigger Binding="{Binding IsSelected, RelativeSource={RelativeSource AncestorType=TreeViewItem}}" Value="True">
+                                                                            <Setter Property="Fill" Value="#FF4CAF50"/>
+                                                                        </DataTrigger>
+                                                                    </Style.Triggers>
+                                                                </Style>
+                                                            </Ellipse.Style>
+                                                        </Ellipse>
+                                                    </Grid>
+                                                </Border>
+                                                
+                                                <!-- Children Container -->
+                                                <ItemsPresenter x:Name="ItemsHost"
+                                                               Grid.Row="1"
+                                                               Margin="20,0,0,0"
+                                                               Visibility="Collapsed"/>
+                                            </Grid>
+                                            
+                                            <ControlTemplate.Triggers>
+                                                <Trigger Property="IsExpanded" Value="True">
+                                                    <Setter TargetName="ItemsHost" Property="Visibility" Value="Visible"/>
+                                                </Trigger>
+                                                <Trigger Property="IsSelected" Value="True">
+                                                    <Setter TargetName="ItemBorder" Property="Background" Value="#FFE3F2FD"/>
+                                                </Trigger>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter TargetName="ItemBorder" Property="Background" Value="#FFF5F5F5"/>
+                                                </Trigger>
+                                                <DataTrigger Binding="{Binding HasChildren}" Value="False">
+                                                    <Setter TargetName="Expander" Property="Visibility" Value="Collapsed"/>
+                                                </DataTrigger>
+                                            </ControlTemplate.Triggers>
                                         </ControlTemplate>
                                     </Setter.Value>
                                 </Setter>
-                                <Style.Triggers>
-                                    <Trigger Property="IsSelected" Value="True">
-                                        <Setter Property="Background" Value="#FFE3F2FD"/>
-                                    </Trigger>
-                                    <Trigger Property="IsMouseOver" Value="True">
-                                        <Setter Property="Background" Value="#FFF5F5F5"/>
-                                    </Trigger>
-                                </Style.Triggers>
                             </Style>
-                        </ListBox.ItemContainerStyle>
-                    </ListBox>
+                        </TreeView.Resources>
+                        
+                        <!-- Hierarchical Data Template -->
+                        <TreeView.ItemTemplate>
+                            <HierarchicalDataTemplate ItemsSource="{Binding Children}">
+                                <ContentPresenter Content="{Binding}"/>
+                            </HierarchicalDataTemplate>
+                        </TreeView.ItemTemplate>
+                    </TreeView>
                 </Border>
             </Grid>
         </Border>
