@@ -40,16 +40,9 @@ namespace Xcelerator.ViewModels
             _allMachines = new ObservableCollection<string>();
             InitializeMachineList();
 
-            // Initialize remote machines
-            _remoteMachines = new ObservableCollection<string>
-            {
-                "TOA-C34COR01",
-                "TOB-C34COR01",
-                "TOA-C34API01",
-                "TOB-C34API01",
-                "TOA-C34WEB01",
-                "TOB-C34WEB01"
-            };
+            // Initialize remote machines dynamically based on cluster name
+            _remoteMachines = new ObservableCollection<string>();
+            InitializeRemoteMachines();
 
             // Setup filtered collection view
             _filteredMachines = CollectionViewSource.GetDefaultView(_allMachines);
@@ -222,6 +215,37 @@ namespace Xcelerator.ViewModels
             _allMachines.Add("logging-elasticsearch");
             _allMachines.Add("messaging-kafka-001");
             _allMachines.Add("messaging-kafka-002");
+        }
+
+        /// <summary>
+        /// Initialize remote machines based on cluster name
+        /// </summary>
+        private void InitializeRemoteMachines()
+        {
+            // Ensure cluster exists and has a valid name
+            if (_cluster == null || string.IsNullOrEmpty(_cluster.Name))
+            {
+                return;
+            }
+
+            // Extract letters and last digit from cluster name
+            var clusterName = _cluster.Name;
+            var match = Regex.Match(clusterName, @"^([A-Za-z]+)(\d+)$");
+            
+            if (!match.Success)
+            {
+                return;
+            }
+
+            var letters = match.Groups[1].Value;
+            var numbers = match.Groups[2].Value;
+            
+            // Generate machine names in format: {letters}-C{lastDigit}{type}
+            // Example: SC10 -> SC-C0COR01, SC-C0API01, SC-C0WEB01, SC-C0MED01
+            _remoteMachines.Add($"{letters}-C{numbers}COR01");
+            _remoteMachines.Add($"{letters}-C{numbers}API01");
+            _remoteMachines.Add($"{letters}-C{numbers}WEB01");
+            _remoteMachines.Add($"{letters}-C{numbers}MED01");
         }
 
         /// <summary>
