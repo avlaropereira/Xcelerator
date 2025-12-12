@@ -292,13 +292,14 @@
                                                                    Foreground="#FF2D2D30"
                                                                    VerticalAlignment="Center"/>
                                                         
-                                                        <!-- Status Indicator Dot -->
+                                                        <!-- Status Indicator Dot (only for leaf items without children) -->
                                                         <Ellipse Grid.Column="3"
                                                                  Width="8"
                                                                  Height="8"
                                                                  Margin="8,0,0,0"
                                                                  VerticalAlignment="Center"
-                                                                 HorizontalAlignment="Right">
+                                                                 HorizontalAlignment="Right"
+                                                                 Visibility="{Binding IsLeaf, Converter={StaticResource BooleanToVisibilityConverter}}">
                                                             <Ellipse.Style>
                                                                 <Style TargetType="Ellipse">
                                                                     <Setter Property="Fill" Value="#FFF44336"/>
