@@ -254,25 +254,17 @@
                                                                         <Setter.Value>
                                                                             <ControlTemplate TargetType="ToggleButton">
                                                                                 <Border Background="Transparent">
-                                                                                    <TextBlock x:Name="ExpanderIcon"
-                                                                                               Text="?"
-                                                                                               FontSize="10"
-                                                                                               Foreground="#FF666666"
-                                                                                               HorizontalAlignment="Center"
-                                                                                               VerticalAlignment="Center"
-                                                                                               RenderTransformOrigin="0.5,0.5">
-                                                                                        <TextBlock.RenderTransform>
-                                                                                            <RotateTransform Angle="0"/>
-                                                                                        </TextBlock.RenderTransform>
-                                                                                    </TextBlock>
+                                                                                    <materialDesign:PackIcon x:Name="ExpanderIcon"
+                                                                                                            Kind="Server"
+                                                                                                            Width="16"
+                                                                                                            Height="16"
+                                                                                                            Foreground="#FF666666"
+                                                                                                            HorizontalAlignment="Center"
+                                                                                                            VerticalAlignment="Center"/>
                                                                                 </Border>
                                                                                 <ControlTemplate.Triggers>
                                                                                     <Trigger Property="IsChecked" Value="True">
-                                                                                        <Setter TargetName="ExpanderIcon" Property="RenderTransform">
-                                                                                            <Setter.Value>
-                                                                                                <RotateTransform Angle="90"/>
-                                                                                            </Setter.Value>
-                                                                                        </Setter>
+                                                                                        <Setter TargetName="ExpanderIcon" Property="Foreground" Value="#FF0078D4"/>
                                                                                     </Trigger>
                                                                                 </ControlTemplate.Triggers>
                                                                             </ControlTemplate>
@@ -282,14 +274,15 @@
                                                             </ToggleButton.Style>
                                                         </ToggleButton>
                                                         
-                                                        <!-- Remote Desktop Icon -->
+                                                        <!-- Remote Desktop Icon (only for leaf items without children) -->
                                                         <materialDesign:PackIcon Grid.Column="1"
                                                                                  Kind="RemoteDesktop"
                                                                                  Width="16"
                                                                                  Height="16"
                                                                                  Foreground="#FF666666"
                                                                                  Margin="0,0,8,0"
-                                                                                 VerticalAlignment="Center"/>
+                                                                                 VerticalAlignment="Center"
+                                                                                 Visibility="{Binding IsLeaf, Converter={StaticResource BooleanToVisibilityConverter}}"/>
                                                         
                                                         <!-- Machine Name -->
                                                         <TextBlock Grid.Column="2"
