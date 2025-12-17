@@ -1,7 +1,9 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Linq;
 using System.Text.RegularExpressions;
 using System.Windows.Data;
+using System.Windows.Input;
 using Xcelerator.Models;
 
 namespace Xcelerator.ViewModels
@@ -26,6 +28,9 @@ namespace Xcelerator.ViewModels
         private ICollectionView? _filteredMachines;
         private ObservableCollection<RemoteMachineItem> _remoteMachines;
         private RemoteMachineItem? _selectedRemoteMachine;
+        private ObservableCollection<ITabViewModel> _openTabs;
+
+        public ICommand OpenMachineTabCommand { get; }
 
         public LiveLogMonitorViewModel(MainViewModel mainViewModel, DashboardViewModel dashboardViewModel, Cluster? cluster = null, Dictionary<string, string>? tokenData = null)
         {
@@ -34,6 +39,9 @@ namespace Xcelerator.ViewModels
             _cluster = cluster;
             _tokenData = tokenData;
 
+            // Initialize open tabs collection
+            _openTabs = new ObservableCollection<ITabViewModel>();
+
             // Initialize machine list with sample data
             _allMachines = new ObservableCollection<string>();
             InitializeMachineList();
@@ -41,6 +49,9 @@ namespace Xcelerator.ViewModels
             // Initialize remote machines dynamically based on cluster name
             _remoteMachines = new ObservableCollection<RemoteMachineItem>();
             InitializeRemoteMachines();
+
+            // Initialize OpenMachineTabCommand
+            OpenMachineTabCommand = new RelayCommand<RemoteMachineItem>(ExecuteOpenMachineTab, CanExecuteOpenMachineTab);
 
             // Setup filtered collection view
             _filteredMachines = CollectionViewSource.GetDefaultView(_allMachines);
@@ -210,6 +221,15 @@ namespace Xcelerator.ViewModels
         {
             get => _selectedRemoteMachine;
             set => SetProperty(ref _selectedRemoteMachine, value);
+        }
+
+        /// <summary>
+        /// Collection of open log tabs
+        /// </summary>
+        public ObservableCollection<ITabViewModel> OpenTabs
+        {
+            get => _openTabs;
+            set => SetProperty(ref _openTabs, value);
         }
 
         #endregion
@@ -392,6 +412,47 @@ namespace Xcelerator.ViewModels
                 }
                 MatchCount = count;
             }
+        }
+
+        #endregion
+
+        #region Commands
+
+        /// <summary>
+        /// Determines whether a new tab can be opened for the specified remote machine
+        /// </summary>
+        private bool CanExecuteOpenMachineTab(RemoteMachineItem? remoteMachine)
+        {
+            return remoteMachine != null && remoteMachine.IsLeaf;
+        }
+
+        /// <summary>
+        /// Opens a new tab for the specified remote machine
+        /// </summary>
+        private void ExecuteOpenMachineTab(RemoteMachineItem? remoteMachine)
+        {
+            if (remoteMachine == null || !remoteMachine.IsLeaf)
+                return;
+
+            // Check if a tab for this machine already exists
+            var existingTab = OpenTabs
+                .OfType<LogTabViewModel>()
+                .FirstOrDefault(tab => tab.RemoteMachine?.Name == remoteMachine.Name);
+
+            if (existingTab != null)
+            {
+                // Tab already exists, just select it (WPF will handle the selection automatically)
+                return;
+            }
+
+            // Create a new LogTabViewModel with the remote machine's display name
+            var logTab = new LogTabViewModel(remoteMachine.DisplayName)
+            {
+                RemoteMachine = remoteMachine
+            };
+
+            // Add the new tab to the OpenTabs collection
+            OpenTabs.Add(logTab);
         }
 
         #endregion
