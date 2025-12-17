@@ -279,6 +279,7 @@ namespace Xcelerator.ViewModels
             };
             
             // Add COR01 Virtual Cluster services as children
+            cor01.Children.Add(new RemoteMachineItem { Name = $"{letters}-C{numbers}COR01-VirtualCluster", DisplayName = "Virtual Cluster" });
             cor01.Children.Add(new RemoteMachineItem { Name = $"{letters}-C{numbers}COR01-FileServer", DisplayName = "File Server" });
             cor01.Children.Add(new RemoteMachineItem { Name = $"{letters}-C{numbers}COR01-CoOpService", DisplayName = "CoOp Service" });
             cor01.Children.Add(new RemoteMachineItem { Name = $"{letters}-C{numbers}COR01-SurvyService", DisplayName = "Survy Service" });
