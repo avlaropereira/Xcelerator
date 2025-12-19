@@ -14,6 +14,12 @@ namespace Xcelerator.LogEngine.Services
         /// <param name="item">Item identifier (e.g. service or component name)</param>
         public async Task<LogResult> GetLogsInParallelAsync(string machine, string item)
         {
+            if (string.IsNullOrWhiteSpace(machine))
+                throw new ArgumentException("Machine name cannot be null or empty.", nameof(machine));
+            
+            if (string.IsNullOrWhiteSpace(item))
+                throw new ArgumentException("Item cannot be null or empty.", nameof(item));
+            
             return await ProcessSingleMachineAsync(machine, item);
         }
 
