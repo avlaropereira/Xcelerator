@@ -7,25 +7,20 @@ namespace Xcelerator.LogEngine.Services
     {
 
         /// <summary>
-        /// Downloads logs from multiple machines in parallel, extracts recent lines, and cleans up temp files.
+        /// Downloads logs from multiple machines in parallel and returns all lines from the most recent log file.
         /// </summary>
         /// <param name="machines">List of machine names (e.g. sc1, sc2)</param>
         /// <param name="remoteShareTemplate">Format string for share (e.g. "\\{0}\c$\VCLogs")</param>
-        /// <param name="pattern">Regex pattern to search for (e.g. "Error")</param>
-        /// <param name="lookbackMinutes">How many minutes back to search (e.g. 2.5)</param>
-        public async Task<List<LogResult>> GetLogsInParallelAsync(IEnumerable<string> machines, string remoteShareTemplate, string pattern, double lookbackMinutes)
+        public async Task<List<LogResult>> GetLogsInParallelAsync(IEnumerable<string> machines, string remoteShareTemplate)
         {
             var results = new ConcurrentBag<LogResult>();
             var tasks = new List<Task>();
-
-            // Calculate the cutoff time once
-            DateTime cutoffTime = DateTime.Now.AddMinutes(-lookbackMinutes);
 
             foreach (var machine in machines)
             {
                 tasks.Add(Task.Run(async () =>
                 {
-                    var result = await ProcessSingleMachineAsync(machine, remoteShareTemplate, pattern, cutoffTime);
+                    var result = await ProcessSingleMachineAsync(machine, remoteShareTemplate);
                     results.Add(result);
                 }));
             }
@@ -36,7 +31,7 @@ namespace Xcelerator.LogEngine.Services
             return results.ToList();
         }
 
-        private async Task<LogResult> ProcessSingleMachineAsync(string machine, string shareTemplate, string pattern, DateTime cutoffTime)
+        private async Task<LogResult> ProcessSingleMachineAsync(string machine, string shareTemplate)
         {
             var result = new LogResult { MachineName = machine, Success = true };
 
@@ -73,36 +68,16 @@ namespace Xcelerator.LogEngine.Services
                 string localFilePath = Path.Combine(tempFolder, recentFile.Name);
                 await CopyFileAsync(recentFile.FullName, localFilePath);
 
-                // 4. Parse Locally
-                // Optimization: ReadLines is lazy; we iterate once.
+                // 4. Read All Lines
+                // ReadLines is lazy; we iterate once and add all lines
                 foreach (var line in File.ReadLines(localFilePath))
                 {
-                    // Filter 1: Check pattern match first (faster than timestamp parsing)
-                    if (!string.IsNullOrEmpty(pattern) &&
-                        !line.Contains(pattern, StringComparison.OrdinalIgnoreCase))
-                    {
-                        continue;
-                    }
-
-                    // Filter 2: Check Timestamp
-                    // Expected format: MM/DD/YYYY HH:MM:SS.fff
-                    // We'll try to parse the first 23 characters if available
-                    if (line.Length >= 23)
-                    {
-                        string timestampStr = line.Substring(0, 23);
-                        if (DateTime.TryParse(timestampStr, out DateTime logTime))
-                        {
-                            if (logTime >= cutoffTime)
-                            {
-                                result.LogLines.Add(line);
-                            }
-                        }
-                    }
+                    result.LogLines.Add(line);
                 }
 
                 if (result.LogLines.Count == 0)
                 {
-                    result.LogLines.Add($"No logs found matching '{pattern}' in the last {(DateTime.Now - cutoffTime).TotalMinutes:F1} minutes.");
+                    result.LogLines.Add("No log lines found in the file.");
                 }
 
             }
