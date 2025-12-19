@@ -1,6 +1,8 @@
 using Xcelerator.Models;
 using Xcelerator.LogEngine.Services;
 using System.IO;
+using System.Windows;
+using System.Collections.ObjectModel;
 
 namespace Xcelerator.ViewModels
 {
@@ -13,6 +15,8 @@ namespace Xcelerator.ViewModels
         private RemoteMachineItem? _remoteMachine;
         private string _logContent = string.Empty;
         private readonly LogHarvesterService _logHarvesterService;
+        private ObservableCollection<string> _logLines;
+        private bool _isLoading;
 
         /// <summary>
         /// Initializes a new instance of the LogTabViewModel class
@@ -23,6 +27,7 @@ namespace Xcelerator.ViewModels
             _headerName = remoteMachineItem.DisplayName;
             _remoteMachine = remoteMachineItem;
             _logHarvesterService = new LogHarvesterService();
+            _logLines = new ObservableCollection<string>();
             
             // Parse machine name and item from the remote machine item name
             var (machineName, machineItemName) = ParseMachineItem(remoteMachineItem.Name);
@@ -40,15 +45,19 @@ namespace Xcelerator.ViewModels
         {
             try
             {
+                IsLoading = true;
                 LogContent = "Loading logs...";
                 
-                var result = await _logHarvesterService.GetLogsInParallelAsync(machineName, itemName);
+                // Perform heavy work on background thread
+                var result = await Task.Run(async () =>
+                {
+                    return await _logHarvesterService.GetLogsInParallelAsync(machineName, itemName);
+                });
                 
                 if (result.Success && !string.IsNullOrEmpty(result.LocalFilePath))
                 {
-                    // Read the downloaded log file
-                    var logLines = await File.ReadAllLinesAsync(result.LocalFilePath);
-                    LogContent = string.Join(Environment.NewLine, logLines);
+                    // Read file and populate collection in chunks to avoid UI freeze
+                    await LoadLogLinesInChunks(result.LocalFilePath);
                 }
                 else
                 {
@@ -59,6 +68,50 @@ namespace Xcelerator.ViewModels
             {
                 LogContent = $"Error loading logs: {ex.Message}";
             }
+            finally
+            {
+                IsLoading = false;
+            }
+        }
+
+        /// <summary>
+        /// Loads log lines in chunks to prevent UI freezing
+        /// </summary>
+        private async Task LoadLogLinesInChunks(string filePath)
+        {
+            const int chunkSize = 1000; // Load 1000 lines at a time
+            
+            await Task.Run(async () =>
+            {
+                var lines = await File.ReadAllLinesAsync(filePath);
+                
+                // Process in chunks
+                for (int i = 0; i < lines.Length; i += chunkSize)
+                {
+                    var chunk = lines.Skip(i).Take(chunkSize).ToArray();
+                    
+                    // Update UI on UI thread
+                    await Application.Current.Dispatcher.InvokeAsync(() =>
+                    {
+                        foreach (var line in chunk)
+                        {
+                            LogLines.Add(line);
+                        }
+                        
+                        // Update summary content
+                        LogContent = $"Loaded {LogLines.Count:N0} lines...";
+                    }, System.Windows.Threading.DispatcherPriority.Background);
+                    
+                    // Small delay to let UI breathe
+                    await Task.Delay(1);
+                }
+                
+                // Final update
+                await Application.Current.Dispatcher.InvokeAsync(() =>
+                {
+                    LogContent = $"Loaded {LogLines.Count:N0} log lines from {Path.GetFileName(filePath)}";
+                });
+            });
         }
 
         /// <summary>
@@ -86,6 +139,24 @@ namespace Xcelerator.ViewModels
         {
             get => _logContent;
             set => SetProperty(ref _logContent, value);
+        }
+
+        /// <summary>
+        /// Collection of log lines for efficient rendering
+        /// </summary>
+        public ObservableCollection<string> LogLines
+        {
+            get => _logLines;
+            set => SetProperty(ref _logLines, value);
+        }
+
+        /// <summary>
+        /// Indicates whether logs are currently being loaded
+        /// </summary>
+        public bool IsLoading
+        {
+            get => _isLoading;
+            set => SetProperty(ref _isLoading, value);
         }
 
         /// <summary>
