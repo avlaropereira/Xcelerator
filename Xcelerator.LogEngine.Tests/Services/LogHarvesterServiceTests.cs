@@ -1,5 +1,3 @@
-using System.Collections.Concurrent;
-using Xcelerator.LogEngine.Models;
 using Xcelerator.LogEngine.Services;
 
 namespace Xcelerator.LogEngine.Tests.Services
