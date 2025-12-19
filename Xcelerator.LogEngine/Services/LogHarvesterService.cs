@@ -7,7 +7,8 @@ namespace Xcelerator.LogEngine.Services
     {
 
         /// <summary>
-        /// Downloads logs from multiple machines in parallel and returns all lines from the most recent log file.
+        /// Downloads logs from multiple machines in parallel and returns the local file path of the downloaded log file.
+        /// The downloaded file is stored in a temporary directory and will NOT be automatically cleaned up.
         /// </summary>
         /// <param name="machines">List of machine names (e.g. sc1, sc2)</param>
         /// <param name="remoteShareTemplate">Format string for share (e.g. "\\{0}\c$\VCLogs")</param>
@@ -46,7 +47,7 @@ namespace Xcelerator.LogEngine.Services
                 // 2. Find Recent File (Fast metadata check)
                 var directoryInfo = new DirectoryInfo(remotePath);
 
-                if (!directoryInfo.Exists)
+                if (!Directory.Exists(remotePath))
                 {
                     result.Success = false;
                     result.ErrorMessage = $"Path not accessible: {remotePath}";
@@ -68,33 +69,22 @@ namespace Xcelerator.LogEngine.Services
                 string localFilePath = Path.Combine(tempFolder, recentFile.Name);
                 await CopyFileAsync(recentFile.FullName, localFilePath);
 
-                // 4. Read All Lines
-                // ReadLines is lazy; we iterate once and add all lines
-                foreach (var line in File.ReadLines(localFilePath))
-                {
-                    result.LogLines.Add(line);
-                }
-
-                if (result.LogLines.Count == 0)
-                {
-                    result.LogLines.Add("No log lines found in the file.");
-                }
+                // 4. Set the local file path with the original remote file name appended
+                result.LocalFilePath = $"{localFilePath}";
 
             }
             catch (Exception ex)
             {
                 result.Success = false;
                 result.ErrorMessage = ex.Message;
-            }
-            finally
-            {
-                // 5. CLEANUP: Aggressive deletion of temp data
+                
+                // Cleanup on error
                 try
                 {
                     if (Directory.Exists(tempFolder))
                         Directory.Delete(tempFolder, true);
                 }
-                catch { /* Ignore cleanup errors to prevent crashing main thread */ }
+                catch { /* Ignore cleanup errors */ }
             }
 
             return result;
@@ -102,10 +92,24 @@ namespace Xcelerator.LogEngine.Services
 
         private async Task CopyFileAsync(string source, string destination)
         {
-            using (FileStream sourceStream = File.Open(source, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
-            using (FileStream destStream = File.Create(destination))
+            const int bufferSize = 1024 * 1024; // 1 MB buffer for better performance on large files
+            
+            using (FileStream sourceStream = new FileStream(
+                source, 
+                FileMode.Open, 
+                FileAccess.Read, 
+                FileShare.ReadWrite,
+                bufferSize,
+                useAsync: true))
+            using (FileStream destStream = new FileStream(
+                destination,
+                FileMode.Create,
+                FileAccess.Write,
+                FileShare.None,
+                bufferSize,
+                useAsync: true))
             {
-                await sourceStream.CopyToAsync(destStream);
+                await sourceStream.CopyToAsync(destStream, bufferSize);
             }
         }
     }

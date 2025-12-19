@@ -40,6 +40,20 @@ namespace Xcelerator.LogEngine.Tests.Services
             {
                 // Ignore cleanup errors
             }
+
+            // Cleanup XceleratorLogs temp directory
+            try
+            {
+                string xceleratorLogsPath = Path.Combine(Path.GetTempPath(), "XceleratorLogs");
+                if (Directory.Exists(xceleratorLogsPath))
+                {
+                    Directory.Delete(xceleratorLogsPath, true);
+                }
+            }
+            catch
+            {
+                // Ignore cleanup errors for temp directory
+            }
         }
 
         #region Test Helpers
@@ -109,11 +123,8 @@ namespace Xcelerator.LogEngine.Tests.Services
             Assert.Equal(machineName, result.MachineName);
             Assert.True(result.Success);
             Assert.Null(result.ErrorMessage);
-            Assert.Equal(4, result.LogLines.Count); // All lines returned, no filtering
-            Assert.Contains("Test error message", result.LogLines[0]);
-            Assert.Contains("Normal operation", result.LogLines[1]);
-            Assert.Contains("Recent error message", result.LogLines[2]);
-            Assert.Contains("Old error message", result.LogLines[3]);
+            Assert.NotNull(result.LocalFilePath);
+            Assert.True(File.Exists(result.LocalFilePath.Split('|')[0]));
         }
 
         [Fact]
@@ -143,7 +154,7 @@ namespace Xcelerator.LogEngine.Tests.Services
             // Assert
             Assert.Equal(3, results.Count);
             Assert.All(results, r => Assert.True(r.Success));
-            Assert.All(results, r => Assert.NotEmpty(r.LogLines));
+            Assert.All(results, r => Assert.NotNull(r.LocalFilePath));
             Assert.Contains(results, r => r.MachineName == "machine1");
             Assert.Contains(results, r => r.MachineName == "machine2");
             Assert.Contains(results, r => r.MachineName == "machine3");
@@ -174,7 +185,7 @@ namespace Xcelerator.LogEngine.Tests.Services
             // Assert
             var result = results[0];
             Assert.True(result.Success);
-            Assert.Equal(3, result.LogLines.Count); // All lines returned
+            Assert.NotNull(result.LocalFilePath);
         }
 
         [Fact]
@@ -208,8 +219,8 @@ namespace Xcelerator.LogEngine.Tests.Services
             // Assert
             var result = results[0];
             Assert.True(result.Success);
-            Assert.Single(result.LogLines);
-            Assert.Contains("Recent log", result.LogLines[0]);
+            Assert.NotNull(result.LocalFilePath);
+            Assert.True(File.Exists(result.LocalFilePath.Split('|')[0]));
         }
 
         [Fact]
@@ -237,7 +248,7 @@ namespace Xcelerator.LogEngine.Tests.Services
             // Assert
             var result = results[0];
             Assert.True(result.Success);
-            Assert.Equal(3, result.LogLines.Count); // All lines returned regardless of pattern
+            Assert.NotNull(result.LocalFilePath);
         }
 
         #endregion
@@ -312,8 +323,7 @@ namespace Xcelerator.LogEngine.Tests.Services
             // Assert
             var result = results[0];
             Assert.True(result.Success);
-            Assert.Single(result.LogLines);
-            Assert.Contains("INFO: Normal operation", result.LogLines[0]);
+            Assert.NotNull(result.LocalFilePath);
         }
 
         [Fact]
@@ -339,8 +349,7 @@ namespace Xcelerator.LogEngine.Tests.Services
             // Assert
             var result = results[0];
             Assert.True(result.Success);
-            Assert.Single(result.LogLines);
-            Assert.Contains("Old error", result.LogLines[0]);
+            Assert.NotNull(result.LocalFilePath);
         }
 
         #endregion
@@ -389,10 +398,7 @@ namespace Xcelerator.LogEngine.Tests.Services
             // Assert
             var result = results[0];
             Assert.True(result.Success);
-            Assert.Equal(3, result.LogLines.Count); // All lines included, no filtering
-            Assert.Contains("Valid log", result.LogLines[0]);
-            Assert.Contains("Short line ERROR", result.LogLines[1]);
-            Assert.Contains("ERROR", result.LogLines[2]);
+            Assert.NotNull(result.LocalFilePath);
         }
 
         [Fact]
@@ -419,9 +425,7 @@ namespace Xcelerator.LogEngine.Tests.Services
             // Assert
             var result = results[0];
             Assert.True(result.Success);
-            Assert.Equal(2, result.LogLines.Count); // All lines included, no filtering
-            Assert.Contains("Valid timestamp", result.LogLines[0]);
-            Assert.Contains("Invalid timestamp", result.LogLines[1]);
+            Assert.NotNull(result.LocalFilePath);
         }
 
         [Fact]
@@ -476,9 +480,7 @@ namespace Xcelerator.LogEngine.Tests.Services
             // Assert
             var result = results[0];
             Assert.True(result.Success);
-            Assert.Equal(2, result.LogLines.Count); // All lines returned
-            Assert.Contains("Current minute", result.LogLines[0]);
-            Assert.Contains("One minute ago", result.LogLines[1]);
+            Assert.NotNull(result.LocalFilePath);
         }
 
         #endregion
@@ -518,8 +520,36 @@ namespace Xcelerator.LogEngine.Tests.Services
             // Assert
             var result = results[0];
             Assert.True(result.Success);
-            Assert.Equal(10002, result.LogLines.Count); // All lines returned
+            Assert.NotNull(result.LocalFilePath);
+            Assert.True(File.Exists(result.LocalFilePath.Split('|')[0]));
             Assert.True(stopwatch.ElapsedMilliseconds < 5000, $"Processing took {stopwatch.ElapsedMilliseconds}ms, expected < 5000ms");
+        }
+
+        #endregion
+
+        #region Integration Tests
+
+        [Fact]
+        [Trait("Category", "Integration")]
+        public async Task GetLogsInParallelAsync_WithRealNetworkShare_DownloadsAndValidatesLogs()
+        {
+            // Arrange
+            string machineName = "TOA-C34COR01";
+            string remoteShareTemplate = @"\\{0}\D$\Proj\LogFiles\VC";
+
+            // Act
+            var results = await _service.GetLogsInParallelAsync(
+                new[] { machineName },
+                remoteShareTemplate
+            );
+
+            // Assert
+            Assert.Single(results);
+            var result = results[0];
+            Assert.Equal(machineName, result.MachineName);
+            Assert.True(result.Success, $"Failed to access logs: {result.ErrorMessage}");
+            Assert.NotNull(result.LocalFilePath);
+            Assert.True(File.Exists(result.LocalFilePath.Split('|')[0]), "Expected to find downloaded log file");
         }
 
         #endregion

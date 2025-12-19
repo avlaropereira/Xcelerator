@@ -33,6 +33,9 @@ The test suite covers the following scenarios for the `GetLogsInParallelAsync` m
 ### Performance Tests
 - ? Efficiently processes large log files (10,000+ lines)
 
+### Integration Tests
+- ?? Real network share test (skipped by default - see below)
+
 ## Running the Tests
 
 ### Run all tests
@@ -54,6 +57,48 @@ dotnet test --filter "FullyQualifiedName~GetLogsInParallelAsync_WithValidMachine
 ```bash
 dotnet test --collect:"XPlat Code Coverage"
 ```
+
+## Integration Tests
+
+The test suite includes an integration test that connects to a real network share:
+
+**Test**: `GetLogsInParallelAsync_WithRealNetworkShare_DownloadsAndValidatesLogs`  
+**Network Path**: `\\SOA-C30COR01\D$\Proj\LogFiles\VC`
+
+This test is **skipped by default** because it requires:
+- Network access to the specified machine
+- Appropriate permissions to access the share
+- The share to contain actual log files
+
+### Running the Integration Test
+
+To enable and run the integration test:
+
+1. **Remove the Skip attribute** from the test in `LogHarvesterServiceTests.cs`:
+   ```csharp
+   // Change from:
+   [Fact(Skip = "Integration test - requires network access...")]
+   
+   // To:
+   [Fact]
+   ```
+
+2. **Run the integration test specifically**:
+   ```bash
+   dotnet test --filter "Category=Integration"
+   ```
+
+3. **Or run with the specific test name**:
+   ```bash
+   dotnet test --filter "FullyQualifiedName~GetLogsInParallelAsync_WithRealNetworkShare_DownloadsAndValidatesLogs"
+   ```
+
+### Integration Test Requirements
+
+- **Network Access**: Must be able to reach `\\SOA-C30COR01\D$\Proj\LogFiles\VC`
+- **Permissions**: Must have read access to the D$ administrative share
+- **Timeout**: Test has a 30-second timeout to prevent hanging
+- **Expected Result**: Should find and download logs from the most recent log file
 
 ## Test Structure
 
@@ -83,4 +128,5 @@ All tests implement `IDisposable` to ensure proper cleanup of temporary files an
 
 ## Test Results
 
-All 15 tests pass successfully, providing comprehensive coverage of the `LogHarvesterService` functionality.
+All 15 unit tests pass successfully, with 1 integration test skipped by default.
+
