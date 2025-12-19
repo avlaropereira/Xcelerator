@@ -7,32 +7,17 @@ namespace Xcelerator.LogEngine.Services
     {
 
         /// <summary>
-        /// Downloads logs from multiple machines in parallel and returns the local file path of the downloaded log file.
+        /// Downloads logs from a single machine and item, and returns the local file path of the downloaded log file.
         /// The downloaded file is stored in a temporary directory and will NOT be automatically cleaned up.
         /// </summary>
-        /// <param name="machines">List of machine names (e.g. sc1, sc2)</param>
-        /// <param name="remoteShareTemplate">Format string for share (e.g. "\\{0}\c$\VCLogs")</param>
-        public async Task<List<LogResult>> GetLogsInParallelAsync(IEnumerable<string> machines, string remoteShareTemplate)
+        /// <param name="machine">Machine name (e.g. sc1)</param>
+        /// <param name="item">Item identifier (e.g. service or component name)</param>
+        public async Task<LogResult> GetLogsInParallelAsync(string machine, string item)
         {
-            var results = new ConcurrentBag<LogResult>();
-            var tasks = new List<Task>();
-
-            foreach (var machine in machines)
-            {
-                tasks.Add(Task.Run(async () =>
-                {
-                    var result = await ProcessSingleMachineAsync(machine, remoteShareTemplate);
-                    results.Add(result);
-                }));
-            }
-
-            // Wait for all downloads to finish
-            await Task.WhenAll(tasks);
-
-            return results.ToList();
+            return await ProcessSingleMachineAsync(machine, item);
         }
 
-        private async Task<LogResult> ProcessSingleMachineAsync(string machine, string shareTemplate)
+        private async Task<LogResult> ProcessSingleMachineAsync(string machine, string item)
         {
             var result = new LogResult { MachineName = machine, Success = true };
 
@@ -42,7 +27,7 @@ namespace Xcelerator.LogEngine.Services
 
             try
             {
-                string remotePath = string.Format(shareTemplate, machine);
+                string remotePath = string.Format(@"\\{0}\D$\Proj\LogFiles\{1}", machine, item);
 
                 // 2. Find Recent File (Fast metadata check)
                 var directoryInfo = new DirectoryInfo(remotePath);
