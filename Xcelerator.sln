@@ -4,8 +4,13 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 VisualStudioVersion = 17.13.36105.23
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xcelerator", "Xcelerator\Xcelerator.csproj", "{4E02CBC2-3698-4BA7-AF5D-CDF176F8F8A1}"
+	ProjectSection(ProjectDependencies) = postProject
+		{65119E80-F8BB-4434-A763-EE303F8CBF6F} = {65119E80-F8BB-4434-A763-EE303F8CBF6F}
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xcelerator.NiceClient", "Xcelerator.NiceClient\Xcelerator.NiceClient.csproj", "{16F982D6-0FE0-49CA-970A-ADAAB1CA7E4B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xcelerator.LogEngine", "Xcelerator.LogEngine\Xcelerator.LogEngine.csproj", "{65119E80-F8BB-4434-A763-EE303F8CBF6F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -41,6 +46,18 @@ Global
 		{16F982D6-0FE0-49CA-970A-ADAAB1CA7E4B}.Release|x64.Build.0 = Release|Any CPU
 		{16F982D6-0FE0-49CA-970A-ADAAB1CA7E4B}.Release|x86.ActiveCfg = Release|Any CPU
 		{16F982D6-0FE0-49CA-970A-ADAAB1CA7E4B}.Release|x86.Build.0 = Release|Any CPU
+		{65119E80-F8BB-4434-A763-EE303F8CBF6F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{65119E80-F8BB-4434-A763-EE303F8CBF6F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{65119E80-F8BB-4434-A763-EE303F8CBF6F}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{65119E80-F8BB-4434-A763-EE303F8CBF6F}.Debug|x64.Build.0 = Debug|Any CPU
+		{65119E80-F8BB-4434-A763-EE303F8CBF6F}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{65119E80-F8BB-4434-A763-EE303F8CBF6F}.Debug|x86.Build.0 = Debug|Any CPU
+		{65119E80-F8BB-4434-A763-EE303F8CBF6F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{65119E80-F8BB-4434-A763-EE303F8CBF6F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{65119E80-F8BB-4434-A763-EE303F8CBF6F}.Release|x64.ActiveCfg = Release|Any CPU
+		{65119E80-F8BB-4434-A763-EE303F8CBF6F}.Release|x64.Build.0 = Release|Any CPU
+		{65119E80-F8BB-4434-A763-EE303F8CBF6F}.Release|x86.ActiveCfg = Release|Any CPU
+		{65119E80-F8BB-4434-A763-EE303F8CBF6F}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
