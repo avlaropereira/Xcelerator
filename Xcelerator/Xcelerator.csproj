@@ -17,6 +17,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Xcelerator.NiceClient\Xcelerator.NiceClient.csproj" />
+    <ProjectReference Include="..\Xcelerator.LogEngine\Xcelerator.LogEngine.csproj" />
   </ItemGroup>
 
 </Project>
