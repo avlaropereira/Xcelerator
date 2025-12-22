@@ -444,14 +444,6 @@ d:DesignHeight="650" d:DesignWidth="1000">
                         </DataTemplate>
                     </TabControl.ContentTemplate>
                 </TabControl>
-
-                <!-- Placeholder when no tabs are open -->
-                <TextBlock Text="No logs available. Start monitoring to see live logs."
-                           FontSize="14"
-                           Foreground="#FF999999"
-                           HorizontalAlignment="Center"
-                           VerticalAlignment="Center"
-                           Visibility="{Binding OpenTabs.Count, Converter={StaticResource InverseBooleanToVisibilityConverter}}"/>
             </Grid>
         </Border>
     </Grid>
