@@ -30,6 +30,7 @@ namespace Xcelerator.ViewModels
         private ObservableCollection<ITabViewModel> _openTabs;
 
         public ICommand OpenMachineTabCommand { get; }
+        public ICommand CloseTabCommand { get; }
 
         public LiveLogMonitorViewModel(MainViewModel mainViewModel, DashboardViewModel dashboardViewModel, Cluster? cluster = null, Dictionary<string, string>? tokenData = null)
         {
@@ -51,6 +52,9 @@ namespace Xcelerator.ViewModels
 
             // Initialize OpenMachineTabCommand
             OpenMachineTabCommand = new RelayCommand<RemoteMachineItem>(ExecuteOpenMachineTab, CanExecuteOpenMachineTab);
+            
+            // Initialize CloseTabCommand
+            CloseTabCommand = new RelayCommand<ITabViewModel>(ExecuteCloseTab, CanExecuteCloseTab);
 
             // Setup filtered collection view
             _filteredMachines = CollectionViewSource.GetDefaultView(_allMachines);
@@ -452,6 +456,32 @@ namespace Xcelerator.ViewModels
 
             // Add the new tab to the OpenTabs collection
             OpenTabs.Add(logTab);
+        }
+
+        /// <summary>
+        /// Determines whether a tab can be closed
+        /// </summary>
+        private bool CanExecuteCloseTab(ITabViewModel? tab)
+        {
+            return tab != null && OpenTabs.Contains(tab);
+        }
+
+        /// <summary>
+        /// Closes the specified tab and cleans up its resources
+        /// </summary>
+        private void ExecuteCloseTab(ITabViewModel? tab)
+        {
+            if (tab == null)
+                return;
+
+            // If the tab is a LogTabViewModel, call its Cleanup method
+            if (tab is LogTabViewModel logTab)
+            {
+                logTab.Cleanup();
+            }
+
+            // Remove the tab from the collection
+            OpenTabs.Remove(tab);
         }
 
         #endregion

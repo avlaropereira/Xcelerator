@@ -17,6 +17,7 @@ namespace Xcelerator.ViewModels
         private readonly LogHarvesterService _logHarvesterService;
         private ObservableCollection<string> _logLines;
         private bool _isLoading;
+        private string? _localFilePath;
 
         /// <summary>
         /// Initializes a new instance of the LogTabViewModel class
@@ -56,6 +57,9 @@ namespace Xcelerator.ViewModels
                 
                 if (result.Success && !string.IsNullOrEmpty(result.LocalFilePath))
                 {
+                    // Store the local file path for cleanup later
+                    LocalFilePath = result.LocalFilePath;
+                    
                     // Read file and populate collection in chunks to avoid UI freeze
                     await LoadLogLinesInChunks(result.LocalFilePath);
                 }
@@ -160,6 +164,15 @@ namespace Xcelerator.ViewModels
         }
 
         /// <summary>
+        /// Path to the local temporary log file
+        /// </summary>
+        public string? LocalFilePath
+        {
+            get => _localFilePath;
+            set => SetProperty(ref _localFilePath, value);
+        }
+
+        /// <summary>
         /// Parses a machine-item string in the format "SO-C30COR01-VirtualCluster" 
         /// and returns the machine name and item abbreviation
         /// </summary>
@@ -202,6 +215,37 @@ namespace Xcelerator.ViewModels
 
             string itemAbbreviation = remoteMachines.TryGetValue(itemName, out var abbr) ? abbr : itemName;
             return (machineName, itemAbbreviation);
+        }
+
+        /// <summary>
+        /// Cleans up resources including the temporary log file
+        /// </summary>
+        public void Cleanup()
+        {
+            try
+            {
+                if (!string.IsNullOrEmpty(LocalFilePath) && File.Exists(LocalFilePath))
+                {
+                    // Delete the log file
+                    File.Delete(LocalFilePath);
+                    
+                    // Try to delete the parent directory if it's empty
+                    var directory = Path.GetDirectoryName(LocalFilePath);
+                    if (!string.IsNullOrEmpty(directory) && Directory.Exists(directory))
+                    {
+                        // Only delete if directory is empty
+                        if (!Directory.EnumerateFileSystemEntries(directory).Any())
+                        {
+                            Directory.Delete(directory);
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                // Log error but don't throw - cleanup is best effort
+                System.Diagnostics.Debug.WriteLine($"Error cleaning up log file: {ex.Message}");
+            }
         }
     }
 }

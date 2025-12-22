@@ -183,6 +183,7 @@ namespace Xcelerator.ViewModels
 
         /// <summary>
         /// Select a cluster and add it to the selected clusters list
+        /// Navigate directly to Dashboard (skip login)
         /// </summary>
         private void SelectCluster(Cluster? cluster)
         {
@@ -204,6 +205,11 @@ namespace Xcelerator.ViewModels
                 cluster.IsSelected = true;
                 SelectedClusters.Add(cluster);
                 _mainViewModel.Credentials.SelectedClusters.Add(cluster);
+
+                // Navigate directly to Dashboard when cluster is selected
+                SelectedClusterForLogin = cluster;
+                cluster.IsInDashboardMode = true;
+                NavigateToDashboard();
             }
         }
 
@@ -238,7 +244,7 @@ namespace Xcelerator.ViewModels
         }
 
         /// <summary>
-        /// Handle cluster tag click - shows login form or dashboard based on cluster state
+        /// Handle cluster tag click - navigate directly to dashboard (skip login)
         /// </summary>
         private void TagClick(Cluster? cluster)
         {
@@ -246,21 +252,12 @@ namespace Xcelerator.ViewModels
 
             SelectedClusterForLogin = cluster;
 
-            // If cluster has valid token, show dashboard mode
-            // Otherwise show login form even if it has credentials (token might be expired)
-            if (cluster.HasValidToken)
-            {
-                _mainViewModel.Credentials.AccessKey = cluster.AccessKey;
-                _mainViewModel.Credentials.SecretKey = cluster.SecretKey;
-                cluster.IsInDashboardMode = true;
-                NavigateToDashboard();
-            }
-            else
-            {
-                // Show login form for this specific cluster
-                cluster.IsInDashboardMode = false;
-                NavigateToLogin();
-            }
+            // Always navigate directly to Dashboard when clicking on selected cluster
+            // Skip login regardless of token state
+            _mainViewModel.Credentials.AccessKey = cluster.AccessKey;
+            _mainViewModel.Credentials.SecretKey = cluster.SecretKey;
+            cluster.IsInDashboardMode = true;
+            NavigateToDashboard();
         }
 
         /// <summary>
