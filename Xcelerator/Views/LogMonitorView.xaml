@@ -9,6 +9,7 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
         
         <!-- Status Bar -->
@@ -58,6 +59,7 @@
         <!-- Virtualized Log Lines -->
         <ListBox Grid.Row="1"
                  ItemsSource="{Binding LogLines}"
+                 SelectedItem="{Binding SelectedLogLine, Mode=TwoWay}"
                  VirtualizingPanel.IsVirtualizing="True"
                  VirtualizingPanel.VirtualizationMode="Recycling"
                  ScrollViewer.HorizontalScrollBarVisibility="Auto"
@@ -75,12 +77,18 @@
                             <ControlTemplate TargetType="ListBoxItem">
                                 <Border x:Name="ItemBorder"
                                         Background="Transparent"
-                                        Padding="2,1">
+                                        Padding="2,1"
+                                        Cursor="Hand">
                                     <ContentPresenter/>
                                 </Border>
                                 <ControlTemplate.Triggers>
                                     <Trigger Property="IsMouseOver" Value="True">
                                         <Setter TargetName="ItemBorder" Property="Background" Value="#FFFFF4CC"/>
+                                    </Trigger>
+                                    <Trigger Property="IsSelected" Value="True">
+                                        <Setter TargetName="ItemBorder" Property="Background" Value="#FFE3F2FD"/>
+                                        <Setter TargetName="ItemBorder" Property="BorderBrush" Value="#FF0078D4"/>
+                                        <Setter TargetName="ItemBorder" Property="BorderThickness" Value="0,0,0,2"/>
                                     </Trigger>
                                 </ControlTemplate.Triggers>
                             </ControlTemplate>
@@ -117,5 +125,104 @@
                 </Style>
             </TextBlock.Style>
         </TextBlock>
+        
+        <!-- Detail Panel -->
+        <Border Grid.Row="2"
+                Background="#FFF8F9FA"
+                BorderBrush="#FF0078D4"
+                BorderThickness="0,2,0,0"
+                Padding="15"
+                Visibility="{Binding IsDetailPanelVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                
+                <!-- Header -->
+                <Grid Grid.Row="0" Margin="0,0,0,10">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    
+                    <TextBlock Grid.Column="0"
+                               Text="Selected Log Line Details"
+                               FontSize="13"
+                               FontWeight="SemiBold"
+                               Foreground="#FF2D2D30"
+                               VerticalAlignment="Center"/>
+                    
+                    <TextBlock Grid.Column="1"
+                               FontSize="11"
+                               Foreground="#FF666666"
+                               VerticalAlignment="Center"
+                               Margin="10,0,0,0"
+                               Text="Click a line above to view its full content here"/>
+                    
+                    <!-- Close Button -->
+                    <Button Grid.Column="2"
+                            Content="?"
+                            Width="24"
+                            Height="24"
+                            FontSize="14"
+                            FontWeight="Bold"
+                            Background="Transparent"
+                            BorderThickness="1"
+                            BorderBrush="#FFCCCCCC"
+                            Foreground="#FF666666"
+                            Cursor="Hand"
+                            ToolTip="Close detail panel"
+                            Click="CloseDetailPanel_Click">
+                        <Button.Style>
+                            <Style TargetType="Button">
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border Background="{TemplateBinding Background}"
+                                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                                    CornerRadius="3">
+                                                <ContentPresenter HorizontalAlignment="Center"
+                                                                  VerticalAlignment="Center"/>
+                                            </Border>
+                                            <ControlTemplate.Triggers>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter Property="Background" Value="#FFEEEEEE"/>
+                                                    <Setter Property="BorderBrush" Value="#FF999999"/>
+                                                </Trigger>
+                                                <Trigger Property="IsPressed" Value="True">
+                                                    <Setter Property="Background" Value="#FFDDDDDD"/>
+                                                </Trigger>
+                                            </ControlTemplate.Triggers>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                            </Style>
+                        </Button.Style>
+                    </Button>
+                </Grid>
+                
+                <!-- Content Area with ScrollViewer -->
+                <Border Grid.Row="1"
+                        Background="White"
+                        BorderBrush="#FFE0E0E0"
+                        BorderThickness="1"
+                        CornerRadius="4"
+                        MaxHeight="200">
+                    <ScrollViewer HorizontalScrollBarVisibility="Disabled"
+                                  VerticalScrollBarVisibility="Auto">
+                        <TextBlock Text="{Binding SelectedLogLine}"
+                                   FontFamily="Consolas"
+                                   FontSize="11"
+                                   Foreground="#FF2D2D30"
+                                   TextWrapping="Wrap"
+                                   Padding="10"
+                                   LineHeight="16"/>
+                    </ScrollViewer>
+                </Border>
+            </Grid>
+        </Border>
     </Grid>
 </UserControl>

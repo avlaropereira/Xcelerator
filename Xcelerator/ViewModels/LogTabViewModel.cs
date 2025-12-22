@@ -18,6 +18,8 @@ namespace Xcelerator.ViewModels
         private ObservableCollection<string> _logLines;
         private bool _isLoading;
         private string? _localFilePath;
+        private string? _selectedLogLine;
+        private bool _isDetailPanelVisible;
 
         /// <summary>
         /// Initializes a new instance of the LogTabViewModel class
@@ -170,6 +172,31 @@ namespace Xcelerator.ViewModels
         {
             get => _localFilePath;
             set => SetProperty(ref _localFilePath, value);
+        }
+
+        /// <summary>
+        /// The currently selected log line to display in detail panel
+        /// </summary>
+        public string? SelectedLogLine
+        {
+            get => _selectedLogLine;
+            set
+            {
+                if (SetProperty(ref _selectedLogLine, value))
+                {
+                    // Show detail panel when a line is selected
+                    IsDetailPanelVisible = !string.IsNullOrEmpty(value);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Indicates whether the detail panel is visible
+        /// </summary>
+        public bool IsDetailPanelVisible
+        {
+            get => _isDetailPanelVisible;
+            set => SetProperty(ref _isDetailPanelVisible, value);
         }
 
         /// <summary>
