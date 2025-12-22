@@ -73,7 +73,16 @@
                     <Setter Property="Template">
                         <Setter.Value>
                             <ControlTemplate TargetType="ListBoxItem">
-                                <ContentPresenter/>
+                                <Border x:Name="ItemBorder"
+                                        Background="Transparent"
+                                        Padding="2,1">
+                                    <ContentPresenter/>
+                                </Border>
+                                <ControlTemplate.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter TargetName="ItemBorder" Property="Background" Value="#FFFFF4CC"/>
+                                    </Trigger>
+                                </ControlTemplate.Triggers>
                             </ControlTemplate>
                         </Setter.Value>
                     </Setter>
@@ -85,8 +94,7 @@
                                FontFamily="Consolas"
                                FontSize="11"
                                Foreground="#FF2D2D30"
-                               TextWrapping="NoWrap"
-                               Padding="2,1"/>
+                               TextWrapping="NoWrap"/>
                 </DataTemplate>
             </ListBox.ItemTemplate>
         </ListBox>
