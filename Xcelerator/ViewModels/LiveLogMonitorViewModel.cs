@@ -23,9 +23,6 @@ namespace Xcelerator.ViewModels
         private string _searchText = string.Empty;
         private bool _isRegexMode = false;
         private int _matchCount = 0;
-        private string? _selectedMachine;
-        private ObservableCollection<string> _allMachines;
-        private ICollectionView? _filteredMachines;
         private ObservableCollection<RemoteMachineItem> _remoteMachines;
         private RemoteMachineItem? _selectedRemoteMachine;
         private ObservableCollection<ITabViewModel> _openTabs;
@@ -51,10 +48,6 @@ namespace Xcelerator.ViewModels
             // Initialize search results collection
             _searchResults = new ObservableCollection<LogSearchResult>();
 
-            // Initialize machine list with sample data
-            _allMachines = new ObservableCollection<string>();
-            InitializeMachineList();
-
             // Initialize remote machines dynamically based on cluster name
             _remoteMachines = new ObservableCollection<RemoteMachineItem>();
             InitializeRemoteMachines();
@@ -67,14 +60,6 @@ namespace Xcelerator.ViewModels
             
             // Initialize NavigateToSearchResultCommand
             NavigateToSearchResultCommand = new RelayCommand<LogSearchResult>(ExecuteNavigateToSearchResult, CanExecuteNavigateToSearchResult);
-
-            // Setup filtered collection view
-            _filteredMachines = CollectionViewSource.GetDefaultView(_allMachines);
-            if (_filteredMachines != null)
-            {
-                _filteredMachines.Filter = MachineFilter;
-            }
-            UpdateMatchCount();
 
             // Set initial status
             Status = "Ready";
@@ -244,24 +229,6 @@ namespace Xcelerator.ViewModels
         }
 
         /// <summary>
-        /// Currently selected machine
-        /// </summary>
-        public string? SelectedMachine
-        {
-            get => _selectedMachine;
-            set => SetProperty(ref _selectedMachine, value);
-        }
-
-        /// <summary>
-        /// Filtered collection view of machines
-        /// </summary>
-        public ICollectionView? FilteredMachines
-        {
-            get => _filteredMachines;
-            private set => SetProperty(ref _filteredMachines, value);
-        }
-
-        /// <summary>
         /// Collection of remote machines available for log download
         /// </summary>
         public ObservableCollection<RemoteMachineItem> RemoteMachines
@@ -290,35 +257,7 @@ namespace Xcelerator.ViewModels
 
         #endregion
 
-        #region Machine Filtering
-
-        /// <summary>
-        /// Initialize the machine list with sample data
-        /// </summary>
-        private void InitializeMachineList()
-        {
-            // Sample machine names - replace with actual data source
-            _allMachines.Add("machine-001-prod");
-            _allMachines.Add("machine-002-staging");
-            _allMachines.Add("machine-003-dev");
-            _allMachines.Add("server-alpha-001");
-            _allMachines.Add("server-beta-002");
-            _allMachines.Add("worker-node-01");
-            _allMachines.Add("worker-node-02");
-            _allMachines.Add("worker-node-03");
-            _allMachines.Add("database-primary");
-            _allMachines.Add("database-replica-01");
-            _allMachines.Add("cache-redis-001");
-            _allMachines.Add("cache-redis-002");
-            _allMachines.Add("api-gateway-001");
-            _allMachines.Add("api-gateway-002");
-            _allMachines.Add("load-balancer-01");
-            _allMachines.Add("monitoring-prometheus");
-            _allMachines.Add("monitoring-grafana");
-            _allMachines.Add("logging-elasticsearch");
-            _allMachines.Add("messaging-kafka-001");
-            _allMachines.Add("messaging-kafka-002");
-        }
+        #region Remote Machines Initialization
 
         /// <summary>
         /// Initialize remote machines based on cluster name
@@ -417,57 +356,6 @@ namespace Xcelerator.ViewModels
             med01.Children.Add(new RemoteMachineItem { Name = $"{letters}A-C{numbers}MED01-DBCWS", DisplayName = "DBCWS" });
             
             _remoteMachines.Add(med01);
-        }
-
-        /// <summary>
-        /// Filter predicate for machines
-        /// </summary>
-        private bool MachineFilter(object item)
-        {
-            if (item is not string machineName || string.IsNullOrWhiteSpace(SearchText))
-                return true;
-
-            if (IsRegexMode)
-            {
-                try
-                {
-                    return Regex.IsMatch(machineName, SearchText, RegexOptions.IgnoreCase);
-                }
-                catch (ArgumentException)
-                {
-                    // Invalid regex pattern, return false
-                    return false;
-                }
-            }
-            else
-            {
-                return machineName.Contains(SearchText, StringComparison.OrdinalIgnoreCase);
-            }
-        }
-
-        /// <summary>
-        /// Refresh the filter and update match count
-        /// </summary>
-        private void RefreshFilter()
-        {
-            _filteredMachines?.Refresh();
-            UpdateMatchCount();
-        }
-
-        /// <summary>
-        /// Update the match count based on filtered items
-        /// </summary>
-        private void UpdateMatchCount()
-        {
-            if (_filteredMachines != null)
-            {
-                int count = 0;
-                foreach (var item in _filteredMachines)
-                {
-                    count++;
-                }
-                MatchCount = count;
-            }
         }
 
         #endregion
