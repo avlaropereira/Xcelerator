@@ -62,7 +62,8 @@
         </Border>
         
         <!-- Virtualized Log Lines with Syntax Highlighting -->
-        <ListBox Grid.Row="1"
+        <ListBox x:Name="LogLinesListBox"
+                 Grid.Row="1"
                  ItemsSource="{Binding LogLines}"
                  SelectedItem="{Binding SelectedLogLine, Mode=TwoWay}"
                  VirtualizingPanel.IsVirtualizing="True"
@@ -91,7 +92,9 @@
                                         <Setter TargetName="ItemBorder" Property="Background" Value="#FFF5F5F5"/>
                                     </Trigger>
                                     <Trigger Property="IsSelected" Value="True">
-                                        <Setter TargetName="ItemBorder" Property="Background" Value="#FFE3F2FD"/>
+                                        <Setter TargetName="ItemBorder" Property="Background" Value="#FFFFFF99"/>
+                                        <Setter TargetName="ItemBorder" Property="BorderBrush" Value="#FFCCCC00"/>
+                                        <Setter TargetName="ItemBorder" Property="BorderThickness" Value="2"/>
                                     </Trigger>
                                 </ControlTemplate.Triggers>
                             </ControlTemplate>

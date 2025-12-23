@@ -32,6 +32,7 @@ namespace Xcelerator.ViewModels
         private ObservableCollection<LogSearchResult> _searchResults;
         private LogSearchResult? _selectedSearchResult;
         private bool _isSearching;
+        private int _selectedTabIndex;
 
         public ICommand OpenMachineTabCommand { get; }
         public ICommand CloseTabCommand { get; }
@@ -231,6 +232,15 @@ namespace Xcelerator.ViewModels
         {
             get => _isSearching;
             private set => SetProperty(ref _isSearching, value);
+        }
+        
+        /// <summary>
+        /// Selected tab index for programmatic tab selection
+        /// </summary>
+        public int SelectedTabIndex
+        {
+            get => _selectedTabIndex;
+            set => SetProperty(ref _selectedTabIndex, value);
         }
 
         /// <summary>
@@ -689,11 +699,18 @@ namespace Xcelerator.ViewModels
             tab.SelectedLogLine = result.LogEntry;
             tab.IsDetailPanelVisible = true;
             
-            // Note: The TabControl will need to select the tab programmatically
-            // This might require additional logic depending on your TabControl setup
+            // Find the tab in the OpenTabs collection and make it the active tab
+            var tabIndex = OpenTabs.IndexOf(tab);
+            if (tabIndex >= 0)
+            {
+                // We need to trigger the TabControl to select this tab
+                // This will be handled through the SelectedTabIndex property
+                SelectedTabIndex = tabIndex;
+            }
         }
 
         #endregion
     }
 }
+
 

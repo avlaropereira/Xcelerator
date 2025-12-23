@@ -386,6 +386,7 @@ d:DesignHeight="650" d:DesignWidth="1000">
             <Grid>
                 <!-- TabControl for multiple log tabs -->
                 <TabControl ItemsSource="{Binding OpenTabs}"
+                            SelectedIndex="{Binding SelectedTabIndex}"
                             BorderThickness="0"
                             Background="Transparent"
                             Padding="5">
