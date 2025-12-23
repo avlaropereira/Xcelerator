@@ -5,13 +5,15 @@ xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
 xmlns:local="clr-namespace:Xcelerator.Views"
 xmlns:viewmodels="clr-namespace:Xcelerator.ViewModels"
+xmlns:converters="clr-namespace:Xcelerator.Converters"
 xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
 mc:Ignorable="d" 
 d:DesignHeight="650" d:DesignWidth="1000">
     
     <UserControl.Resources>
-        <!-- Namespace alias for TreeViewAssist -->
-        <BooleanToVisibilityConverter x:Key="LocalBooleanToVisibilityConverter"/>
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+        <converters:CountToVisibilityConverter x:Key="CountToVisibilityConverter"/>
+        <converters:CountToVisibilityInvertedConverter x:Key="CountToVisibilityInvertedConverter"/>
     </UserControl.Resources>
     
     <Grid Background="White">
@@ -37,9 +39,9 @@ d:DesignHeight="650" d:DesignWidth="1000">
                     <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
 
-                <!-- Title -->
+                <!--Title -->
                 <TextBlock Grid.Row="0"
-                           Text="Machines"
+                           Text="Search in Logs"
                            FontSize="16"
                            FontWeight="Bold"
                            Foreground="#FF2D2D30"
@@ -106,47 +108,105 @@ d:DesignHeight="650" d:DesignWidth="1000">
                     </TextBlock>
                 </Grid>
 
-                <!-- Machine List -->
+                <!-- Search Results List -->
                 <Border Grid.Row="3"
                         Background="#FFFAFAFA"
                         BorderBrush="#FFE0E0E0"
                         BorderThickness="1"
                         CornerRadius="4">
-                    <ListBox ItemsSource="{Binding FilteredMachines}"
-                             SelectedItem="{Binding SelectedMachine}"
-                             BorderThickness="0"
-                             Background="Transparent"
-                             ScrollViewer.HorizontalScrollBarVisibility="Disabled">
-                        <ListBox.ItemTemplate>
-                            <DataTemplate>
-                                <Border Background="Transparent"
-                                        Padding="8,6"
-                                        Margin="0,1">
-                                    <TextBlock Text="{Binding}"
-                                               FontSize="12"
-                                               Foreground="#FF2D2D30"
-                                               TextTrimming="CharacterEllipsis"
-                                               ToolTip="{Binding}"/>
-                                </Border>
-                            </DataTemplate>
-                        </ListBox.ItemTemplate>
-                        <ListBox.ItemContainerStyle>
-                            <Style TargetType="ListBoxItem">
-                                <Setter Property="Padding" Value="0"/>
-                                <Setter Property="Margin" Value="0"/>
-                                <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
-                                <Style.Triggers>
-                                    <Trigger Property="IsSelected" Value="True">
-                                        <Setter Property="Background" Value="#FF0078D4"/>
-                                        <Setter Property="Foreground" Value="White"/>
-                                    </Trigger>
-                                    <Trigger Property="IsMouseOver" Value="True">
-                                        <Setter Property="Background" Value="#FFF0F0F0"/>
-                                    </Trigger>
-                                </Style.Triggers>
-                            </Style>
-                        </ListBox.ItemContainerStyle>
-                    </ListBox>
+                    <Grid>
+                        <!-- Loading/Searching Indicator -->
+                        <TextBlock Text="Searching..."
+                                   FontSize="12"
+                                   Foreground="#FF666666"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center"
+                                   Visibility="{Binding IsSearching, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                        
+                        <!-- Empty State -->
+                        <TextBlock Text="Enter search text to find log entries across all open tabs"
+                                   FontSize="12"
+                                   Foreground="#FF999999"
+                                   TextWrapping="Wrap"
+                                   TextAlignment="Center"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center"
+                                   Margin="20"
+                                   Visibility="{Binding SearchResults.Count, Converter={StaticResource CountToVisibilityInvertedConverter}}"/>
+                        
+                        <!-- Search Results ListBox -->
+                        <ListBox ItemsSource="{Binding SearchResults}"
+                                 SelectedItem="{Binding SelectedSearchResult}"
+                                 BorderThickness="0"
+                                 Background="Transparent"
+                                 ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                                 Visibility="{Binding SearchResults.Count, Converter={StaticResource CountToVisibilityConverter}}">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Background="Transparent"
+                                            Padding="8,6"
+                                            Margin="0,1">
+                                        <Grid>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto"/>
+                                                <RowDefinition Height="Auto"/>
+                                            </Grid.RowDefinitions>
+                                            
+                                            <!-- Tab Name and Line Number -->
+                                            <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,2">
+                                                <TextBlock Text="["
+                                                           FontSize="10"
+                                                           FontWeight="SemiBold"
+                                                           Foreground="#FF0078D4"/>
+                                                <TextBlock Text="{Binding TabName}"
+                                                           FontSize="10"
+                                                           FontWeight="SemiBold"
+                                                           Foreground="#FF0078D4"/>
+                                                <TextBlock Text="]"
+                                                           FontSize="10"
+                                                           FontWeight="SemiBold"
+                                                           Foreground="#FF0078D4"/>
+                                                <TextBlock Text=" Line "
+                                                           FontSize="10"
+                                                           Foreground="#FF666666"
+                                                           Margin="4,0,0,0"/>
+                                                <TextBlock Text="{Binding LineNumber}"
+                                                           FontSize="10"
+                                                           FontWeight="SemiBold"
+                                                           Foreground="#FF666666"/>
+                                            </StackPanel>
+                                            
+                                            <!-- Preview Text -->
+                                            <TextBlock Grid.Row="1"
+                                                       Text="{Binding Preview}"
+                                                       FontSize="11"
+                                                       FontFamily="Consolas"
+                                                       Foreground="#FF2D2D30"
+                                                       TextTrimming="CharacterEllipsis"
+                                                       ToolTip="{Binding Preview}"/>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                            <ListBox.ItemContainerStyle>
+                                <Style TargetType="ListBoxItem">
+                                    <Setter Property="Padding" Value="0"/>
+                                    <Setter Property="Margin" Value="0"/>
+                                    <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                                    <EventSetter Event="MouseDoubleClick" Handler="SearchResult_MouseDoubleClick"/>
+                                    <Style.Triggers>
+                                        <Trigger Property="IsSelected" Value="True">
+                                            <Setter Property="Background" Value="#FFE3F2FD"/>
+                                            <Setter Property="Foreground" Value="#FF2D2D30"/>
+                                        </Trigger>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter Property="Background" Value="#FFF0F0F0"/>
+                                        </Trigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </ListBox.ItemContainerStyle>
+                        </ListBox>
+                    </Grid>
                 </Border>
 
                 <!-- Remote Machines Section -->

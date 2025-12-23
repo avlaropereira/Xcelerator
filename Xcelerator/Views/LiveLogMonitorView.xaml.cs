@@ -42,5 +42,30 @@ namespace Xcelerator.Views
             // Mark the event as handled to prevent it from bubbling up
             e.Handled = true;
         }
+
+        private void SearchResult_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            if (e.ChangedButton != MouseButton.Left)
+                return;
+
+            // Get the ViewModel
+            if (DataContext is not LiveLogMonitorViewModel viewModel)
+                return;
+
+            // Get the selected search result
+            var searchResult = viewModel.SelectedSearchResult;
+            if (searchResult == null)
+                return;
+
+            // Execute the navigation command
+            if (viewModel.NavigateToSearchResultCommand.CanExecute(searchResult))
+            {
+                viewModel.NavigateToSearchResultCommand.Execute(searchResult);
+            }
+
+            // Mark the event as handled
+            e.Handled = true;
+        }
     }
 }
+

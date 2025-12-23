@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Text.RegularExpressions;
+using System.Windows;
 using System.Windows.Data;
 using System.Windows.Input;
 using Xcelerator.Models;
@@ -28,9 +29,13 @@ namespace Xcelerator.ViewModels
         private ObservableCollection<RemoteMachineItem> _remoteMachines;
         private RemoteMachineItem? _selectedRemoteMachine;
         private ObservableCollection<ITabViewModel> _openTabs;
+        private ObservableCollection<LogSearchResult> _searchResults;
+        private LogSearchResult? _selectedSearchResult;
+        private bool _isSearching;
 
         public ICommand OpenMachineTabCommand { get; }
         public ICommand CloseTabCommand { get; }
+        public ICommand NavigateToSearchResultCommand { get; }
 
         public LiveLogMonitorViewModel(MainViewModel mainViewModel, DashboardViewModel dashboardViewModel, Cluster? cluster = null, Dictionary<string, string>? tokenData = null)
         {
@@ -41,6 +46,9 @@ namespace Xcelerator.ViewModels
 
             // Initialize open tabs collection
             _openTabs = new ObservableCollection<ITabViewModel>();
+            
+            // Initialize search results collection
+            _searchResults = new ObservableCollection<LogSearchResult>();
 
             // Initialize machine list with sample data
             _allMachines = new ObservableCollection<string>();
@@ -55,6 +63,9 @@ namespace Xcelerator.ViewModels
             
             // Initialize CloseTabCommand
             CloseTabCommand = new RelayCommand<ITabViewModel>(ExecuteCloseTab, CanExecuteCloseTab);
+            
+            // Initialize NavigateToSearchResultCommand
+            NavigateToSearchResultCommand = new RelayCommand<LogSearchResult>(ExecuteNavigateToSearchResult, CanExecuteNavigateToSearchResult);
 
             // Setup filtered collection view
             _filteredMachines = CollectionViewSource.GetDefaultView(_allMachines);
@@ -161,7 +172,8 @@ namespace Xcelerator.ViewModels
             {
                 if (SetProperty(ref _searchText, value))
                 {
-                    RefreshFilter();
+                    // Perform search across all open tabs asynchronously
+                    _ = SearchLogsAsync(value);
                 }
             }
         }
@@ -176,18 +188,49 @@ namespace Xcelerator.ViewModels
             {
                 if (SetProperty(ref _isRegexMode, value))
                 {
-                    RefreshFilter();
+                    // Re-run search with new mode if there's search text
+                    if (!string.IsNullOrWhiteSpace(SearchText))
+                    {
+                        _ = SearchLogsAsync(SearchText);
+                    }
                 }
             }
         }
 
         /// <summary>
-        /// Number of machines matching the filter
+        /// Number of search results matching the filter
         /// </summary>
         public int MatchCount
         {
             get => _matchCount;
             private set => SetProperty(ref _matchCount, value);
+        }
+        
+        /// <summary>
+        /// Collection of search results from all open tabs
+        /// </summary>
+        public ObservableCollection<LogSearchResult> SearchResults
+        {
+            get => _searchResults;
+            private set => SetProperty(ref _searchResults, value);
+        }
+        
+        /// <summary>
+        /// Currently selected search result
+        /// </summary>
+        public LogSearchResult? SelectedSearchResult
+        {
+            get => _selectedSearchResult;
+            set => SetProperty(ref _selectedSearchResult, value);
+        }
+        
+        /// <summary>
+        /// Indicates whether a search operation is in progress
+        /// </summary>
+        public bool IsSearching
+        {
+            get => _isSearching;
+            private set => SetProperty(ref _isSearching, value);
         }
 
         /// <summary>
@@ -419,6 +462,148 @@ namespace Xcelerator.ViewModels
 
         #endregion
 
+        #region Log Search
+
+        /// <summary>
+        /// Searches through all open log tabs for matching entries
+        /// </summary>
+        private async Task SearchLogsAsync(string searchText)
+        {
+            if (string.IsNullOrWhiteSpace(searchText))
+            {
+                // Clear results if search is empty
+                await Application.Current.Dispatcher.InvokeAsync(() =>
+                {
+                    SearchResults.Clear();
+                    MatchCount = 0;
+                    Status = "Ready";
+                });
+                return;
+            }
+
+            IsSearching = true;
+            Status = "Searching...";
+
+            try
+            {
+                // Perform search on background thread
+                var results = await Task.Run(() => PerformLogSearch(searchText));
+
+                // Update UI on UI thread
+                await Application.Current.Dispatcher.InvokeAsync(() =>
+                {
+                    SearchResults.Clear();
+                    foreach (var result in results)
+                    {
+                        SearchResults.Add(result);
+                    }
+                    MatchCount = results.Count;
+                    Status = $"Found {MatchCount:N0} matches across {OpenTabs.Count} tab(s)";
+                });
+            }
+            catch (Exception ex)
+            {
+                await Application.Current.Dispatcher.InvokeAsync(() =>
+                {
+                    Status = $"Search error: {ex.Message}";
+                    SearchResults.Clear();
+                    MatchCount = 0;
+                });
+            }
+            finally
+            {
+                IsSearching = false;
+            }
+        }
+
+        /// <summary>
+        /// Performs the actual log search across all tabs
+        /// </summary>
+        private List<LogSearchResult> PerformLogSearch(string searchText)
+        {
+            var results = new List<LogSearchResult>();
+            
+            // Search through each open tab
+            foreach (var tab in OpenTabs.OfType<LogTabViewModel>())
+            {
+                var tabResults = SearchInTab(tab, searchText);
+                results.AddRange(tabResults);
+            }
+
+            // Sort results by tab name, then line number
+            return results.OrderBy(r => r.TabName).ThenBy(r => r.LineNumber).ToList();
+        }
+
+        /// <summary>
+        /// Searches for matches within a single tab
+        /// </summary>
+        private List<LogSearchResult> SearchInTab(LogTabViewModel tab, string searchText)
+        {
+            var results = new List<LogSearchResult>();
+            
+            if (tab.LogLines == null || tab.LogLines.Count == 0)
+                return results;
+
+            int lineNumber = 0;
+            
+            foreach (var logEntry in tab.LogLines)
+            {
+                lineNumber++;
+                
+                bool isMatch = false;
+                
+                if (IsRegexMode)
+                {
+                    try
+                    {
+                        isMatch = Regex.IsMatch(logEntry, searchText, RegexOptions.IgnoreCase);
+                    }
+                    catch (ArgumentException)
+                    {
+                        // Invalid regex, skip this pattern
+                        continue;
+                    }
+                }
+                else
+                {
+                    isMatch = logEntry.Contains(searchText, StringComparison.OrdinalIgnoreCase);
+                }
+
+                if (isMatch)
+                {
+                    results.Add(new LogSearchResult
+                    {
+                        TabName = tab.HeaderName,
+                        LogEntry = logEntry,
+                        LineNumber = lineNumber,
+                        Preview = CreatePreview(logEntry, 100),
+                        SourceTab = tab
+                    });
+                }
+            }
+
+            return results;
+        }
+
+        /// <summary>
+        /// Creates a shortened preview of a log entry
+        /// </summary>
+        private string CreatePreview(string logEntry, int maxLength)
+        {
+            if (string.IsNullOrEmpty(logEntry))
+                return string.Empty;
+
+            // Remove newlines and extra whitespace for preview
+            var preview = Regex.Replace(logEntry, @"\s+", " ").Trim();
+            
+            if (preview.Length <= maxLength)
+                return preview;
+
+            return preview.Substring(0, maxLength) + "...";
+        }
+
+        #endregion
+
         #region Commands
 
         /// <summary>
@@ -483,7 +668,32 @@ namespace Xcelerator.ViewModels
             // Remove the tab from the collection
             OpenTabs.Remove(tab);
         }
+        
+        /// <summary>
+        /// Determines whether navigation to search result is possible
+        /// </summary>
+        private bool CanExecuteNavigateToSearchResult(LogSearchResult? result)
+        {
+            return result != null && result.SourceTab is LogTabViewModel;
+        }
+
+        /// <summary>
+        /// Navigates to the selected search result
+        /// </summary>
+        private void ExecuteNavigateToSearchResult(LogSearchResult? result)
+        {
+            if (result == null || result.SourceTab is not LogTabViewModel tab)
+                return;
+
+            // Set the selected log line in the tab to show it in the detail panel
+            tab.SelectedLogLine = result.LogEntry;
+            tab.IsDetailPanelVisible = true;
+            
+            // Note: The TabControl will need to select the tab programmatically
+            // This might require additional logic depending on your TabControl setup
+        }
 
         #endregion
     }
 }
+
