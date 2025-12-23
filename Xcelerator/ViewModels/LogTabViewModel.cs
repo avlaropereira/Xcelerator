@@ -20,15 +20,18 @@ namespace Xcelerator.ViewModels
         private string? _localFilePath;
         private string? _selectedLogLine;
         private bool _isDetailPanelVisible;
+        private string? _clusterName; // Track cluster name for log file registration
 
         /// <summary>
         /// Initializes a new instance of the LogTabViewModel class
         /// </summary>
         /// <param name="remoteMachineItem">The remote machine item to display logs for</param>
-        public LogTabViewModel(RemoteMachineItem remoteMachineItem)
+        /// <param name="clusterName">The cluster name for log file tracking (optional)</param>
+        public LogTabViewModel(RemoteMachineItem remoteMachineItem, string? clusterName = null)
         {
             _headerName = remoteMachineItem.DisplayName;
             _remoteMachine = remoteMachineItem;
+            _clusterName = clusterName;
             _logHarvesterService = new LogHarvesterServiceAdvanced();
             _logLines = new ObservableCollection<string>();
             
@@ -63,6 +66,12 @@ namespace Xcelerator.ViewModels
                 {
                     // Store the local file path for cleanup later
                     LocalFilePath = result.LocalFilePath;
+                    
+                    // Register log file with cluster for tracking
+                    if (!string.IsNullOrEmpty(_clusterName))
+                    {
+                        PanelViewModel.RegisterLogFile(_clusterName, result.LocalFilePath);
+                    }
                     
                     // Read file and populate collection in chunks to avoid UI freeze
                     await LoadLogLinesInChunks(result.LocalFilePath, stopwatch);

@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using System.Windows.Input;
 using Xcelerator.Models;
 using Xcelerator.NiceClient.Services.Auth;
@@ -15,6 +16,7 @@ namespace Xcelerator.ViewModels
         private string _selectedModule = string.Empty;
         private Dictionary<string, string> _tokenData;
         private BaseViewModel? _currentModuleViewModel;
+        private readonly HashSet<string> _openModules = new HashSet<string>();
 
         public DashboardViewModel(MainViewModel mainViewModel, PanelViewModel panelViewModel, Cluster? cluster = null)
         {
@@ -22,7 +24,7 @@ namespace Xcelerator.ViewModels
             _panelViewModel = panelViewModel;
             _cluster = cluster;
             
-            SelectModuleCommand = new RelayCommand<string>(SelectModule);
+            SelectModuleCommand = new RelayCommand<string>(SelectModule, CanSelectModule);
 
             // Decode token if cluster is provided
             if (_cluster != null && !string.IsNullOrEmpty(_cluster.AuthToken))
@@ -124,12 +126,35 @@ namespace Xcelerator.ViewModels
         public ICommand SelectModuleCommand { get; }
 
         /// <summary>
+        /// Checks if a module can be selected (not already open)
+        /// </summary>
+        private bool CanSelectModule(string? module)
+        {
+            if (string.IsNullOrEmpty(module))
+                return false;
+
+            // Module can be selected if it's not already in the open modules list
+            return !_openModules.Contains(module);
+        }
+
+        /// <summary>
+        /// Checks if a specific module is already open
+        /// </summary>
+        public bool IsModuleOpen(string moduleName)
+        {
+            return _openModules.Contains(moduleName);
+        }
+
+        /// <summary>
         /// Select a module
         /// </summary>
         private void SelectModule(string? module)
         {
-            if (module != null)
+            if (module != null && !_openModules.Contains(module))
             {
+                // Add module to open modules set
+                _openModules.Add(module);
+                
                 SelectedModule = module;
                 
                 // Store selected module in cluster for persistence
@@ -149,8 +174,42 @@ namespace Xcelerator.ViewModels
                     // Clear module view for other modules (not yet implemented)
                     CurrentModuleViewModel = null;
                 }
+                
+                // Notify that command can execute state has changed for all module buttons
+                RaiseCanExecuteChanged();
+                
                 // Future: Add navigation for other modules
                 // else if (module == "ContactForge") { CurrentModuleViewModel = new ContactForgeViewModel(...); }
+            }
+        }
+
+        /// <summary>
+        /// Closes a module and allows it to be selected again
+        /// </summary>
+        public void CloseModule(string moduleName)
+        {
+            if (_openModules.Remove(moduleName))
+            {
+                // If closing the current module, clear the view
+                if (SelectedModule == moduleName)
+                {
+                    SelectedModule = string.Empty;
+                    CurrentModuleViewModel = null;
+                }
+                
+                // Notify that command can execute state has changed
+                RaiseCanExecuteChanged();
+            }
+        }
+
+        /// <summary>
+        /// Raises CanExecuteChanged for SelectModuleCommand to update UI button states
+        /// </summary>
+        private void RaiseCanExecuteChanged()
+        {
+            if (SelectModuleCommand is RelayCommand<string> relayCommand)
+            {
+                System.Windows.Input.CommandManager.InvalidateRequerySuggested();
             }
         }
     }

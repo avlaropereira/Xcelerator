@@ -36,6 +36,11 @@
                             <Trigger Property="IsPressed" Value="True">
                                 <Setter Property="Background" Value="#FFE0E0E0"/>
                             </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Foreground" Value="#FFAAAAAA"/>
+                                <Setter Property="Background" Value="#FFF5F5F5"/>
+                                <Setter Property="Opacity" Value="0.6"/>
+                            </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
                 </Setter.Value>
@@ -113,6 +118,7 @@
                                 Style="{StaticResource NavigationButtonStyle}"
                                 Command="{Binding SelectModuleCommand}"
                                 CommandParameter="ContactForge"
+                                IsEnabled="False"
                                 FontSize="15"
                                 Padding="15,10"
                                 Margin="0,0,10,0"/>
@@ -120,6 +126,7 @@
                                 Style="{StaticResource NavigationButtonStyle}"
                                 Command="{Binding SelectModuleCommand}"
                                 CommandParameter="ConnectGrid"
+                                IsEnabled="False"
                                 FontSize="15"
                                 Padding="15,10"
                                 Margin="0,0,10,0"/>
@@ -127,6 +134,7 @@
                                 Style="{StaticResource NavigationButtonStyle}"
                                 Command="{Binding SelectModuleCommand}"
                                 CommandParameter="AgentForge"
+                                IsEnabled="False"
                                 FontSize="15"
                                 Padding="15,10"
                                 Margin="0,0,10,0"/>
@@ -134,6 +142,7 @@
                                 Style="{StaticResource NavigationButtonStyle}"
                                 Command="{Binding SelectModuleCommand}"
                                 CommandParameter="PulseOps"
+                                IsEnabled="False"
                                 FontSize="15"
                                 Padding="15,10"/>
                     </StackPanel>

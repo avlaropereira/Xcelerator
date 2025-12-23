@@ -531,8 +531,8 @@ namespace Xcelerator.ViewModels
                 return;
             }
 
-            // Create a new LogTabViewModel with the remote machine's display name
-            var logTab = new LogTabViewModel(remoteMachine)
+            // Create a new LogTabViewModel with the remote machine's display name and cluster name
+            var logTab = new LogTabViewModel(remoteMachine, _cluster?.Name)
             {
                 RemoteMachine = remoteMachine
             };
