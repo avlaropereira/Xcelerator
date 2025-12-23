@@ -46,6 +46,8 @@ namespace Xcelerator.ViewModels
         /// <param name="itemName">The item name (e.g., "VC")</param>
         private async Task LoadLogsAsync(string machineName, string itemName)
         {
+            var stopwatch = System.Diagnostics.Stopwatch.StartNew();
+            
             try
             {
                 IsLoading = true;
@@ -63,7 +65,7 @@ namespace Xcelerator.ViewModels
                     LocalFilePath = result.LocalFilePath;
                     
                     // Read file and populate collection in chunks to avoid UI freeze
-                    await LoadLogLinesInChunks(result.LocalFilePath);
+                    await LoadLogLinesInChunks(result.LocalFilePath, stopwatch);
                 }
                 else
                 {
@@ -104,7 +106,9 @@ namespace Xcelerator.ViewModels
         /// Optimized version: streams file, batches additions, minimizes dispatcher calls
         /// Joins multi-line log entries (lines without timestamps are appended to previous entry)
         /// </summary>
-        private async Task LoadLogLinesInChunks(string filePath)
+        /// <param name="filePath">Path to the log file</param>
+        /// <param name="stopwatch">Stopwatch to track total operation time</param>
+        private async Task LoadLogLinesInChunks(string filePath, System.Diagnostics.Stopwatch stopwatch)
         {
             const int chunkSize = 5000; // Larger chunks for fewer dispatcher calls
             const int bufferSize = 65536; // 64KB buffer for file reading
@@ -181,13 +185,24 @@ namespace Xcelerator.ViewModels
                     var chunk = buffer.ToArray();
                     totalLinesLoaded += chunk.Length;
                     
+                    stopwatch.Stop();
+                    var elapsed = stopwatch.Elapsed;
+                    
                     await Application.Current.Dispatcher.InvokeAsync(() =>
                     {
                         foreach (var l in chunk)
                         {
                             LogLines.Add(l);
                         }
-                        LogContent = $"Loaded {totalLinesLoaded:N0} log entries from {Path.GetFileName(filePath)}";
+                        
+                        // Format elapsed time nicely
+                        string timeDisplay = elapsed.TotalSeconds < 1
+                            ? $"{elapsed.TotalMilliseconds:F0}ms"
+                            : elapsed.TotalMinutes >= 1
+                                ? $"{elapsed.Minutes}m {elapsed.Seconds}s"
+                                : $"{elapsed.TotalSeconds:F1}s";
+                        
+                        LogContent = $"Loaded {totalLinesLoaded:N0} log entries from {Path.GetFileName(filePath)} in {timeDisplay}";
                     }, System.Windows.Threading.DispatcherPriority.Background);
                 }
             });

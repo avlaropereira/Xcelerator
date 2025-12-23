@@ -15,59 +15,13 @@ d:DesignHeight="650" d:DesignWidth="1000">
     </UserControl.Resources>
     
     <Grid Background="White">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
-        </Grid.RowDefinitions>
-        
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="300"/>
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
 
-        <!-- Controls Panel -->
-        <Border Grid.Row="0"
-                Grid.ColumnSpan="2"
-                Background="#FFF5F5F5" 
-                CornerRadius="8"
-                Padding="15"
-                Margin="0,0,0,15">
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
-
-                <TextBlock Grid.Column="0"
-                           Text="Log Monitor Controls"
-                           FontSize="14"
-                           FontWeight="SemiBold"
-                           Foreground="#FF2D2D30"
-                           VerticalAlignment="Center"
-                           Margin="0,0,20,0"/>
-
-                <!-- Status Display -->
-                <StackPanel Grid.Column="1" 
-                            Orientation="Horizontal"
-                            HorizontalAlignment="Left"
-                            VerticalAlignment="Center">
-                    <TextBlock Text="Status: "
-                               FontSize="12"
-                               Foreground="#FF666666"
-                               VerticalAlignment="Center"
-                               Margin="0,0,5,0"/>
-                    <TextBlock Text="{Binding Status}"
-                               FontSize="12"
-                               FontWeight="SemiBold"
-                               Foreground="#FF2D2D30"
-                               VerticalAlignment="Center"/>
-                </StackPanel>
-            </Grid>
-        </Border>
-
         <!-- Machine List Panel (Left Side) -->
-        <Border Grid.Row="1"
+        <Border Grid.Row="0"
                 Grid.Column="0"
                 Background="White"
                 BorderBrush="#FFE0E0E0"
@@ -362,7 +316,7 @@ d:DesignHeight="650" d:DesignWidth="1000">
         </Border>
 
         <!-- Log Display Area with Tabbed Interface -->
-        <Border Grid.Row="1"
+        <Border Grid.Row="0"
                 Grid.Column="1"
                 Background="White" 
                 BorderBrush="#FFE0E0E0" 
