@@ -81,42 +81,115 @@ namespace Xcelerator.ViewModels
         }
 
         /// <summary>
+        /// Checks if a line starts with a timestamp in the format MM/dd/yyyy HH:mm:ss.fff
+        /// </summary>
+        private bool StartsWithTimestamp(string line)
+        {
+            if (string.IsNullOrEmpty(line) || line.Length < 23)
+                return false;
+
+            // Check format: MM/dd/yyyy HH:mm:ss.fff
+            // Positions:    01234567890123456789012
+            return char.IsDigit(line[0]) && char.IsDigit(line[1]) && line[2] == '/' &&
+                   char.IsDigit(line[3]) && char.IsDigit(line[4]) && line[5] == '/' &&
+                   char.IsDigit(line[6]) && char.IsDigit(line[7]) && 
+                   char.IsDigit(line[8]) && char.IsDigit(line[9]) && line[10] == ' ' &&
+                   char.IsDigit(line[11]) && char.IsDigit(line[12]) && line[13] == ':' &&
+                   char.IsDigit(line[14]) && char.IsDigit(line[15]) && line[16] == ':' &&
+                   char.IsDigit(line[17]) && char.IsDigit(line[18]) && line[19] == '.';
+        }
+
+        /// <summary>
         /// Loads log lines in chunks to prevent UI freezing
+        /// Optimized version: streams file, batches additions, minimizes dispatcher calls
+        /// Joins multi-line log entries (lines without timestamps are appended to previous entry)
         /// </summary>
         private async Task LoadLogLinesInChunks(string filePath)
         {
-            const int chunkSize = 1000; // Load 1000 lines at a time
+            const int chunkSize = 5000; // Larger chunks for fewer dispatcher calls
+            const int bufferSize = 65536; // 64KB buffer for file reading
             
+            var buffer = new List<string>(chunkSize);
+            int totalLinesLoaded = 0;
+            string? currentEntry = null;
+            
+            // Stream file line-by-line instead of loading all into memory
             await Task.Run(async () =>
             {
-                var lines = await File.ReadAllLinesAsync(filePath);
+                using var stream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read, bufferSize, useAsync: true);
+                using var reader = new StreamReader(stream);
                 
-                // Process in chunks
-                for (int i = 0; i < lines.Length; i += chunkSize)
+                string? line;
+                while ((line = await reader.ReadLineAsync()) != null)
                 {
-                    var chunk = lines.Skip(i).Take(chunkSize).ToArray();
-                    
-                    // Update UI on UI thread
-                    await Application.Current.Dispatcher.InvokeAsync(() =>
+                    // Check if this line starts a new log entry (has timestamp)
+                    if (StartsWithTimestamp(line))
                     {
-                        foreach (var line in chunk)
+                        // Save the previous complete entry if exists
+                        if (currentEntry != null)
                         {
-                            LogLines.Add(line);
+                            buffer.Add(currentEntry);
                         }
                         
-                        // Update summary content
-                        LogContent = $"Loaded {LogLines.Count:N0} lines...";
-                    }, System.Windows.Threading.DispatcherPriority.Background);
+                        // Start a new entry
+                        currentEntry = line;
+                    }
+                    else
+                    {
+                        // This is a continuation line - append to current entry
+                        if (currentEntry != null)
+                        {
+                            currentEntry += Environment.NewLine + line;
+                        }
+                        else
+                        {
+                            // No current entry yet (file doesn't start with timestamp)
+                            // Start with this line
+                            currentEntry = line;
+                        }
+                    }
                     
-                    // Small delay to let UI breathe
-                    await Task.Delay(1);
+                    // When buffer is full, batch update the UI
+                    if (buffer.Count >= chunkSize)
+                    {
+                        var chunk = buffer.ToArray();
+                        buffer.Clear();
+                        totalLinesLoaded += chunk.Length;
+                        
+                        // Single dispatcher call per chunk with batch addition
+                        await Application.Current.Dispatcher.InvokeAsync(() =>
+                        {
+                            // Temporarily disable collection change notifications for performance
+                            foreach (var l in chunk)
+                            {
+                                LogLines.Add(l);
+                            }
+                            LogContent = $"Loaded {totalLinesLoaded:N0} entries...";
+                        }, System.Windows.Threading.DispatcherPriority.Background);
+                    }
                 }
                 
-                // Final update
-                await Application.Current.Dispatcher.InvokeAsync(() =>
+                // Don't forget the last entry
+                if (currentEntry != null)
                 {
-                    LogContent = $"Loaded {LogLines.Count:N0} log lines from {Path.GetFileName(filePath)}";
-                });
+                    buffer.Add(currentEntry);
+                }
+                
+                // Process remaining lines
+                if (buffer.Count > 0)
+                {
+                    var chunk = buffer.ToArray();
+                    totalLinesLoaded += chunk.Length;
+                    
+                    await Application.Current.Dispatcher.InvokeAsync(() =>
+                    {
+                        foreach (var l in chunk)
+                        {
+                            LogLines.Add(l);
+                        }
+                        LogContent = $"Loaded {totalLinesLoaded:N0} log entries from {Path.GetFileName(filePath)}";
+                    }, System.Windows.Threading.DispatcherPriority.Background);
+                }
             });
         }
 

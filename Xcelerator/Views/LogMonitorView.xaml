@@ -10,6 +10,7 @@
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="200" MinHeight="100"/>
         </Grid.RowDefinitions>
         
         <!-- Status Bar -->
@@ -43,7 +44,7 @@
                             </EventTrigger>
                         </TextBlock.Triggers>
                     </TextBlock>
-                    <TextBlock Text="Loading..." FontSize="12" Foreground="#FF666666" VerticalAlignment="Center"/>
+                    <TextBlock FontSize="12" Foreground="#FF666666" VerticalAlignment="Center"/>
                 </StackPanel>
                 
                 <!-- Status Text -->
@@ -126,8 +127,19 @@
             </TextBlock.Style>
         </TextBlock>
         
+        <!-- GridSplitter for resizing detail panel -->
+        <GridSplitter Grid.Row="2"
+                      Height="5"
+                      HorizontalAlignment="Stretch"
+                      VerticalAlignment="Center"
+                      Background="Transparent"
+                      Cursor="SizeNS"
+                      Visibility="{Binding IsDetailPanelVisible, Converter={StaticResource BooleanToVisibilityConverter}}"
+                      ResizeBehavior="PreviousAndNext"
+                      ResizeDirection="Rows"/>
+        
         <!-- Detail Panel -->
-        <Border Grid.Row="2"
+        <Border Grid.Row="3"
                 Background="#FFF8F9FA"
                 BorderBrush="#FF0078D4"
                 BorderThickness="0,2,0,0"
@@ -136,7 +148,7 @@
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
                 
                 <!-- Header -->
@@ -204,13 +216,13 @@
                     </Button>
                 </Grid>
                 
+                
                 <!-- Content Area with ScrollViewer -->
                 <Border Grid.Row="1"
                         Background="White"
                         BorderBrush="#FFE0E0E0"
                         BorderThickness="1"
-                        CornerRadius="4"
-                        MaxHeight="200">
+                        CornerRadius="4">
                     <ScrollViewer HorizontalScrollBarVisibility="Disabled"
                                   VerticalScrollBarVisibility="Auto">
                         <TextBlock Text="{Binding SelectedLogLine}"
