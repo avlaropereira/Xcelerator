@@ -1,10 +1,13 @@
 ﻿using System.Collections.Concurrent;
+using System.IO.MemoryMappedFiles;
 using Xcelerator.LogEngine.Models;
 
 namespace Xcelerator.LogEngine.Services
 {
     public class LogHarvesterService
     {
+        // Optimized buffer size for network transfers (8MB instead of 1MB)
+        private const int NetworkBufferSize = 8 * 1024 * 1024; // 8MB
 
         /// <summary>
         /// Downloads logs from a single machine and item, and returns the local file path of the downloaded log file.
@@ -56,9 +59,11 @@ namespace Xcelerator.LogEngine.Services
                     return result;
                 }
 
-                // 3. Copy to Temp (Optimized with Async I/O)
+                // 3. Copy to Temp (Optimized with larger buffer and async I/O)
                 string localFilePath = Path.Combine(tempFolder, recentFile.Name);
-                await CopyFileAsync(recentFile.FullName, localFilePath);
+                
+                // Use optimized copy method
+                await CopyFileOptimizedAsync(recentFile.FullName, localFilePath);
 
                 // 4. Set the local file path with the original remote file name appended
                 result.LocalFilePath = $"{localFilePath}";
@@ -81,27 +86,34 @@ namespace Xcelerator.LogEngine.Services
             return result;
         }
 
-        private async Task CopyFileAsync(string source, string destination)
+        /// <summary>
+        /// Optimized file copy with larger buffer and sequential scan hints
+        /// </summary>
+        private async Task CopyFileOptimizedAsync(string source, string destination)
         {
-            const int bufferSize = 1024 * 1024; // 1 MB buffer for better performance on large files
-            
             using (FileStream sourceStream = new FileStream(
                 source, 
                 FileMode.Open, 
                 FileAccess.Read, 
                 FileShare.ReadWrite,
-                bufferSize,
-                useAsync: true))
+                NetworkBufferSize,
+                FileOptions.Asynchronous | FileOptions.SequentialScan))
             using (FileStream destStream = new FileStream(
                 destination,
                 FileMode.Create,
                 FileAccess.Write,
                 FileShare.None,
-                bufferSize,
-                useAsync: true))
+                NetworkBufferSize,
+                FileOptions.Asynchronous | FileOptions.SequentialScan))
             {
-                await sourceStream.CopyToAsync(destStream, bufferSize);
+                await sourceStream.CopyToAsync(destStream, NetworkBufferSize);
             }
+        }
+
+        private async Task CopyFileAsync(string source, string destination)
+        {
+            // Legacy method - redirects to optimized version
+            await CopyFileOptimizedAsync(source, destination);
         }
     }
 }

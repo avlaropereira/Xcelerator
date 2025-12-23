@@ -14,7 +14,7 @@ namespace Xcelerator.ViewModels
         private string _headerName;
         private RemoteMachineItem? _remoteMachine;
         private string _logContent = string.Empty;
-        private readonly LogHarvesterService _logHarvesterService;
+        private readonly LogHarvesterServiceAdvanced _logHarvesterService;
         private ObservableCollection<string> _logLines;
         private bool _isLoading;
         private string? _localFilePath;
@@ -29,7 +29,7 @@ namespace Xcelerator.ViewModels
         {
             _headerName = remoteMachineItem.DisplayName;
             _remoteMachine = remoteMachineItem;
-            _logHarvesterService = new LogHarvesterService();
+            _logHarvesterService = new LogHarvesterServiceAdvanced();
             _logLines = new ObservableCollection<string>();
             
             // Parse machine name and item from the remote machine item name
