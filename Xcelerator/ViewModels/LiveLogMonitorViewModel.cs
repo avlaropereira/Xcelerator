@@ -22,6 +22,7 @@ namespace Xcelerator.ViewModels
         private bool _hasLogs = false;
         private string _searchText = string.Empty;
         private bool _isRegexMode = false;
+        private bool _isCaseSensitive = false;
         private int _matchCount = 0;
         private ObservableCollection<RemoteMachineItem> _remoteMachines;
         private RemoteMachineItem? _selectedRemoteMachine;
@@ -34,6 +35,7 @@ namespace Xcelerator.ViewModels
         public ICommand OpenMachineTabCommand { get; }
         public ICommand CloseTabCommand { get; }
         public ICommand NavigateToSearchResultCommand { get; }
+        public ICommand SearchCommand { get; }
 
         public LiveLogMonitorViewModel(MainViewModel mainViewModel, DashboardViewModel dashboardViewModel, Cluster? cluster = null, Dictionary<string, string>? tokenData = null)
         {
@@ -60,6 +62,9 @@ namespace Xcelerator.ViewModels
             
             // Initialize NavigateToSearchResultCommand
             NavigateToSearchResultCommand = new RelayCommand<LogSearchResult>(ExecuteNavigateToSearchResult, CanExecuteNavigateToSearchResult);
+            
+            // Initialize SearchCommand (triggered by Enter key)
+            SearchCommand = new RelayCommand(ExecuteSearch, CanExecuteSearch);
 
             // Set initial status
             Status = "Ready";
@@ -154,14 +159,7 @@ namespace Xcelerator.ViewModels
         public string SearchText
         {
             get => _searchText;
-            set
-            {
-                if (SetProperty(ref _searchText, value))
-                {
-                    // Perform search across all open tabs asynchronously
-                    _ = SearchLogsAsync(value);
-                }
-            }
+            set => SetProperty(ref _searchText, value); // Remove automatic search
         }
 
         /// <summary>
@@ -170,17 +168,16 @@ namespace Xcelerator.ViewModels
         public bool IsRegexMode
         {
             get => _isRegexMode;
-            set
-            {
-                if (SetProperty(ref _isRegexMode, value))
-                {
-                    // Re-run search with new mode if there's search text
-                    if (!string.IsNullOrWhiteSpace(SearchText))
-                    {
-                        _ = SearchLogsAsync(SearchText);
-                    }
-                }
-            }
+            set => SetProperty(ref _isRegexMode, value);
+        }
+        
+        /// <summary>
+        /// Whether case sensitive search is enabled
+        /// </summary>
+        public bool IsCaseSensitive
+        {
+            get => _isCaseSensitive;
+            set => SetProperty(ref _isCaseSensitive, value);
         }
 
         /// <summary>
@@ -454,7 +451,8 @@ namespace Xcelerator.ViewModels
                 {
                     try
                     {
-                        isMatch = Regex.IsMatch(logEntry, searchText, RegexOptions.IgnoreCase);
+                        var regexOptions = IsCaseSensitive ? RegexOptions.None : RegexOptions.IgnoreCase;
+                        isMatch = Regex.IsMatch(logEntry, searchText, regexOptions);
                     }
                     catch (ArgumentException)
                     {
@@ -464,7 +462,9 @@ namespace Xcelerator.ViewModels
                 }
                 else
                 {
-                    isMatch = logEntry.Contains(searchText, StringComparison.OrdinalIgnoreCase);
+                    // Contains match with case sensitivity option
+                    var comparison = IsCaseSensitive ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase;
+                    isMatch = logEntry.Contains(searchText, comparison);
                 }
 
                 if (isMatch)
@@ -596,9 +596,29 @@ namespace Xcelerator.ViewModels
                 SelectedTabIndex = tabIndex;
             }
         }
+        
+        /// <summary>
+        /// Determines whether search can be executed
+        /// </summary>
+        private bool CanExecuteSearch()
+        {
+            return !string.IsNullOrWhiteSpace(SearchText) && !IsSearching;
+        }
+        
+        /// <summary>
+        /// Executes the search (triggered by Enter key)
+        /// </summary>
+        private void ExecuteSearch()
+        {
+            if (!string.IsNullOrWhiteSpace(SearchText))
+            {
+                _ = SearchLogsAsync(SearchText);
+            }
+        }
 
         #endregion
     }
 }
+
 
 

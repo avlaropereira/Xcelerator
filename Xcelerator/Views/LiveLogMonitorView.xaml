@@ -77,14 +77,20 @@ d:DesignHeight="650" d:DesignWidth="1000">
                                  VerticalAlignment="Center"
                                  Padding="0,8"
                                  FontSize="12"
-                                 Foreground="#FF2D2D30"/>
+                                 Foreground="#FF2D2D30">
+                            <TextBox.InputBindings>
+                                <KeyBinding Key="Enter" Command="{Binding SearchCommand}"/>
+                            </TextBox.InputBindings>
+                        </TextBox>
                     </Grid>
                 </Border>
 
-                <!-- Regex Toggle and Match Count -->
+                <!-- Search Options and Match Count -->
                 <Grid Grid.Row="2"
                       Margin="0,0,0,10">
                     <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
@@ -92,13 +98,23 @@ d:DesignHeight="650" d:DesignWidth="1000">
                     <!-- Regex Toggle -->
                     <CheckBox Grid.Column="0"
                               IsChecked="{Binding IsRegexMode}"
-                              Content="Regex Mode"
+                              IsEnabled="False"
+                              Content="Regex"
+                              FontSize="11"
+                              Foreground="#FF666666"
+                              VerticalAlignment="Center"
+                              Margin="0,0,15,0"/>
+                    
+                    <!-- Case Sensitive Toggle -->
+                    <CheckBox Grid.Column="1"
+                              IsChecked="{Binding IsCaseSensitive}"
+                              Content="Case Sensitive"
                               FontSize="11"
                               Foreground="#FF666666"
                               VerticalAlignment="Center"/>
                     
                     <!-- Match Count -->
-                    <TextBlock Grid.Column="1"
+                    <TextBlock Grid.Column="3"
                                FontSize="11"
                                Foreground="#FF0078D4"
                                FontWeight="SemiBold"
