@@ -336,6 +336,22 @@ namespace Xcelerator.ViewModels
             remoteMachines.Add("FSDrivePublisher", "FileServerSetUp");
             remoteMachines.Add("DroneLetter", "DroveSvc");
             remoteMachines.Add("DBCWS", "Not Available");
+            // API machines
+            remoteMachines.Add("L7Healthcheck", "Not Available");
+            remoteMachines.Add("DroneService", "Not Available");
+            remoteMachines.Add("APIWebsite", "API");
+            remoteMachines.Add("AutoSite", "Not Available");
+            //remoteMachines.Add("DBCWS", "DBCWS");
+            // WEB machines
+            remoteMachines.Add("Agent", "Agent");
+            remoteMachines.Add("AuthenticationServer", "AuthorizationServer");
+            remoteMachines.Add("CacheSite", "CacheSite");
+            remoteMachines.Add("inContact", "inContact");
+            remoteMachines.Add("inControl", "inControl");
+            remoteMachines.Add("ReportService", "ReportService");
+            remoteMachines.Add("Security", "Not Available");
+            remoteMachines.Add("WebScripting", "WebScripting");
+            //remoteMachines.Add("DBCWS", "DBCWS");
 
             string itemAbbreviation = remoteMachines.TryGetValue(itemName, out var abbr) ? abbr : itemName;
             return (machineName, itemAbbreviation);
