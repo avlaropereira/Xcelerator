@@ -4,6 +4,7 @@ xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
 xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
 xmlns:local="clr-namespace:Xcelerator.Views"
+xmlns:models="clr-namespace:Xcelerator.Models"
 xmlns:viewmodels="clr-namespace:Xcelerator.ViewModels"
 xmlns:converters="clr-namespace:Xcelerator.Converters"
 xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
@@ -148,19 +149,163 @@ d:DesignHeight="650" d:DesignWidth="1000">
                                    HorizontalAlignment="Center"
                                    VerticalAlignment="Center"
                                    Margin="20"
-                                   Visibility="{Binding SearchResults.Count, Converter={StaticResource CountToVisibilityInvertedConverter}}"/>
+                                   Visibility="{Binding SearchResultGroups.Count, Converter={StaticResource CountToVisibilityInvertedConverter}}"/>
                         
-                        <!-- Search Results ListBox -->
-                        <ListBox ItemsSource="{Binding SearchResults}"
-                                 SelectedItem="{Binding SelectedSearchResult}"
-                                 BorderThickness="0"
-                                 Background="Transparent"
-                                 ScrollViewer.HorizontalScrollBarVisibility="Disabled"
-                                 Visibility="{Binding SearchResults.Count, Converter={StaticResource CountToVisibilityConverter}}">
-                            <ListBox.ItemTemplate>
-                                <DataTemplate>
+                        <!-- Search Results TreeView (Hierarchical by Tab) -->
+                        <TreeView ItemsSource="{Binding SearchResultGroups}"
+                                  BorderThickness="0"
+                                  Background="Transparent"
+                                  ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                                  VirtualizingPanel.IsVirtualizing="True"
+                                  VirtualizingPanel.VirtualizationMode="Recycling"
+                                  VirtualizingPanel.ScrollUnit="Pixel"
+                                  Visibility="{Binding SearchResultGroups.Count, Converter={StaticResource CountToVisibilityConverter}}">
+                            <TreeView.Resources>
+                                <!-- Style for TreeViewItem -->
+                                <Style TargetType="TreeViewItem">
+                                    <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}"/>
+                                    <Setter Property="Padding" Value="0"/>
+                                    <Setter Property="Margin" Value="0"/>
+                                    <Setter Property="Foreground" Value="#FF2D2D30"/>
+                                    <EventSetter Event="MouseDoubleClick" Handler="SearchResult_MouseDoubleClick"/>
+                                    <Setter Property="Template">
+                                        <Setter.Value>
+                                            <ControlTemplate TargetType="TreeViewItem">
+                                                <Grid>
+                                                    <Grid.RowDefinitions>
+                                                        <RowDefinition Height="Auto"/>
+                                                        <RowDefinition Height="*"/>
+                                                    </Grid.RowDefinitions>
+                                                    
+                                                    <!-- Item Content -->
+                                                    <Border x:Name="ItemBorder"
+                                                            Grid.Row="0"
+                                                            Background="Transparent"
+                                                            Padding="8,6"
+                                                            Margin="0,1"
+                                                            CornerRadius="2">
+                                                        <ContentPresenter x:Name="PART_Header"
+                                                                          ContentSource="Header"
+                                                                          HorizontalAlignment="Left"/>
+                                                    </Border>
+                                                    
+                                                    <!-- Children Container -->
+                                                    <ItemsPresenter x:Name="ItemsHost"
+                                                                   Grid.Row="1"
+                                                                   Margin="16,0,0,0"
+                                                                   Visibility="Collapsed"/>
+                                                </Grid>
+                                                
+                                                <ControlTemplate.Triggers>
+                                                    <Trigger Property="IsExpanded" Value="True">
+                                                        <Setter TargetName="ItemsHost" Property="Visibility" Value="Visible"/>
+                                                    </Trigger>
+                                                    <Trigger Property="IsSelected" Value="True">
+                                                        <Setter TargetName="ItemBorder" Property="Background" Value="#FFE3F2FD"/>
+                                                    </Trigger>
+                                                    <Trigger Property="IsMouseOver" Value="True">
+                                                        <Setter TargetName="ItemBorder" Property="Background" Value="#FFF5F5F5"/>
+                                                    </Trigger>
+                                                </ControlTemplate.Triggers>
+                                            </ControlTemplate>
+                                        </Setter.Value>
+                                    </Setter>
+                                </Style>
+                                
+                                <!-- Data template for group header (Tab Name) -->
+                                <HierarchicalDataTemplate DataType="{x:Type models:LogSearchResultGroup}" ItemsSource="{Binding Results}">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        
+                                        <!-- Expander Icon (Clickable) -->
+                                        <Button Grid.Column="0"
+                                                Width="20"
+                                                Height="20"
+                                                Padding="0"
+                                                Background="Transparent"
+                                                BorderThickness="0"
+                                                Cursor="Hand"
+                                                VerticalAlignment="Center"
+                                                Margin="0,0,6,0"
+                                                Click="ToggleGroupExpansion_Click">
+                                            <materialDesign:PackIcon Width="14"
+                                                                     Height="14"
+                                                                     Foreground="#FF0078D4">
+                                                <materialDesign:PackIcon.Style>
+                                                    <Style TargetType="materialDesign:PackIcon">
+                                                        <Setter Property="Kind" Value="ChevronRight"/>
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding IsExpanded}" Value="True">
+                                                                <Setter Property="Kind" Value="ChevronDown"/>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </materialDesign:PackIcon.Style>
+                                            </materialDesign:PackIcon>
+                                        </Button>
+                                        
+                                        <!-- Tab Name and Match Count (Double-click to toggle) -->
+                                        <TextBlock Grid.Column="1"
+                                                   Text="{Binding DisplayText}"
+                                                   FontSize="12"
+                                                   FontWeight="SemiBold"
+                                                   Foreground="#FF0078D4"
+                                                   VerticalAlignment="Center"
+                                                   Cursor="Hand"
+                                                   MouseLeftButtonDown="GroupHeader_MouseLeftButtonDown"/>
+                                        
+                                        <!-- Collapse All Button -->
+                                        <Button Grid.Column="2"
+                                                Content="Collapse"
+                                                FontSize="10"
+                                                Padding="4,2"
+                                                Margin="8,0,0,0"
+                                                Background="Transparent"
+                                                BorderBrush="#FF0078D4"
+                                                BorderThickness="1"
+                                                Foreground="#FF0078D4"
+                                                Cursor="Hand"
+                                                VerticalAlignment="Center"
+                                                Click="CollapseGroup_Click"
+                                                Visibility="{Binding IsExpanded, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                            <Button.Style>
+                                                <Style TargetType="Button">
+                                                    <Setter Property="Template">
+                                                        <Setter.Value>
+                                                            <ControlTemplate TargetType="Button">
+                                                                <Border Background="{TemplateBinding Background}"
+                                                                        BorderBrush="{TemplateBinding BorderBrush}"
+                                                                        BorderThickness="{TemplateBinding BorderThickness}"
+                                                                        CornerRadius="2"
+                                                                        Padding="{TemplateBinding Padding}">
+                                                                    <ContentPresenter HorizontalAlignment="Center"
+                                                                                      VerticalAlignment="Center"/>
+                                                                </Border>
+                                                                <ControlTemplate.Triggers>
+                                                                    <Trigger Property="IsMouseOver" Value="True">
+                                                                        <Setter Property="Background" Value="#FFE3F2FD"/>
+                                                                    </Trigger>
+                                                                    <Trigger Property="IsPressed" Value="True">
+                                                                        <Setter Property="Background" Value="#FFBBDEFB"/>
+                                                                    </Trigger>
+                                                                </ControlTemplate.Triggers>
+                                                            </ControlTemplate>
+                                                        </Setter.Value>
+                                                    </Setter>
+                                                </Style>
+                                            </Button.Style>
+                                        </Button>
+                                    </Grid>
+                                </HierarchicalDataTemplate>
+                                
+                                <!-- Data template for individual search result (leaf) -->
+                                <DataTemplate DataType="{x:Type models:LogSearchResult}">
                                     <Border Background="Transparent"
-                                            Padding="8,6"
+                                            Padding="4,4"
                                             Margin="0,1">
                                         <Grid>
                                             <Grid.RowDefinitions>
@@ -168,24 +313,11 @@ d:DesignHeight="650" d:DesignWidth="1000">
                                                 <RowDefinition Height="Auto"/>
                                             </Grid.RowDefinitions>
                                             
-                                            <!-- Tab Name and Line Number -->
+                                            <!-- Line Number -->
                                             <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,2">
-                                                <TextBlock Text="["
+                                                <TextBlock Text="Line "
                                                            FontSize="10"
-                                                           FontWeight="SemiBold"
-                                                           Foreground="#FF0078D4"/>
-                                                <TextBlock Text="{Binding TabName}"
-                                                           FontSize="10"
-                                                           FontWeight="SemiBold"
-                                                           Foreground="#FF0078D4"/>
-                                                <TextBlock Text="]"
-                                                           FontSize="10"
-                                                           FontWeight="SemiBold"
-                                                           Foreground="#FF0078D4"/>
-                                                <TextBlock Text=" Line "
-                                                           FontSize="10"
-                                                           Foreground="#FF666666"
-                                                           Margin="4,0,0,0"/>
+                                                           Foreground="#FF666666"/>
                                                 <TextBlock Text="{Binding LineNumber}"
                                                            FontSize="10"
                                                            FontWeight="SemiBold"
@@ -203,25 +335,8 @@ d:DesignHeight="650" d:DesignWidth="1000">
                                         </Grid>
                                     </Border>
                                 </DataTemplate>
-                            </ListBox.ItemTemplate>
-                            <ListBox.ItemContainerStyle>
-                                <Style TargetType="ListBoxItem">
-                                    <Setter Property="Padding" Value="0"/>
-                                    <Setter Property="Margin" Value="0"/>
-                                    <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
-                                    <EventSetter Event="MouseDoubleClick" Handler="SearchResult_MouseDoubleClick"/>
-                                    <Style.Triggers>
-                                        <Trigger Property="IsSelected" Value="True">
-                                            <Setter Property="Background" Value="#FFE3F2FD"/>
-                                            <Setter Property="Foreground" Value="#FF2D2D30"/>
-                                        </Trigger>
-                                        <Trigger Property="IsMouseOver" Value="True">
-                                            <Setter Property="Background" Value="#FFF0F0F0"/>
-                                        </Trigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </ListBox.ItemContainerStyle>
-                        </ListBox>
+                            </TreeView.Resources>
+                        </TreeView>
                     </Grid>
                 </Border>
 

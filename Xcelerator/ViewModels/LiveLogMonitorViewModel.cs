@@ -27,10 +27,11 @@ namespace Xcelerator.ViewModels
         private ObservableCollection<RemoteMachineItem> _remoteMachines;
         private RemoteMachineItem? _selectedRemoteMachine;
         private ObservableCollection<ITabViewModel> _openTabs;
-        private ObservableCollection<LogSearchResult> _searchResults;
+        private ObservableCollection<LogSearchResultGroup> _searchResultGroups;
         private LogSearchResult? _selectedSearchResult;
         private bool _isSearching;
         private int _selectedTabIndex;
+        private CancellationTokenSource? _searchCancellation;
 
         public ICommand OpenMachineTabCommand { get; }
         public ICommand CloseTabCommand { get; }
@@ -47,8 +48,8 @@ namespace Xcelerator.ViewModels
             // Initialize open tabs collection
             _openTabs = new ObservableCollection<ITabViewModel>();
             
-            // Initialize search results collection
-            _searchResults = new ObservableCollection<LogSearchResult>();
+            // Initialize search result groups collection (hierarchical by tab)
+            _searchResultGroups = new ObservableCollection<LogSearchResultGroup>();
 
             // Initialize remote machines dynamically based on cluster name
             _remoteMachines = new ObservableCollection<RemoteMachineItem>();
@@ -190,12 +191,12 @@ namespace Xcelerator.ViewModels
         }
         
         /// <summary>
-        /// Collection of search results from all open tabs
+        /// Collection of grouped search results from all open tabs (hierarchical by tab)
         /// </summary>
-        public ObservableCollection<LogSearchResult> SearchResults
+        public ObservableCollection<LogSearchResultGroup> SearchResultGroups
         {
-            get => _searchResults;
-            private set => SetProperty(ref _searchResults, value);
+            get => _searchResultGroups;
+            private set => SetProperty(ref _searchResultGroups, value);
         }
         
         /// <summary>
@@ -360,40 +361,80 @@ namespace Xcelerator.ViewModels
         #region Log Search
 
         /// <summary>
-        /// Searches through all open log tabs for matching entries
+        /// Searches through all open log tabs for matching entries with parallel processing and cancellation support
         /// </summary>
         private async Task SearchLogsAsync(string searchText)
         {
             if (string.IsNullOrWhiteSpace(searchText))
             {
+                // Cancel any ongoing search
+                _searchCancellation?.Cancel();
+                _searchCancellation = null;
+                
                 // Clear results if search is empty
                 await Application.Current.Dispatcher.InvokeAsync(() =>
                 {
-                    SearchResults.Clear();
+                    SearchResultGroups.Clear();
                     MatchCount = 0;
                     Status = "Ready";
                 });
                 return;
             }
 
+            // Cancel previous search if still running
+            _searchCancellation?.Cancel();
+            _searchCancellation = new CancellationTokenSource();
+            var cancellationToken = _searchCancellation.Token;
+
             IsSearching = true;
             Status = "Searching...";
 
             try
             {
-                // Perform search on background thread
-                var results = await Task.Run(() => PerformLogSearch(searchText));
-
-                // Update UI on UI thread
+                // Clear previous results immediately
                 await Application.Current.Dispatcher.InvokeAsync(() =>
                 {
-                    SearchResults.Clear();
-                    foreach (var result in results)
+                    SearchResultGroups.Clear();
+                    MatchCount = 0;
+                });
+
+                // Perform search on background thread with parallel processing
+                var resultGroups = await Task.Run(() => PerformLogSearchParallel(searchText, cancellationToken), cancellationToken);
+
+                // Check if cancelled before updating UI
+                if (!cancellationToken.IsCancellationRequested)
+                {
+                    // Calculate total matches on background thread
+                    int totalMatches = resultGroups.Sum(g => g.ResultCount);
+                    bool hasLimitedResults = resultGroups.Any(g => g.ResultCount >= 5000);
+                    
+                    // Update UI on UI thread with batched operations
+                    await Application.Current.Dispatcher.InvokeAsync(() =>
                     {
-                        SearchResults.Add(result);
-                    }
-                    MatchCount = results.Count;
-                    Status = $"Found {MatchCount:N0} matches across {OpenTabs.Count} tab(s)";
+                        // Use batched add to minimize UI updates
+                        foreach (var group in resultGroups)
+                        {
+                            SearchResultGroups.Add(group);
+                        }
+                        MatchCount = totalMatches;
+                        
+                        if (hasLimitedResults)
+                        {
+                            Status = $"Found {MatchCount:N0}+ matches across {resultGroups.Count} tab(s) (some tabs limited to 5000 results)";
+                        }
+                        else
+                        {
+                            Status = $"Found {MatchCount:N0} matches across {resultGroups.Count} tab(s)";
+                        }
+                    }, System.Windows.Threading.DispatcherPriority.Background);
+                }
+            }
+            catch (OperationCanceledException)
+            {
+                // Search was cancelled, this is expected
+                await Application.Current.Dispatcher.InvokeAsync(() =>
+                {
+                    Status = "Search cancelled";
                 });
             }
             catch (Exception ex)
@@ -401,7 +442,7 @@ namespace Xcelerator.ViewModels
                 await Application.Current.Dispatcher.InvokeAsync(() =>
                 {
                     Status = $"Search error: {ex.Message}";
-                    SearchResults.Clear();
+                    SearchResultGroups.Clear();
                     MatchCount = 0;
                 });
             }
@@ -412,7 +453,51 @@ namespace Xcelerator.ViewModels
         }
 
         /// <summary>
-        /// Performs the actual log search across all tabs
+        /// Performs parallel log search across all tabs and groups results by tab
+        /// </summary>
+        private List<LogSearchResultGroup> PerformLogSearchParallel(string searchText, CancellationToken cancellationToken)
+        {
+            var tabs = OpenTabs.OfType<LogTabViewModel>().ToList();
+            
+            // Use Parallel.ForEach for concurrent processing of tabs
+            var groupsBag = new System.Collections.Concurrent.ConcurrentBag<LogSearchResultGroup>();
+            
+            Parallel.ForEach(tabs, new ParallelOptions 
+            { 
+                MaxDegreeOfParallelism = Environment.ProcessorCount,
+                CancellationToken = cancellationToken
+            }, tab =>
+            {
+                // Check for cancellation
+                cancellationToken.ThrowIfCancellationRequested();
+                
+                var tabResults = SearchInTabOptimized(tab, searchText, cancellationToken);
+                
+                // Only create a group if there are results
+                if (tabResults.Count > 0)
+                {
+                    var group = new LogSearchResultGroup
+                    {
+                        TabName = tab.HeaderName,
+                        IsExpanded = true
+                    };
+                    
+                    // Add results already sorted by line number
+                    foreach (var result in tabResults)
+                    {
+                        group.Results.Add(result);
+                    }
+                    
+                    groupsBag.Add(group);
+                }
+            });
+
+            // Sort groups by tab name and return
+            return groupsBag.OrderBy(g => g.TabName).ToList();
+        }
+
+        /// <summary>
+        /// Performs the actual log search across all tabs (legacy sequential method kept for compatibility)
         /// </summary>
         private List<LogSearchResult> PerformLogSearch(string searchText)
         {
@@ -477,6 +562,82 @@ namespace Xcelerator.ViewModels
                         Preview = CreatePreview(logEntry, 100),
                         SourceTab = tab
                     });
+                }
+            }
+
+            return results;
+        }
+
+        /// <summary>
+        /// Optimized search for matches within a single tab with cancellation support and compiled regex
+        /// </summary>
+        private List<LogSearchResult> SearchInTabOptimized(LogTabViewModel tab, string searchText, CancellationToken cancellationToken)
+        {
+            var results = new List<LogSearchResult>();
+            
+            if (tab.LogLines == null || tab.LogLines.Count == 0)
+                return results;
+
+            // Limit results per tab to prevent UI overload
+            const int maxResultsPerTab = 5000;
+
+            // Pre-compile regex if in regex mode for better performance
+            Regex? regex = null;
+            if (IsRegexMode)
+            {
+                try
+                {
+                    var regexOptions = IsCaseSensitive ? RegexOptions.Compiled : RegexOptions.Compiled | RegexOptions.IgnoreCase;
+                    regex = new Regex(searchText, regexOptions);
+                }
+                catch (ArgumentException)
+                {
+                    // Invalid regex, return empty results
+                    return results;
+                }
+            }
+            
+            var comparison = IsCaseSensitive ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase;
+            int lineNumber = 0;
+            const int batchCheckSize = 1000; // Check for cancellation every 1000 lines
+            
+            foreach (var logEntry in tab.LogLines)
+            {
+                lineNumber++;
+                
+                // Check for cancellation periodically to avoid overhead
+                if (lineNumber % batchCheckSize == 0)
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
+                }
+                
+                bool isMatch = false;
+                
+                if (regex != null)
+                {
+                    isMatch = regex.IsMatch(logEntry);
+                }
+                else
+                {
+                    isMatch = logEntry.Contains(searchText, comparison);
+                }
+
+                if (isMatch)
+                {
+                    results.Add(new LogSearchResult
+                    {
+                        TabName = tab.HeaderName,
+                        LogEntry = logEntry,
+                        LineNumber = lineNumber,
+                        Preview = CreatePreview(logEntry, 100),
+                        SourceTab = tab
+                    });
+                    
+                    // Stop if we've hit the limit to prevent UI freezing
+                    if (results.Count >= maxResultsPerTab)
+                    {
+                        break;
+                    }
                 }
             }
 

@@ -48,13 +48,16 @@ namespace Xcelerator.Views
             if (e.ChangedButton != MouseButton.Left)
                 return;
 
-            // Get the ViewModel
-            if (DataContext is not LiveLogMonitorViewModel viewModel)
+            // Get the TreeViewItem that was double-clicked
+            if (sender is not TreeViewItem treeViewItem)
                 return;
 
-            // Get the selected search result
-            var searchResult = viewModel.SelectedSearchResult;
-            if (searchResult == null)
+            // Only handle double-click for leaf items (LogSearchResult), not group headers
+            if (treeViewItem.DataContext is not LogSearchResult searchResult)
+                return;
+
+            // Get the ViewModel
+            if (DataContext is not LiveLogMonitorViewModel viewModel)
                 return;
 
             // Execute the navigation command
@@ -66,6 +69,42 @@ namespace Xcelerator.Views
             // Mark the event as handled
             e.Handled = true;
         }
+
+        /// <summary>
+        /// Handles the collapse button click to collapse a specific group
+        /// </summary>
+        private void CollapseGroup_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button button && button.DataContext is LogSearchResultGroup group)
+            {
+                group.IsExpanded = false;
+            }
+        }
+
+        /// <summary>
+        /// Handles the chevron icon click to toggle group expansion
+        /// </summary>
+        private void ToggleGroupExpansion_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button button && button.DataContext is LogSearchResultGroup group)
+            {
+                group.IsExpanded = !group.IsExpanded;
+            }
+        }
+
+        /// <summary>
+        /// Handles double-click on group header to toggle expansion
+        /// </summary>
+        private void GroupHeader_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            // Check for double-click
+            if (e.ClickCount == 2 && sender is TextBlock textBlock && textBlock.DataContext is LogSearchResultGroup group)
+            {
+                group.IsExpanded = !group.IsExpanded;
+                e.Handled = true;
+            }
+        }
     }
 }
+
 
