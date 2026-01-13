@@ -8,13 +8,14 @@
          d:DesignHeight="450" d:DesignWidth="800">
 <UserControl.Resources>
     <converters:LogLineToColoredSegmentsConverter x:Key="LogLineToColoredSegmentsConverter"/>
+    <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
 </UserControl.Resources>
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
-            <RowDefinition Height="200" MinHeight="100"/>
+            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
         
         <!-- Status Bar -->
@@ -58,6 +59,32 @@
                            Foreground="#FF2D2D30"
                            VerticalAlignment="Center"
                            Margin="10,0,0,0"/>
+                
+                <!-- Options Dropdown -->
+                <ComboBox Grid.Column="2"
+                          Width="60"
+                          Height="24"
+                          FontSize="12"
+                          VerticalAlignment="Center"
+                          Margin="10,0,0,0"
+                          HorizontalContentAlignment="Center"
+                          VerticalContentAlignment="Center">
+                    <ComboBox.ItemContainerStyle>
+                        <Style TargetType="ComboBoxItem">
+                            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+                        </Style>
+                    </ComboBox.ItemContainerStyle>
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding}" 
+                                       TextAlignment="Center"
+                                       HorizontalAlignment="Center"/>
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                    <System:String xmlns:System="clr-namespace:System;assembly=mscorlib">3</System:String>
+                    <System:String xmlns:System="clr-namespace:System;assembly=mscorlib">5</System:String>
+                    <System:String xmlns:System="clr-namespace:System;assembly=mscorlib">7</System:String>
+                </ComboBox>
             </Grid>
         </Border>
         
@@ -144,22 +171,48 @@
         
         <!-- GridSplitter for resizing detail panel -->
         <GridSplitter Grid.Row="2"
-                      Height="5"
                       HorizontalAlignment="Stretch"
                       VerticalAlignment="Center"
                       Background="Transparent"
                       Cursor="SizeNS"
-                      Visibility="{Binding IsDetailPanelVisible, Converter={StaticResource BooleanToVisibilityConverter}}"
                       ResizeBehavior="PreviousAndNext"
-                      ResizeDirection="Rows"/>
+                      ResizeDirection="Rows">
+            <GridSplitter.Style>
+                <Style TargetType="GridSplitter">
+                    <Setter Property="Height" Value="5"/>
+                    <Setter Property="Visibility" Value="Visible"/>
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding IsDetailPanelVisible}" Value="False">
+                            <Setter Property="Height" Value="0"/>
+                            <Setter Property="Visibility" Value="Collapsed"/>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </GridSplitter.Style>
+        </GridSplitter>
         
         <!-- Detail Panel -->
         <Border Grid.Row="3"
-                Background="#FFF8F9FA"
-                BorderBrush="#FF0078D4"
-                BorderThickness="0,2,0,0"
-                Padding="15"
-                Visibility="{Binding IsDetailPanelVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
+                MinHeight="0"
+                MaxHeight="400">
+            <Border.Style>
+                <Style TargetType="Border">
+                    <Setter Property="Background" Value="#FFF8F9FA"/>
+                    <Setter Property="BorderBrush" Value="#FF0078D4"/>
+                    <Setter Property="BorderThickness" Value="0,2,0,0"/>
+                    <Setter Property="Padding" Value="15"/>
+                    <Setter Property="Height" Value="200"/>
+                    <Setter Property="Visibility" Value="Visible"/>
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding IsDetailPanelVisible}" Value="False">
+                            <Setter Property="Height" Value="0"/>
+                            <Setter Property="Visibility" Value="Collapsed"/>
+                            <Setter Property="BorderThickness" Value="0"/>
+                            <Setter Property="Padding" Value="0"/>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </Border.Style>
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>

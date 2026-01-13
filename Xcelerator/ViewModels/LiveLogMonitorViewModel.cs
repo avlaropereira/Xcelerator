@@ -14,14 +14,10 @@ namespace Xcelerator.ViewModels
     /// </summary>
     public class LiveLogMonitorViewModel : BaseViewModel
     {
-        private readonly MainViewModel _mainViewModel;
-        private readonly DashboardViewModel _dashboardViewModel;
         private readonly Cluster? _cluster;
         private readonly LogFileManager _logFileManager;
         private Dictionary<string, string>? _tokenData;
-        private string _logContent = string.Empty;
         private string _status = "Ready";
-        private bool _hasLogs = false;
         private string _searchText = string.Empty;
         private bool _isRegexMode = false;
         private bool _isCaseSensitive = false;
@@ -42,8 +38,6 @@ namespace Xcelerator.ViewModels
 
         public LiveLogMonitorViewModel(MainViewModel mainViewModel, DashboardViewModel dashboardViewModel, LogFileManager logFileManager, Cluster? cluster = null, Dictionary<string, string>? tokenData = null)
         {
-            _mainViewModel = mainViewModel;
-            _dashboardViewModel = dashboardViewModel;
             _cluster = cluster;
             _tokenData = tokenData;
             _logFileManager = logFileManager ?? throw new ArgumentNullException(nameof(logFileManager));
@@ -75,15 +69,6 @@ namespace Xcelerator.ViewModels
         }
 
         #region Properties
-
-        /// <summary>
-        /// Decoded token data
-        /// </summary>
-        public Dictionary<string, string>? TokenData
-        {
-            get => _tokenData;
-            private set => SetProperty(ref _tokenData, value);
-        }
 
         /// <summary>
         /// User name from token
@@ -131,30 +116,12 @@ namespace Xcelerator.ViewModels
         public string ClusterName => _cluster?.DisplayName ?? "Unknown";
 
         /// <summary>
-        /// Log content to display
-        /// </summary>
-        public string LogContent
-        {
-            get => _logContent;
-            set => SetProperty(ref _logContent, value);
-        }
-
-        /// <summary>
         /// Current monitoring status
         /// </summary>
         public string Status
         {
             get => _status;
             set => SetProperty(ref _status, value);
-        }
-
-        /// <summary>
-        /// Whether there are logs to display
-        /// </summary>
-        public bool HasLogs
-        {
-            get => _hasLogs;
-            set => SetProperty(ref _hasLogs, value);
         }
 
         /// <summary>
@@ -497,78 +464,6 @@ namespace Xcelerator.ViewModels
 
             // Sort groups by tab name and return
             return groupsBag.OrderBy(g => g.TabName).ToList();
-        }
-
-        /// <summary>
-        /// Performs the actual log search across all tabs (legacy sequential method kept for compatibility)
-        /// </summary>
-        private List<LogSearchResult> PerformLogSearch(string searchText)
-        {
-            var results = new List<LogSearchResult>();
-            
-            // Search through each open tab
-            foreach (var tab in OpenTabs.OfType<LogTabViewModel>())
-            {
-                var tabResults = SearchInTab(tab, searchText);
-                results.AddRange(tabResults);
-            }
-
-            // Sort results by tab name, then line number
-            return results.OrderBy(r => r.TabName).ThenBy(r => r.LineNumber).ToList();
-        }
-
-        /// <summary>
-        /// Searches for matches within a single tab
-        /// </summary>
-        private List<LogSearchResult> SearchInTab(LogTabViewModel tab, string searchText)
-        {
-            var results = new List<LogSearchResult>();
-            
-            if (tab.LogLines == null || tab.LogLines.Count == 0)
-                return results;
-
-            int lineNumber = 0;
-            
-            foreach (var logEntry in tab.LogLines)
-            {
-                lineNumber++;
-                
-                bool isMatch = false;
-                
-                if (IsRegexMode)
-                {
-                    try
-                    {
-                        var regexOptions = IsCaseSensitive ? RegexOptions.None : RegexOptions.IgnoreCase;
-                        isMatch = Regex.IsMatch(logEntry, searchText, regexOptions);
-                    }
-                    catch (ArgumentException)
-                    {
-                        // Invalid regex, skip this pattern
-                        continue;
-                    }
-                }
-                else
-                {
-                    // Contains match with case sensitivity option
-                    var comparison = IsCaseSensitive ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase;
-                    isMatch = logEntry.Contains(searchText, comparison);
-                }
-
-                if (isMatch)
-                {
-                    results.Add(new LogSearchResult
-                    {
-                        TabName = tab.HeaderName,
-                        LogEntry = logEntry,
-                        LineNumber = lineNumber,
-                        Preview = CreatePreview(logEntry, 100),
-                        SourceTab = tab
-                    });
-                }
-            }
-
-            return results;
         }
 
         /// <summary>
