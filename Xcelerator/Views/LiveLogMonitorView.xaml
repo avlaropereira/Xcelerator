@@ -155,18 +155,23 @@ d:DesignHeight="650" d:DesignWidth="1000">
                         <TreeView ItemsSource="{Binding SearchResultGroups}"
                                   BorderThickness="0"
                                   Background="Transparent"
+                                  Foreground="#FF2D2D30"
+                                  HorizontalContentAlignment="Stretch"
+                                  VerticalContentAlignment="Center"
+                                  materialDesign:TreeViewAssist.HasNoItemsExpanderVisibility="Collapsed"
                                   ScrollViewer.HorizontalScrollBarVisibility="Disabled"
                                   VirtualizingPanel.IsVirtualizing="True"
                                   VirtualizingPanel.VirtualizationMode="Recycling"
                                   VirtualizingPanel.ScrollUnit="Pixel"
                                   Visibility="{Binding SearchResultGroups.Count, Converter={StaticResource CountToVisibilityConverter}}">
-                            <TreeView.Resources>
-                                <!-- Style for TreeViewItem -->
+                            <TreeView.ItemContainerStyle>
                                 <Style TargetType="TreeViewItem">
                                     <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}"/>
                                     <Setter Property="Padding" Value="0"/>
                                     <Setter Property="Margin" Value="0"/>
                                     <Setter Property="Foreground" Value="#FF2D2D30"/>
+                                    <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                                    <Setter Property="VerticalContentAlignment" Value="Center"/>
                                     <EventSetter Event="MouseDoubleClick" Handler="SearchResult_MouseDoubleClick"/>
                                     <Setter Property="Template">
                                         <Setter.Value>
@@ -211,6 +216,8 @@ d:DesignHeight="650" d:DesignWidth="1000">
                                         </Setter.Value>
                                     </Setter>
                                 </Style>
+                            </TreeView.ItemContainerStyle>
+                            <TreeView.Resources>
                                 
                                 <!-- Data template for group header (Tab Name) -->
                                 <HierarchicalDataTemplate DataType="{x:Type models:LogSearchResultGroup}" ItemsSource="{Binding Results}">
@@ -357,16 +364,19 @@ d:DesignHeight="650" d:DesignWidth="1000">
                     <TreeView ItemsSource="{Binding RemoteMachines}"
                               BorderThickness="0"
                               Background="Transparent"
+                              Foreground="#FF2D2D30"
+                              HorizontalContentAlignment="Stretch"
+                              VerticalContentAlignment="Center"
+                              materialDesign:TreeViewAssist.HasNoItemsExpanderVisibility="Collapsed"
                               ScrollViewer.HorizontalScrollBarVisibility="Disabled">
-                        <TreeView.Resources>
-                            <!-- Style for TreeViewItem -->
+                        <TreeView.ItemContainerStyle>
                             <Style TargetType="TreeViewItem">
                                 <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}"/>
                                 <Setter Property="Padding" Value="0"/>
                                 <Setter Property="Margin" Value="0"/>
                                 <Setter Property="Foreground" Value="#FF2D2D30"/>
+                                <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
                                 <Setter Property="VerticalContentAlignment" Value="Center"/>
-                                <Setter Property="materialDesign:TreeViewAssist.HasNoItemsExpanderVisibility" Value="Collapsed"/>
                                 <EventSetter Event="MouseDoubleClick" Handler="TreeViewItem_MouseDoubleClick"/>
                                 <Setter Property="Template">
                                     <Setter.Value>
@@ -447,24 +457,15 @@ d:DesignHeight="650" d:DesignWidth="1000">
                                                                    VerticalAlignment="Center"/>
                                                         
                                                         <!-- Status Indicator Dot (only for leaf items without children) -->
-                                                        <Ellipse Grid.Column="3"
+                                                        <Ellipse x:Name="StatusDot"
+                                                                 Grid.Column="3"
                                                                  Width="8"
                                                                  Height="8"
                                                                  Margin="8,0,0,0"
+                                                                 Fill="#FFF44336"
                                                                  VerticalAlignment="Center"
                                                                  HorizontalAlignment="Right"
-                                                                 Visibility="{Binding IsLeaf, Converter={StaticResource BooleanToVisibilityConverter}}">
-                                                            <Ellipse.Style>
-                                                                <Style TargetType="Ellipse">
-                                                                    <Setter Property="Fill" Value="#FFF44336"/>
-                                                                    <Style.Triggers>
-                                                                        <DataTrigger Binding="{Binding IsSelected, RelativeSource={RelativeSource AncestorType=TreeViewItem}}" Value="True">
-                                                                            <Setter Property="Fill" Value="#FF4CAF50"/>
-                                                                        </DataTrigger>
-                                                                    </Style.Triggers>
-                                                                </Style>
-                                                            </Ellipse.Style>
-                                                        </Ellipse>
+                                                                 Visibility="{Binding IsLeaf, Converter={StaticResource BooleanToVisibilityConverter}}"/>
                                                     </Grid>
                                                 </Border>
                                                 
@@ -481,6 +482,7 @@ d:DesignHeight="650" d:DesignWidth="1000">
                                                 </Trigger>
                                                 <Trigger Property="IsSelected" Value="True">
                                                     <Setter TargetName="ItemBorder" Property="Background" Value="#FFE3F2FD"/>
+                                                    <Setter TargetName="StatusDot" Property="Fill" Value="#FF4CAF50"/>
                                                 </Trigger>
                                                 <Trigger Property="IsMouseOver" Value="True">
                                                     <Setter TargetName="ItemBorder" Property="Background" Value="#FFF5F5F5"/>
@@ -493,7 +495,7 @@ d:DesignHeight="650" d:DesignWidth="1000">
                                     </Setter.Value>
                                 </Setter>
                             </Style>
-                        </TreeView.Resources>
+                        </TreeView.ItemContainerStyle>
                         
                         <!-- Hierarchical Data Template -->
                         <TreeView.ItemTemplate>

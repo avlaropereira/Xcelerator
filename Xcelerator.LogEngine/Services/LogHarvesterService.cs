@@ -1,6 +1,4 @@
-﻿using System.Collections.Concurrent;
-using System.IO.MemoryMappedFiles;
-using Xcelerator.LogEngine.Models;
+﻿using Xcelerator.LogEngine.Models;
 
 namespace Xcelerator.LogEngine.Services
 {
@@ -108,12 +106,6 @@ namespace Xcelerator.LogEngine.Services
             {
                 await sourceStream.CopyToAsync(destStream, NetworkBufferSize);
             }
-        }
-
-        private async Task CopyFileAsync(string source, string destination)
-        {
-            // Legacy method - redirects to optimized version
-            await CopyFileOptimizedAsync(source, destination);
         }
     }
 }

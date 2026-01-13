@@ -43,43 +43,81 @@ namespace Xcelerator.ViewModels
         }
 
         /// <summary>
-        /// Loads logs from the remote machine asynchronously
+        /// Loads logs from the remote machine asynchronously with retry logic
         /// </summary>
         /// <param name="machineName">The machine name (e.g., "SO-C30COR01")</param>
         /// <param name="itemName">The item name (e.g., "VC")</param>
         private async Task LoadLogsAsync(string machineName, string itemName)
         {
+            const int maxRetries = 3;
+            int attemptNumber = 0;
+            Exception? lastException = null;
+            
             var stopwatch = System.Diagnostics.Stopwatch.StartNew();
             
             try
             {
                 IsLoading = true;
-                LogContent = "Loading logs...";
                 
-                // Perform heavy work on background thread
-                var result = await Task.Run(async () =>
+                while (attemptNumber < maxRetries)
                 {
-                    return await _logHarvesterService.GetLogsInParallelAsync(machineName, itemName);
-                });
-                
-                if (result.Success && !string.IsNullOrEmpty(result.LocalFilePath))
-                {
-                    // Store the local file path for cleanup later
-                    LocalFilePath = result.LocalFilePath;
+                    attemptNumber++;
                     
-                    // Register log file with cluster for tracking
-                    if (!string.IsNullOrEmpty(_clusterName))
+                    try
                     {
-                        PanelViewModel.RegisterLogFile(_clusterName, result.LocalFilePath);
+                        LogContent = attemptNumber == 1 
+                            ? "Loading logs..." 
+                            : $"Retrying... (Attempt {attemptNumber} of {maxRetries})";
+                        
+                        // Perform heavy work on background thread
+                        var result = await Task.Run(async () =>
+                        {
+                            return await _logHarvesterService.GetLogsInParallelAsync(machineName, itemName);
+                        });
+                        
+                        if (result.Success && !string.IsNullOrEmpty(result.LocalFilePath))
+                        {
+                            // Store the local file path for cleanup later
+                            LocalFilePath = result.LocalFilePath;
+                            
+                            // Register log file with cluster for tracking
+                            if (!string.IsNullOrEmpty(_clusterName))
+                            {
+                                PanelViewModel.RegisterLogFile(_clusterName, result.LocalFilePath);
+                            }
+                            
+                            // Read file and populate collection in chunks to avoid UI freeze
+                            await LoadLogLinesInChunks(result.LocalFilePath, stopwatch);
+                            
+                            // Success - exit retry loop
+                            return;
+                        }
+                        else
+                        {
+                            // Create exception for failed result to trigger retry
+                            lastException = new Exception(result.ErrorMessage ?? "Unknown error");
+                            
+                            // If this isn't the last attempt, wait before retrying
+                            if (attemptNumber < maxRetries)
+                            {
+                                await Task.Delay(TimeSpan.FromSeconds(2 * attemptNumber)); // Exponential backoff: 2s, 4s, 6s
+                            }
+                        }
                     }
-                    
-                    // Read file and populate collection in chunks to avoid UI freeze
-                    await LoadLogLinesInChunks(result.LocalFilePath, stopwatch);
+                    catch (Exception ex)
+                    {
+                        lastException = ex;
+                        
+                        // If this isn't the last attempt, wait before retrying
+                        if (attemptNumber < maxRetries)
+                        {
+                            await Task.Delay(TimeSpan.FromSeconds(2 * attemptNumber)); // Exponential backoff: 2s, 4s, 6s
+                        }
+                    }
                 }
-                else
-                {
-                    LogContent = $"Failed to load logs: {result.ErrorMessage ?? "Unknown error"}";
-                }
+                
+                // If we get here, all retries failed
+                LogContent = $"Failed to load logs after {maxRetries} attempts: {lastException?.Message ?? "Unknown error"}";
             }
             catch (Exception ex)
             {

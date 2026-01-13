@@ -34,5 +34,11 @@ namespace Xcelerator.Models
         /// Display text for the list (combines tab name and preview)
         /// </summary>
         public string DisplayText => $"[{TabName}] Line {LineNumber}: {Preview}";
+
+        /// <summary>
+        /// Dummy property for TreeView binding compatibility (leaf nodes don't expand)
+        /// This prevents binding errors when TreeViewItem tries to bind IsExpanded to all items
+        /// </summary>
+        public bool IsExpanded { get; set; } = false;
     }
 }
