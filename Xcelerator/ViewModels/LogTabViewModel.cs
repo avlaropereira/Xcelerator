@@ -1,5 +1,6 @@
 using Xcelerator.Models;
 using Xcelerator.LogEngine.Services;
+using Xcelerator.Services;
 using System.IO;
 using System.Windows;
 using System.Collections.ObjectModel;
@@ -15,6 +16,7 @@ namespace Xcelerator.ViewModels
         private RemoteMachineItem? _remoteMachine;
         private string _logContent = string.Empty;
         private readonly LogHarvesterServiceAdvanced _logHarvesterService;
+        private readonly LogFileManager _logFileManager;
         private ObservableCollection<string> _logLines;
         private bool _isLoading;
         private string? _localFilePath;
@@ -26,12 +28,14 @@ namespace Xcelerator.ViewModels
         /// Initializes a new instance of the LogTabViewModel class
         /// </summary>
         /// <param name="remoteMachineItem">The remote machine item to display logs for</param>
+        /// <param name="logFileManager">The log file manager service</param>
         /// <param name="clusterName">The cluster name for log file tracking (optional)</param>
-        public LogTabViewModel(RemoteMachineItem remoteMachineItem, string? clusterName = null)
+        public LogTabViewModel(RemoteMachineItem remoteMachineItem, LogFileManager logFileManager, string? clusterName = null)
         {
             _headerName = remoteMachineItem.DisplayName;
             _remoteMachine = remoteMachineItem;
             _clusterName = clusterName;
+            _logFileManager = logFileManager ?? throw new ArgumentNullException(nameof(logFileManager));
             _logHarvesterService = new LogHarvesterServiceAdvanced();
             _logLines = new ObservableCollection<string>();
             
@@ -80,11 +84,8 @@ namespace Xcelerator.ViewModels
                             // Store the local file path for cleanup later
                             LocalFilePath = result.LocalFilePath;
                             
-                            // Register log file with cluster for tracking
-                            if (!string.IsNullOrEmpty(_clusterName))
-                            {
-                                PanelViewModel.RegisterLogFile(_clusterName, result.LocalFilePath);
-                            }
+                            // Register log file with centralized manager for automatic cleanup
+                            _logFileManager.RegisterLogFile(result.LocalFilePath);
                             
                             // Read file and populate collection in chunks to avoid UI freeze
                             await LoadLogLinesInChunks(result.LocalFilePath, stopwatch);
@@ -397,26 +398,16 @@ namespace Xcelerator.ViewModels
 
         /// <summary>
         /// Cleans up resources including the temporary log file
+        /// The file is also tracked by LogFileManager for application-wide cleanup
         /// </summary>
         public void Cleanup()
         {
             try
             {
-                if (!string.IsNullOrEmpty(LocalFilePath) && File.Exists(LocalFilePath))
+                if (!string.IsNullOrEmpty(LocalFilePath))
                 {
-                    // Delete the log file
-                    File.Delete(LocalFilePath);
-                    
-                    // Try to delete the parent directory if it's empty
-                    var directory = Path.GetDirectoryName(LocalFilePath);
-                    if (!string.IsNullOrEmpty(directory) && Directory.Exists(directory))
-                    {
-                        // Only delete if directory is empty
-                        if (!Directory.EnumerateFileSystemEntries(directory).Any())
-                        {
-                            Directory.Delete(directory);
-                        }
-                    }
+                    // Remove from log manager and delete immediately
+                    _logFileManager.RemoveLogFile(LocalFilePath, deleteFile: true);
                 }
             }
             catch (Exception ex)

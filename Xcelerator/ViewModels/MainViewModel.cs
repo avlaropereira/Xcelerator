@@ -1,6 +1,7 @@
 using System.Windows.Input;
 using Xcelerator.Models;
 using Xcelerator.NiceClient.Services.Auth;
+using Xcelerator.Services;
 
 namespace Xcelerator.ViewModels
 {
@@ -9,10 +10,10 @@ namespace Xcelerator.ViewModels
         private object _currentPage;
         private LoginCredentials _credentials;
 
-        public MainViewModel(IAuthService authService)
+        public MainViewModel(IAuthService authService, LogFileManager logFileManager)
         {
             _credentials = new LoginCredentials();
-            _currentPage = new PanelViewModel(this, authService);
+            _currentPage = new PanelViewModel(this, authService, logFileManager);
         }
 
         public object CurrentPage

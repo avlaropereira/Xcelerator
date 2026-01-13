@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Hosting;
 using System.Windows;
 using Xcelerator.NiceClient.Services.Auth;
+using Xcelerator.Services;
 using Xcelerator.ViewModels;
 
 namespace Xcelerator
@@ -20,7 +21,10 @@ namespace Xcelerator
             // --- 1. Register the NICE Services ---
             builder.Services.AddHttpClient<IAuthService, AuthService>();
 
-            // --- 2. Register ViewModels ---
+            // --- 2. Register Application Services ---
+            builder.Services.AddSingleton<LogFileManager>();
+
+            // --- 3. Register ViewModels ---
             builder.Services.AddSingleton<MainViewModel>();
             builder.Services.AddSingleton<MainWindow>();
 
@@ -46,9 +50,25 @@ namespace Xcelerator
 
         protected override async void OnExit(ExitEventArgs e)
         {
+            // Clean up all downloaded log files before exiting
+            try
+            {
+                var logFileManager = AppHost?.Services.GetService<LogFileManager>();
+                if (logFileManager != null)
+                {
+                    var stats = logFileManager.CleanupAllLogFiles();
+                    System.Diagnostics.Debug.WriteLine($"Application exit cleanup: {stats}");
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error during cleanup on exit: {ex.Message}");
+            }
+
             // Gracefully stop the host (cleans up connections/services)
             await AppHost!.StopAsync();
             base.OnExit(e);
         }
     }
 }
+

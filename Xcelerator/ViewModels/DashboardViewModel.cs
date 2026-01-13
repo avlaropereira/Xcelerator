@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using System.Windows.Input;
 using Xcelerator.Models;
 using Xcelerator.NiceClient.Services.Auth;
+using Xcelerator.Services;
 
 namespace Xcelerator.ViewModels
 {
@@ -13,16 +14,18 @@ namespace Xcelerator.ViewModels
         private readonly MainViewModel _mainViewModel;
         private readonly PanelViewModel _panelViewModel;
         private readonly Cluster? _cluster;
+        private readonly LogFileManager _logFileManager;
         private string _selectedModule = string.Empty;
         private Dictionary<string, string> _tokenData;
         private BaseViewModel? _currentModuleViewModel;
         private readonly HashSet<string> _openModules = new HashSet<string>();
 
-        public DashboardViewModel(MainViewModel mainViewModel, PanelViewModel panelViewModel, Cluster? cluster = null)
+        public DashboardViewModel(MainViewModel mainViewModel, PanelViewModel panelViewModel, LogFileManager logFileManager, Cluster? cluster = null)
         {
             _mainViewModel = mainViewModel;
             _panelViewModel = panelViewModel;
             _cluster = cluster;
+            _logFileManager = logFileManager ?? throw new ArgumentNullException(nameof(logFileManager));
             
             SelectModuleCommand = new RelayCommand<string>(SelectModule, CanSelectModule);
 
@@ -166,7 +169,7 @@ namespace Xcelerator.ViewModels
                 // Load specific module view into the dashboard content area
                 if (module == "LiveLogMonitor")
                 {
-                    var liveLogMonitorViewModel = new LiveLogMonitorViewModel(_mainViewModel, this, _cluster, _tokenData);
+                    var liveLogMonitorViewModel = new LiveLogMonitorViewModel(_mainViewModel, this, _logFileManager, _cluster, _tokenData);
                     CurrentModuleViewModel = liveLogMonitorViewModel;
                 }
                 else

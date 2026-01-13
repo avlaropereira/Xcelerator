@@ -6,6 +6,7 @@ using System.Windows.Data;
 using System.Windows.Input;
 using Xcelerator.Models;
 using Xcelerator.NiceClient.Services.Auth;
+using Xcelerator.Services;
 
 namespace Xcelerator.ViewModels
 {
@@ -16,6 +17,7 @@ namespace Xcelerator.ViewModels
     {
         private readonly MainViewModel _mainViewModel;
         private readonly IAuthService _authService;
+        private readonly LogFileManager _logFileManager;
         private ObservableCollection<Cluster> _availableClusters;
         private ObservableCollection<Cluster> _selectedClusters;
         private BaseViewModel? _currentViewModel;
@@ -24,13 +26,14 @@ namespace Xcelerator.ViewModels
         private int _matchCount = 0;
         private ICollectionView? _filteredClusters;
         
-        // Track downloaded log files per cluster for cleanup
+        // Track downloaded log files per cluster for cleanup (legacy, kept for backward compatibility)
         private static readonly Dictionary<string, HashSet<string>> _clusterLogFiles = new Dictionary<string, HashSet<string>>();
 
-        public PanelViewModel(MainViewModel mainViewModel, IAuthService authService)
+        public PanelViewModel(MainViewModel mainViewModel, IAuthService authService, LogFileManager logFileManager)
         {
             _mainViewModel = mainViewModel;
             _authService = authService;
+            _logFileManager = logFileManager ?? throw new ArgumentNullException(nameof(logFileManager));
             _availableClusters = new ObservableCollection<Cluster>();
             _selectedClusters = new ObservableCollection<Cluster>();
 
@@ -288,7 +291,7 @@ namespace Xcelerator.ViewModels
         {
             if (SelectedClusterForLogin != null)
             {
-                var dashboardViewModel = new DashboardViewModel(_mainViewModel, this, SelectedClusterForLogin)
+                var dashboardViewModel = new DashboardViewModel(_mainViewModel, this, _logFileManager, SelectedClusterForLogin)
                 {
                     SelectedModule = SelectedClusterForLogin.SelectedModule
                 };

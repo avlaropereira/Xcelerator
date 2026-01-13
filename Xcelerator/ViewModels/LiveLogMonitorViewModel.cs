@@ -5,6 +5,7 @@ using System.Windows;
 using System.Windows.Data;
 using System.Windows.Input;
 using Xcelerator.Models;
+using Xcelerator.Services;
 
 namespace Xcelerator.ViewModels
 {
@@ -16,6 +17,7 @@ namespace Xcelerator.ViewModels
         private readonly MainViewModel _mainViewModel;
         private readonly DashboardViewModel _dashboardViewModel;
         private readonly Cluster? _cluster;
+        private readonly LogFileManager _logFileManager;
         private Dictionary<string, string>? _tokenData;
         private string _logContent = string.Empty;
         private string _status = "Ready";
@@ -38,12 +40,13 @@ namespace Xcelerator.ViewModels
         public ICommand NavigateToSearchResultCommand { get; }
         public ICommand SearchCommand { get; }
 
-        public LiveLogMonitorViewModel(MainViewModel mainViewModel, DashboardViewModel dashboardViewModel, Cluster? cluster = null, Dictionary<string, string>? tokenData = null)
+        public LiveLogMonitorViewModel(MainViewModel mainViewModel, DashboardViewModel dashboardViewModel, LogFileManager logFileManager, Cluster? cluster = null, Dictionary<string, string>? tokenData = null)
         {
             _mainViewModel = mainViewModel;
             _dashboardViewModel = dashboardViewModel;
             _cluster = cluster;
             _tokenData = tokenData;
+            _logFileManager = logFileManager ?? throw new ArgumentNullException(nameof(logFileManager));
 
             // Initialize open tabs collection
             _openTabs = new ObservableCollection<ITabViewModel>();
@@ -692,8 +695,8 @@ namespace Xcelerator.ViewModels
                 return;
             }
 
-            // Create a new LogTabViewModel with the remote machine's display name and cluster name
-            var logTab = new LogTabViewModel(remoteMachine, _cluster?.Name)
+            // Create a new LogTabViewModel with the remote machine's display name, log file manager, and cluster name
+            var logTab = new LogTabViewModel(remoteMachine, _logFileManager, _cluster?.Name)
             {
                 RemoteMachine = remoteMachine
             };
