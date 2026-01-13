@@ -23,6 +23,11 @@ namespace Xcelerator.ViewModels
         private string? _selectedLogLine;
         private bool _isDetailPanelVisible;
         private string? _clusterName; // Track cluster name for log file registration
+        private int _refreshIntervalMinutes;
+        private System.Threading.Timer? _refreshTimer;
+        private bool _isRefreshing;
+        private string _machineName = string.Empty;
+        private string _machineItemName = string.Empty;
 
         /// <summary>
         /// Initializes a new instance of the LogTabViewModel class
@@ -41,6 +46,8 @@ namespace Xcelerator.ViewModels
             
             // Parse machine name and item from the remote machine item name
             var (machineName, machineItemName) = ParseMachineItem(remoteMachineItem.Name);
+            _machineName = machineName;
+            _machineItemName = machineItemName;
             
             // Load logs asynchronously
             _ = LoadLogsAsync(machineName, machineItemName);
@@ -336,6 +343,178 @@ namespace Xcelerator.ViewModels
         }
 
         /// <summary>
+        /// The refresh interval in minutes (0 = disabled)
+        /// </summary>
+        public int RefreshIntervalMinutes
+        {
+            get => _refreshIntervalMinutes;
+            set
+            {
+                if (SetProperty(ref _refreshIntervalMinutes, value))
+                {
+                    UpdateRefreshTimer();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Indicates whether logs are currently being refreshed
+        /// </summary>
+        public bool IsRefreshing
+        {
+            get => _isRefreshing;
+            private set => SetProperty(ref _isRefreshing, value);
+        }
+
+        /// <summary>
+        /// Updates the refresh timer based on the RefreshIntervalMinutes property
+        /// </summary>
+        private void UpdateRefreshTimer()
+        {
+            // Stop and dispose existing timer
+            if (_refreshTimer != null)
+            {
+                _refreshTimer.Dispose();
+                _refreshTimer = null;
+            }
+
+            // If interval is 0 or negative, timer is disabled
+            if (_refreshIntervalMinutes <= 0)
+            {
+                return;
+            }
+
+            // Create new timer with the specified interval
+            var intervalMilliseconds = _refreshIntervalMinutes * 60 * 1000;
+            _refreshTimer = new System.Threading.Timer(
+                async _ => await RefreshLogsAsync(),
+                null,
+                intervalMilliseconds,
+                intervalMilliseconds
+            );
+        }
+
+        /// <summary>
+        /// Refreshes logs in the background without replacing previous content until download is complete
+        /// </summary>
+        private async Task RefreshLogsAsync()
+        {
+            // Prevent multiple simultaneous refreshes
+            if (_isRefreshing || IsLoading)
+            {
+                return;
+            }
+
+            try
+            {
+                IsRefreshing = true;
+
+                // Download logs in background
+                var result = await Task.Run(async () =>
+                {
+                    return await _logHarvesterService.GetLogsInParallelAsync(_machineName, _machineItemName);
+                });
+
+                if (result.Success && !string.IsNullOrEmpty(result.LocalFilePath))
+                {
+                    // Load new log lines into a temporary collection
+                    var newLogLines = new ObservableCollection<string>();
+                    var stopwatch = System.Diagnostics.Stopwatch.StartNew();
+
+                    await LoadLogLinesInChunksToCollection(result.LocalFilePath, newLogLines, stopwatch);
+
+                    // Replace content atomically on UI thread
+                    await Application.Current.Dispatcher.InvokeAsync(() =>
+                    {
+                        // Clean up old file
+                        if (!string.IsNullOrEmpty(LocalFilePath) && LocalFilePath != result.LocalFilePath)
+                        {
+                            _logFileManager.RemoveLogFile(LocalFilePath, deleteFile: true);
+                        }
+
+                        // Replace collection and update file path
+                        LogLines = newLogLines;
+                        LocalFilePath = result.LocalFilePath;
+                        _logFileManager.RegisterLogFile(result.LocalFilePath);
+
+                        // Update status
+                        var timeDisplay = stopwatch.Elapsed.TotalSeconds < 1
+                            ? $"{stopwatch.Elapsed.TotalMilliseconds:F0}ms"
+                            : stopwatch.Elapsed.TotalMinutes >= 1
+                                ? $"{stopwatch.Elapsed.Minutes}m {stopwatch.Elapsed.Seconds}s"
+                                : $"{stopwatch.Elapsed.TotalSeconds:F1}s";
+
+                        LogContent = $"Refreshed {newLogLines.Count:N0} log entries from {Path.GetFileName(result.LocalFilePath)} in {timeDisplay} (Last refresh: {DateTime.Now:HH:mm:ss})";
+                    }, System.Windows.Threading.DispatcherPriority.Background);
+                }
+            }
+            catch (Exception ex)
+            {
+                await Application.Current.Dispatcher.InvokeAsync(() =>
+                {
+                    LogContent = $"Error refreshing logs: {ex.Message}";
+                }, System.Windows.Threading.DispatcherPriority.Background);
+            }
+            finally
+            {
+                IsRefreshing = false;
+            }
+        }
+
+        /// <summary>
+        /// Loads log lines into a specific collection (used for refresh without replacing UI until complete)
+        /// </summary>
+        private async Task LoadLogLinesInChunksToCollection(string filePath, ObservableCollection<string> targetCollection, System.Diagnostics.Stopwatch stopwatch)
+        {
+            const int bufferSize = 65536; // 64KB buffer for file reading
+            string? currentEntry = null;
+
+            await Task.Run(async () =>
+            {
+                using var stream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read, bufferSize, useAsync: true);
+                using var reader = new StreamReader(stream);
+
+                string? line;
+                while ((line = await reader.ReadLineAsync()) != null)
+                {
+                    // Check if this line starts a new log entry (has timestamp)
+                    if (StartsWithTimestamp(line))
+                    {
+                        // Save the previous complete entry if exists
+                        if (currentEntry != null)
+                        {
+                            targetCollection.Add(currentEntry);
+                        }
+
+                        // Start a new entry
+                        currentEntry = line;
+                    }
+                    else
+                    {
+                        // This is a continuation line - append to current entry
+                        if (currentEntry != null)
+                        {
+                            currentEntry += Environment.NewLine + line;
+                        }
+                        else
+                        {
+                            // No current entry yet (file doesn't start with timestamp)
+                            currentEntry = line;
+                        }
+                    }
+                }
+
+                // Don't forget the last entry
+                if (currentEntry != null)
+                {
+                    targetCollection.Add(currentEntry);
+                }
+
+                stopwatch.Stop();
+            });
+        }
+
+        /// <summary>
         /// Parses a machine-item string in the format "SO-C30COR01-VirtualCluster" 
         /// and returns the machine name and item abbreviation
         /// </summary>
@@ -404,6 +583,13 @@ namespace Xcelerator.ViewModels
         {
             try
             {
+                // Dispose timer
+                if (_refreshTimer != null)
+                {
+                    _refreshTimer.Dispose();
+                    _refreshTimer = null;
+                }
+
                 if (!string.IsNullOrEmpty(LocalFilePath))
                 {
                     // Remove from log manager and delete immediately

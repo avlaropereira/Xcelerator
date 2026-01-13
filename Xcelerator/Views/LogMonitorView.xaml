@@ -60,30 +60,30 @@
                            VerticalAlignment="Center"
                            Margin="10,0,0,0"/>
                 
-                <!-- Options Dropdown -->
+                <!-- Auto-Refresh Interval Dropdown -->
                 <ComboBox Grid.Column="2"
-                          Width="60"
+                          Width="100"
                           Height="24"
                           FontSize="12"
                           VerticalAlignment="Center"
                           Margin="10,0,0,0"
                           HorizontalContentAlignment="Center"
-                          VerticalContentAlignment="Center">
+                          VerticalContentAlignment="Center"
+                          SelectedValue="{Binding RefreshIntervalMinutes, Mode=TwoWay}"
+                          SelectedValuePath="Tag"
+                          ToolTip="Auto-refresh interval (minutes)">
                     <ComboBox.ItemContainerStyle>
                         <Style TargetType="ComboBoxItem">
                             <Setter Property="HorizontalContentAlignment" Value="Center"/>
                         </Style>
                     </ComboBox.ItemContainerStyle>
-                    <ComboBox.ItemTemplate>
-                        <DataTemplate>
-                            <TextBlock Text="{Binding}" 
-                                       TextAlignment="Center"
-                                       HorizontalAlignment="Center"/>
-                        </DataTemplate>
-                    </ComboBox.ItemTemplate>
-                    <System:String xmlns:System="clr-namespace:System;assembly=mscorlib">3</System:String>
-                    <System:String xmlns:System="clr-namespace:System;assembly=mscorlib">5</System:String>
-                    <System:String xmlns:System="clr-namespace:System;assembly=mscorlib">7</System:String>
+                    <ComboBoxItem Content="Off" Tag="0" IsSelected="True"/>
+                    <ComboBoxItem Content="1 min" Tag="1"/>
+                    <ComboBoxItem Content="2 min" Tag="2"/>
+                    <ComboBoxItem Content="3 min" Tag="3"/>
+                    <ComboBoxItem Content="4 min" Tag="4"/>
+                    <ComboBoxItem Content="5 min" Tag="5"/>
+                    <ComboBoxItem Content="7 min" Tag="7"/>
                 </ComboBox>
             </Grid>
         </Border>
