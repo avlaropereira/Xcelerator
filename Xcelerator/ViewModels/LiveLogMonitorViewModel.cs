@@ -226,102 +226,69 @@ namespace Xcelerator.ViewModels
         #region Remote Machines Initialization
 
         /// <summary>
-        /// Initialize remote machines based on cluster name
+        /// Initialize remote machines dynamically from cluster topology
         /// </summary>
         private void InitializeRemoteMachines()
         {
-            // Ensure cluster exists and has a valid name
-            if (_cluster == null || string.IsNullOrEmpty(_cluster.Name))
+            // Ensure cluster exists and has topology data
+            if (_cluster == null || _cluster.Topology == null)
             {
+                System.Diagnostics.Debug.WriteLine("Cluster or topology is null, no remote machines will be loaded");
                 return;
             }
 
-            // Extract letters and last digit from cluster name
-            var clusterName = _cluster.Name;
-            var match = Regex.Match(clusterName, @"^([A-Za-z]+)(\d+)$");
-            
-            if (!match.Success)
+            // Check if topology has servers
+            if (_cluster.Topology.Servers == null || _cluster.Topology.Servers.Count == 0)
             {
+                System.Diagnostics.Debug.WriteLine($"No servers found in topology for cluster '{_cluster.Name}'");
                 return;
             }
 
-            var letters = match.Groups[1].Value;
-            var numbers = match.Groups[2].Value;
-            
-            // Generate machine names in format: {letters}-C{lastDigit}{type}
-            // Example: SC10 -> SC-C0COR01, SC-C0API01, SC-C0WEB01, SC-C0MED01
-            
-            // COR01 - Virtual Cluster with sub-services
-            var cor01 = new RemoteMachineItem
+            System.Diagnostics.Debug.WriteLine($"Loading {_cluster.Topology.Servers.Count} servers from topology for cluster '{_cluster.Name}'");
+
+            // Iterate through all servers in the topology
+            foreach (var server in _cluster.Topology.Servers)
             {
-                Name = $"{letters}A-C{numbers}COR01",
-                DisplayName = $"{letters}-C{numbers}COR01",
-                IsExpanded = false
-            };
-            
-            // Add COR01 Virtual Cluster services as children
-            cor01.Children.Add(new RemoteMachineItem { Name = $"{letters}A-C{numbers}COR01-VirtualCluster", DisplayName = "Virtual Cluster" });
-            cor01.Children.Add(new RemoteMachineItem { Name = $"{letters}A-C{numbers}COR01-FileServer", DisplayName = "File Server" });
-            cor01.Children.Add(new RemoteMachineItem { Name = $"{letters}A-C{numbers}COR01-CoOpService", DisplayName = "CoOp Service" });
-            cor01.Children.Add(new RemoteMachineItem { Name = $"{letters}A-C{numbers}COR01-SurvyService", DisplayName = "Survy Service" });
-            cor01.Children.Add(new RemoteMachineItem { Name = $"{letters}A-C{numbers}COR01-FSDrivePublisher", DisplayName = "FS Drive Publisher" });
-            cor01.Children.Add(new RemoteMachineItem { Name = $"{letters}A-C{numbers}COR01-DroneLetter", DisplayName = "Drone Letter" });
-            cor01.Children.Add(new RemoteMachineItem { Name = $"{letters}A-C{numbers}COR01-DBCWS", DisplayName = "DBCWS" });
-            
-            _remoteMachines.Add(cor01);
-            
-            // API01 - API Services with sub-services
-            var api01 = new RemoteMachineItem
-            {
-                Name = $"{letters}A-C{numbers}API01",
-                DisplayName = $"{letters}-C{numbers}API01",
-                IsExpanded = false
-            };
-            
-            // Add API01 API Services as children
-            api01.Children.Add(new RemoteMachineItem { Name = $"{letters}A-C{numbers}API01-L7Healthcheck", DisplayName = "L7 Healthcheck" });
-            api01.Children.Add(new RemoteMachineItem { Name = $"{letters}A-C{numbers}API01-DroneService", DisplayName = "Drone Service" });
-            api01.Children.Add(new RemoteMachineItem { Name = $"{letters}A-C{numbers}API01-APIWebsite", DisplayName = "API Website" });
-            api01.Children.Add(new RemoteMachineItem { Name = $"{letters}A-C{numbers}API01-AutoSite", DisplayName = "AutoSite" });
-            api01.Children.Add(new RemoteMachineItem { Name = $"{letters}A-C{numbers}API01-DBCWS", DisplayName = "DBCWS" });
-            
-            _remoteMachines.Add(api01);
-            
-            // WEB01 - Web Services with sub-services
-            var web01 = new RemoteMachineItem
-            {
-                Name = $"{letters}A-C{numbers}WEB01",
-                DisplayName = $"{letters}-C{numbers}WEB01",
-                IsExpanded = false
-            };
-            
-            // Add WEB01 Web Services as children
-            web01.Children.Add(new RemoteMachineItem { Name = $"{letters}A-C{numbers}WEB01-Agent", DisplayName = "Agent" });
-            web01.Children.Add(new RemoteMachineItem { Name = $"{letters}A-C{numbers}WEB01-AuthenticationServer", DisplayName = "Authentication Server" });
-            web01.Children.Add(new RemoteMachineItem { Name = $"{letters}A-C{numbers}WEB01-CacheSite", DisplayName = "Cache Site" });
-            web01.Children.Add(new RemoteMachineItem { Name = $"{letters}A-C{numbers}WEB01-inContact", DisplayName = "inContact" });
-            web01.Children.Add(new RemoteMachineItem { Name = $"{letters}A-C{numbers}WEB01-inControl", DisplayName = "inControl" });
-            web01.Children.Add(new RemoteMachineItem { Name = $"{letters}A-C{numbers}WEB01-ReportService", DisplayName = "Report Service" });
-            web01.Children.Add(new RemoteMachineItem { Name = $"{letters}A-C{numbers}WEB01-Security", DisplayName = "Security" });
-            web01.Children.Add(new RemoteMachineItem { Name = $"{letters}A-C{numbers}WEB01-WebScripting", DisplayName = "WebScripting" });
-            web01.Children.Add(new RemoteMachineItem { Name = $"{letters}A-C{numbers}WEB01-DBCWS", DisplayName = "DBCWS" });
-            
-            _remoteMachines.Add(web01);
-            
-            // MED01 - Media Services with sub-services
-            var med01 = new RemoteMachineItem
-            {
-                Name = $"{letters}A-C{numbers}MED01",
-                DisplayName = $"{letters}-C{numbers}MED01",
-                IsExpanded = false
-            };
-            
-            // Add MED01 Media Services as children
-            med01.Children.Add(new RemoteMachineItem { Name = $"{letters}A-C{numbers}MED01-MediaServer", DisplayName = "Media Server" });
-            med01.Children.Add(new RemoteMachineItem { Name = $"{letters}A-C{numbers}MED01-DroneService", DisplayName = "Drone Service" });
-            med01.Children.Add(new RemoteMachineItem { Name = $"{letters}A-C{numbers}MED01-DBCWS", DisplayName = "DBCWS" });
-            
-            _remoteMachines.Add(med01);
+                // Create parent machine item for the server
+                var serverItem = new RemoteMachineItem
+                {
+                    Name = server.Name,
+                    DisplayName = server.Name,
+                    IsExpanded = false
+                };
+
+                // Add all services as children
+                if (server.Services != null && server.Services.Count > 0)
+                {
+                    foreach (var service in server.Services)
+                    {
+                        // Create a unique identifier for the service
+                        // Format: ServerName-ServiceInternalName
+                        var serviceIdentifier = string.IsNullOrEmpty(service.InternalName) 
+                            ? $"{server.Name}-{service.DisplayName.Replace(" ", "")}"
+                            : $"{server.Name}-{service.InternalName}";
+
+                        var serviceItem = new RemoteMachineItem
+                        {
+                            Name = serviceIdentifier,
+                            DisplayName = service.DisplayName
+                        };
+
+                        serverItem.Children.Add(serviceItem);
+                    }
+
+                    System.Diagnostics.Debug.WriteLine($"  Server '{server.Name}': {server.Services.Count} services loaded");
+                }
+                else
+                {
+                    System.Diagnostics.Debug.WriteLine($"  Server '{server.Name}': No services found");
+                }
+
+                // Add the server to the remote machines collection
+                _remoteMachines.Add(serverItem);
+            }
+
+            System.Diagnostics.Debug.WriteLine($"Successfully loaded {_remoteMachines.Count} servers with topology data");
         }
 
         #endregion
