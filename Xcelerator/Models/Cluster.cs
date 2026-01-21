@@ -1,3 +1,5 @@
+using Xcelerator.Models.Topology;
+
 namespace Xcelerator.Models
 {
     public class Cluster
@@ -19,6 +21,9 @@ namespace Xcelerator.Models
         public string RefreshToken { get; set; } = string.Empty;
         public string ResourceServerBaseUri { get; set; } = string.Empty;
         public DateTime? TokenExpirationTime { get; set; }
+
+        // Infrastructure Topology
+        public ClusterNode? Topology { get; set; }
 
         public Cluster(string name, string displayName = "")
         {

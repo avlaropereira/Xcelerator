@@ -143,16 +143,16 @@ namespace Xcelerator.ViewModels
         private void InitializeClusters()
         {
             AvailableClusters.Clear();
-            
+
             try
             {
                 string clusterJsonPath = @"C:\XceleratorTool\Resources\cluster.json";
-                
+
                 if (File.Exists(clusterJsonPath))
                 {
                     string jsonContent = File.ReadAllText(clusterJsonPath);
                     var clusterConfigs = JsonSerializer.Deserialize<List<ClusterConfig>>(jsonContent);
-                    
+
                     if (clusterConfigs != null)
                     {
                         foreach (var config in clusterConfigs)
@@ -165,6 +165,9 @@ namespace Xcelerator.ViewModels
                             };
                             AvailableClusters.Add(cluster);
                         }
+
+                        // Load and map infrastructure topology
+                        LoadAndMapTopology();
                     }
                 }
             }
@@ -172,6 +175,46 @@ namespace Xcelerator.ViewModels
             {
                 // Log error and use fallback data
                 System.Diagnostics.Debug.WriteLine($"Error loading clusters from JSON: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Loads infrastructure topology from servers.json and maps it to available clusters
+        /// </summary>
+        private void LoadAndMapTopology()
+        {
+            try
+            {
+                string topologyJsonPath = @"C:\XceleratorTool\Resources\servers.json";
+
+                if (!File.Exists(topologyJsonPath))
+                {
+                    System.Diagnostics.Debug.WriteLine($"Topology file not found: {topologyJsonPath}");
+                    return;
+                }
+
+                // Load topology using the TopologyMapper service
+                var topology = TopologyMapper.LoadTopology(topologyJsonPath);
+
+                if (topology == null)
+                {
+                    System.Diagnostics.Debug.WriteLine("Failed to load topology");
+                    return;
+                }
+
+                // Map topology to available clusters
+                TopologyMapper.MapTopologyToClusters(AvailableClusters, topology);
+
+                // Optional: Print topology for debugging
+                #if DEBUG
+                TopologyMapper.PrintTopology(topology);
+                #endif
+
+                System.Diagnostics.Debug.WriteLine($"Successfully loaded and mapped topology for {AvailableClusters.Count(c => c.Topology != null)} clusters");
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error loading topology: {ex.Message}");
             }
         }
 

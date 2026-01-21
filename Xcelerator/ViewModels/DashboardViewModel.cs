@@ -1,4 +1,3 @@
-using System.Collections.ObjectModel;
 using System.Windows.Input;
 using Xcelerator.Models;
 using Xcelerator.NiceClient.Services.Auth;
