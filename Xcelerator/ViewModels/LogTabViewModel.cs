@@ -1,9 +1,9 @@
-using Xcelerator.Models;
-using Xcelerator.LogEngine.Services;
-using Xcelerator.Services;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Windows;
-using System.Collections.ObjectModel;
+using Xcelerator.LogEngine.Services;
+using Xcelerator.Models;
+using Xcelerator.Services;
 
 namespace Xcelerator.ViewModels
 {
@@ -22,7 +22,6 @@ namespace Xcelerator.ViewModels
         private string? _localFilePath;
         private string? _selectedLogLine;
         private bool _isDetailPanelVisible;
-        private string? _clusterName; // Track cluster name for log file registration
         private int _refreshIntervalMinutes;
         private System.Threading.Timer? _refreshTimer;
         private bool _isRefreshing;
@@ -34,21 +33,23 @@ namespace Xcelerator.ViewModels
         /// </summary>
         /// <param name="remoteMachineItem">The remote machine item to display logs for</param>
         /// <param name="logFileManager">The log file manager service</param>
-        /// <param name="clusterName">The cluster name for log file tracking (optional)</param>
-        public LogTabViewModel(RemoteMachineItem remoteMachineItem, LogFileManager logFileManager, string? clusterName = null)
+        /// <param name="machineName">The machine name (e.g., "SOA-C30COR01")</param>
+        /// <param name="machineItemName">The machine item name (e.g., "VC")</param>
+        public LogTabViewModel(
+            RemoteMachineItem remoteMachineItem, 
+            LogFileManager logFileManager, 
+            string? machineName = null,
+            string? machineItemName = null)
         {
-            _headerName = remoteMachineItem.DisplayName;
+            _headerName = remoteMachineItem.Name;
             _remoteMachine = remoteMachineItem;
-            _clusterName = clusterName;
             _logFileManager = logFileManager ?? throw new ArgumentNullException(nameof(logFileManager));
             _logHarvesterService = new LogHarvesterServiceAdvanced();
             _logLines = new ObservableCollection<string>();
-            
-            // Parse machine name and item from the remote machine item name
-            var (machineName, machineItemName) = ParseMachineItem(remoteMachineItem.Name);
-            _machineName = machineName;
-            _machineItemName = machineItemName;
-            
+
+            _machineName = machineName ?? string.Empty;
+            _machineItemName = machineItemName ?? string.Empty;
+
             // Load logs asynchronously
             _ = LoadLogsAsync(machineName, machineItemName);
         }
@@ -512,67 +513,6 @@ namespace Xcelerator.ViewModels
 
                 stopwatch.Stop();
             });
-        }
-
-        /// <summary>
-        /// Parses a machine-item string in the format "SO-C30COR01-VirtualCluster" 
-        /// and returns the machine name and item abbreviation
-        /// </summary>
-        /// <param name="machineItemString">The string to parse (e.g., "SO-C30COR01-VirtualCluster")</param>
-        /// <returns>A tuple containing the machine name (e.g., "SO-C30COR01") and item abbreviation (e.g., "VC")</returns>
-        private (string MachineName, string ItemAbbreviation) ParseMachineItem(string machineItemString)
-        {
-            if (string.IsNullOrWhiteSpace(machineItemString))
-            {
-                throw new ArgumentException("Machine-item string cannot be null or empty", nameof(machineItemString));
-            }
-
-            // Find the second occurrence of '-'
-            int firstDashIndex = machineItemString.IndexOf('-');
-            if (firstDashIndex == -1)
-            {
-                throw new ArgumentException($"Invalid format: '{machineItemString}'. Expected format: 'SO-C30COR01-VirtualCluster'", nameof(machineItemString));
-            }
-
-            int secondDashIndex = machineItemString.IndexOf('-', firstDashIndex + 1);
-            if (secondDashIndex == -1)
-            {
-                throw new ArgumentException($"Invalid format: '{machineItemString}'. Expected format: 'SO-C30COR01-VirtualCluster'", nameof(machineItemString));
-            }
-
-            // Extract machine name (everything before second dash)
-            string machineName = machineItemString.Substring(0, secondDashIndex);
-
-            // Extract item name (everything after second dash)
-            string itemName = machineItemString.Substring(secondDashIndex + 1);
-
-            Dictionary<string, string> remoteMachines = new Dictionary<string, string>();
-            remoteMachines.Add("VirtualCluster", "VC");
-            remoteMachines.Add("FileServer", "FileServer");
-            remoteMachines.Add("CoOpService", "CoOp");
-            remoteMachines.Add("SurvyService", "Surveys");
-            remoteMachines.Add("FSDrivePublisher", "FileServerSetUp");
-            remoteMachines.Add("DroneLetter", "DroveSvc");
-            remoteMachines.Add("DBCWS", "Not Available");
-            // API machines
-            remoteMachines.Add("L7Healthcheck", "Not Available");
-            remoteMachines.Add("DroneService", "Not Available");
-            remoteMachines.Add("APIWebsite", "API");
-            remoteMachines.Add("AutoSite", "Not Available");
-            //remoteMachines.Add("DBCWS", "DBCWS");
-            // WEB machines
-            remoteMachines.Add("Agent", "Agent");
-            remoteMachines.Add("AuthenticationServer", "AuthorizationServer");
-            remoteMachines.Add("CacheSite", "CacheSite");
-            remoteMachines.Add("inContact", "inContact");
-            remoteMachines.Add("inControl", "inControl");
-            remoteMachines.Add("ReportService", "ReportService");
-            remoteMachines.Add("Security", "Not Available");
-            remoteMachines.Add("WebScripting", "WebScripting");
-            //remoteMachines.Add("DBCWS", "DBCWS");
-
-            string itemAbbreviation = remoteMachines.TryGetValue(itemName, out var abbr) ? abbr : itemName;
-            return (machineName, itemAbbreviation);
         }
 
         /// <summary>

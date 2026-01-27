@@ -555,11 +555,68 @@ namespace Xcelerator.ViewModels
                 return;
             }
 
-            // Create a new LogTabViewModel with the remote machine's display name, log file manager, and cluster name
-            var logTab = new LogTabViewModel(remoteMachine, _logFileManager, _cluster?.Name)
+            // Extract server name and service information from topology
+            string? serverName = null;
+            string? machineItemName = null;
+
+            if (_cluster?.Topology?.Servers != null)
+            {
+                // Parse the remoteMachine.Name to extract server name
+                // Format is: {ServerName}-{ServiceInternalName}
+                var nameSegments = remoteMachine.Name.Split('-');
+
+                // Server name is typically the first 2 segments (e.g., "SOA-C30COR01")
+                if (nameSegments.Length >= 3)
+                {
+                    var potentialServerName = string.Join("-", nameSegments.Take(2));
+
+                    // Find matching server in topology
+                    var matchingServer = _cluster.Topology.Servers
+                        .FirstOrDefault(s => s.Name.Equals(potentialServerName, StringComparison.OrdinalIgnoreCase));
+
+                    if (matchingServer != null)
+                    {
+                        serverName = matchingServer.Name;
+
+                        // Find matching service by display name
+                        var matchingService = matchingServer.Services
+                            .FirstOrDefault(svc => svc.DisplayName.Equals(remoteMachine.DisplayName, StringComparison.OrdinalIgnoreCase));
+
+                        if (matchingService != null)
+                        {
+                            machineItemName = matchingService.InternalName;
+
+                            System.Diagnostics.Debug.WriteLine(
+                                $"Topology match found - Server: '{serverName}', Service: '{machineItemName}'"
+                            );
+                        }
+                    }
+                }
+            }
+
+            // Fallback to remoteMachine properties if topology lookup fails
+            if (string.IsNullOrEmpty(serverName) || string.IsNullOrEmpty(machineItemName))
+            {
+                System.Diagnostics.Debug.WriteLine(
+                    $"Topology lookup failed for '{remoteMachine.Name}', using fallback values"
+                );
+
+              
+            }
+
+            // Create a new LogTabViewModel with server name and machine item name
+            var logTab = new LogTabViewModel(
+                remoteMachine, 
+                _logFileManager, 
+                serverName,
+                machineItemName)
             {
                 RemoteMachine = remoteMachine
             };
+
+            System.Diagnostics.Debug.WriteLine(
+                $"Created log tab for Machine: '{remoteMachine.Name}', Server: '{serverName}', Service: '{machineItemName}'"
+            );
 
             // Add the new tab to the OpenTabs collection
             OpenTabs.Add(logTab);
