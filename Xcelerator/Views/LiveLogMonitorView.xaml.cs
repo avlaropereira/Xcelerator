@@ -119,14 +119,11 @@ namespace Xcelerator.Views
                 Owner = Window.GetWindow(this)
             };
 
-            if (dialog.ShowDialog() == true)
+            if (dialog.ShowDialog() == true && dialog.ServerAdded)
             {
-                string serverName = dialog.ServerName;
-
-                // TODO: Add command to ViewModel to handle adding a new server
-                // For now, you can show a message or handle the server addition logic
-                MessageBox.Show($"Server '{serverName}' will be added to {viewModel.ClusterName}", 
-                    "Add Server", MessageBoxButton.OK, MessageBoxImage.Information);
+                // Server was successfully added to the JSON file
+                // Automatically reload the topology to show the new server
+                viewModel.ReloadTopology();
             }
         }
     }

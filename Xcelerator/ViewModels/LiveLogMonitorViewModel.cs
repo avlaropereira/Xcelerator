@@ -1,4 +1,7 @@
+using System;
 using System.Collections.ObjectModel;
+using System.IO;
+using System.Linq;
 using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Input;
@@ -289,6 +292,66 @@ namespace Xcelerator.ViewModels
             }
 
             System.Diagnostics.Debug.WriteLine($"Successfully loaded {_remoteMachines.Count} servers with topology data");
+        }
+
+        /// <summary>
+        /// Reloads the topology from the servers.json file and refreshes the remote machines list
+        /// </summary>
+        public void ReloadTopology()
+        {
+            try
+            {
+                System.Diagnostics.Debug.WriteLine("Reloading topology...");
+
+                // Clear current remote machines
+                _remoteMachines.Clear();
+
+                // Reload topology for the cluster
+                if (_cluster != null)
+                {
+                    string topologyJsonPath = @"C:\XceleratorTool\Resources\servers.json";
+
+                    if (File.Exists(topologyJsonPath))
+                    {
+                        // Load the updated topology
+                        var topology = TopologyMapper.LoadTopology(topologyJsonPath);
+
+                        if (topology != null)
+                        {
+                            // Find this cluster in the topology
+                            var clusterNode = topology.Clusters
+                                .FirstOrDefault(c => c.Name.Equals(_cluster.Name, StringComparison.OrdinalIgnoreCase));
+
+                            if (clusterNode != null)
+                            {
+                                // Update the cluster's topology
+                                _cluster.Topology = clusterNode;
+
+                                // Re-initialize remote machines
+                                InitializeRemoteMachines();
+
+                                Status = $"Topology reloaded successfully - {_remoteMachines.Count} servers loaded";
+                                System.Diagnostics.Debug.WriteLine($"Topology reloaded: {_remoteMachines.Count} servers");
+                            }
+                            else
+                            {
+                                Status = $"Cluster '{_cluster.Name}' not found in topology";
+                                System.Diagnostics.Debug.WriteLine($"Cluster '{_cluster.Name}' not found in topology");
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Status = $"Error reloading topology: {ex.Message}";
+                System.Diagnostics.Debug.WriteLine($"Error reloading topology: {ex.Message}");
+                MessageBox.Show(
+                    $"Failed to reload topology:\n\n{ex.Message}",
+                    "Error",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+            }
         }
 
         #endregion
