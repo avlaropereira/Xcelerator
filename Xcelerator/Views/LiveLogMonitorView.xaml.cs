@@ -104,6 +104,31 @@ namespace Xcelerator.Views
                 e.Handled = true;
             }
         }
+
+        /// <summary>
+        /// Handles the add server button click to show the modal dialog
+        /// </summary>
+        private void AddServerButton_Click(object sender, RoutedEventArgs e)
+        {
+            // Get the ViewModel
+            if (DataContext is not LiveLogMonitorViewModel viewModel)
+                return;
+
+            var dialog = new AddServerDialog(viewModel.ClusterName)
+            {
+                Owner = Window.GetWindow(this)
+            };
+
+            if (dialog.ShowDialog() == true)
+            {
+                string serverName = dialog.ServerName;
+
+                // TODO: Add command to ViewModel to handle adding a new server
+                // For now, you can show a message or handle the server addition logic
+                MessageBox.Show($"Server '{serverName}' will be added to {viewModel.ClusterName}", 
+                    "Add Server", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+        }
     }
 }
 
