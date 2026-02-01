@@ -516,6 +516,22 @@ namespace Xcelerator.ViewModels
         }
 
         /// <summary>
+        /// Scrolls to a specific line number in the log
+        /// </summary>
+        /// <param name="lineNumber">The line number (0-based index) to scroll to</param>
+        public void ScrollToLine(int lineNumber)
+        {
+            if (lineNumber < 0 || lineNumber >= LogLines.Count)
+            {
+                System.Diagnostics.Debug.WriteLine($"Line number {lineNumber} is out of range (0-{LogLines.Count - 1})");
+                return;
+            }
+
+            // Set the selected log line to the target line
+            SelectedLogLine = LogLines[lineNumber];
+        }
+
+        /// <summary>
         /// Cleans up resources including the temporary log file
         /// The file is also tracked by LogFileManager for application-wide cleanup
         /// </summary>

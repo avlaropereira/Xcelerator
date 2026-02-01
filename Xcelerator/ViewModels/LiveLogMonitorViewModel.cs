@@ -664,17 +664,17 @@ namespace Xcelerator.ViewModels
             if (result == null || result.SourceTab is not LogTabViewModel tab)
                 return;
 
-            // Set the selected log line in the tab to show it in the detail panel
-            tab.SelectedLogLine = result.LogEntry;
-            tab.IsDetailPanelVisible = true;
-            
             // Find the tab in the OpenTabs collection and make it the active tab
             var tabIndex = OpenTabs.IndexOf(tab);
             if (tabIndex >= 0)
             {
-                // We need to trigger the TabControl to select this tab
-                // This will be handled through the SelectedTabIndex property
+                // Switch to the tab containing the search result
                 SelectedTabIndex = tabIndex;
+
+                // Scroll to the specific line number in the tab
+                // Note: LineNumber in LogSearchResult is 1-based (for display), 
+                // but ScrollToLine expects 0-based array index, so subtract 1
+                tab.ScrollToLine(result.LineNumber - 1);
             }
         }
         

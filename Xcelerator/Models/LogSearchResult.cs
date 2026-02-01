@@ -16,7 +16,7 @@ namespace Xcelerator.Models
         public string LogEntry { get; set; } = string.Empty;
 
         /// <summary>
-        /// The line number (index) in the original log file
+        /// The line number (1-based) in the original log file for display purposes
         /// </summary>
         public int LineNumber { get; set; }
 

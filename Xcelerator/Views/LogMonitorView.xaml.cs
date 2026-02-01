@@ -38,13 +38,31 @@ namespace Xcelerator.Views
                 // Scroll to the selected item when SelectedLogLine changes
                 if (!string.IsNullOrEmpty(viewModel.SelectedLogLine))
                 {
-                    ScrollToSelectedItem();
+                    // If detail panel is becoming visible, delay scroll until after layout update
+                    if (viewModel.IsDetailPanelVisible)
+                    {
+                        // Use Dispatcher to scroll after the layout pass completes
+                        Dispatcher.BeginInvoke(new Action(() => ScrollToSelectedItem()), 
+                            System.Windows.Threading.DispatcherPriority.Loaded);
+                    }
+                    else
+                    {
+                        ScrollToSelectedItem();
+                    }
                 }
             }
             else if (e.PropertyName == nameof(LogTabViewModel.IsDetailPanelVisible) && sender is LogTabViewModel viewModel2)
             {
                 // Update detail panel row height based on visibility
                 UpdateDetailPanelRowHeight(viewModel2.IsDetailPanelVisible);
+
+                // If detail panel is opening and there's a selected line, ensure it's still visible
+                if (viewModel2.IsDetailPanelVisible && !string.IsNullOrEmpty(viewModel2.SelectedLogLine))
+                {
+                    // Scroll after layout completes
+                    Dispatcher.BeginInvoke(new Action(() => ScrollToSelectedItem()), 
+                        System.Windows.Threading.DispatcherPriority.Loaded);
+                }
             }
         }
 
@@ -55,6 +73,9 @@ namespace Xcelerator.Views
             if (listBox != null && listBox.SelectedItem != null)
             {
                 listBox.ScrollIntoView(listBox.SelectedItem);
+
+                // Ensure the item container is brought into view as well
+                listBox.UpdateLayout();
             }
         }
 
