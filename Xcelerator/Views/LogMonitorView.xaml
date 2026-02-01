@@ -10,12 +10,12 @@
     <converters:LogLineToColoredSegmentsConverter x:Key="LogLineToColoredSegmentsConverter"/>
     <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
 </UserControl.Resources>
-    <Grid>
+    <Grid x:Name="MainGrid">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
+            <RowDefinition Height="2*" MinHeight="150"/>
             <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
+            <RowDefinition x:Name="DetailPanelRow" Height="0" MinHeight="0" MaxHeight="{Binding ActualHeight, ElementName=LogLinesListBox, FallbackValue=350}"/>
         </Grid.RowDefinitions>
         
         <!-- Status Bar -->
@@ -192,20 +192,16 @@
         </GridSplitter>
         
         <!-- Detail Panel -->
-        <Border Grid.Row="3"
-                MinHeight="0"
-                MaxHeight="400">
+        <Border Grid.Row="3">
             <Border.Style>
                 <Style TargetType="Border">
                     <Setter Property="Background" Value="#FFF8F9FA"/>
                     <Setter Property="BorderBrush" Value="#FF0078D4"/>
                     <Setter Property="BorderThickness" Value="0,2,0,0"/>
                     <Setter Property="Padding" Value="15"/>
-                    <Setter Property="Height" Value="200"/>
                     <Setter Property="Visibility" Value="Visible"/>
                     <Style.Triggers>
                         <DataTrigger Binding="{Binding IsDetailPanelVisible}" Value="False">
-                            <Setter Property="Height" Value="0"/>
                             <Setter Property="Visibility" Value="Collapsed"/>
                             <Setter Property="BorderThickness" Value="0"/>
                             <Setter Property="Padding" Value="0"/>

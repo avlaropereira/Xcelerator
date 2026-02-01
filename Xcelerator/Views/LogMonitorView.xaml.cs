@@ -41,6 +41,11 @@ namespace Xcelerator.Views
                     ScrollToSelectedItem();
                 }
             }
+            else if (e.PropertyName == nameof(LogTabViewModel.IsDetailPanelVisible) && sender is LogTabViewModel viewModel2)
+            {
+                // Update detail panel row height based on visibility
+                UpdateDetailPanelRowHeight(viewModel2.IsDetailPanelVisible);
+            }
         }
 
         private void ScrollToSelectedItem()
@@ -50,6 +55,28 @@ namespace Xcelerator.Views
             if (listBox != null && listBox.SelectedItem != null)
             {
                 listBox.ScrollIntoView(listBox.SelectedItem);
+            }
+        }
+
+        /// <summary>
+        /// Updates the detail panel row height to enable GridSplitter resizing
+        /// </summary>
+        private void UpdateDetailPanelRowHeight(bool isVisible)
+        {
+            var row = FindName("DetailPanelRow") as RowDefinition;
+            if (row != null)
+            {
+                if (isVisible)
+                {
+                    // Set to 1* for star-based sizing, enabling GridSplitter to work
+                    // MaxHeight is already bound to LogLinesListBox ActualHeight (50% constraint)
+                    row.Height = new GridLength(1, GridUnitType.Star);
+                }
+                else
+                {
+                    // Collapse to 0 when hidden
+                    row.Height = new GridLength(0, GridUnitType.Pixel);
+                }
             }
         }
 
