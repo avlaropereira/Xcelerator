@@ -27,6 +27,8 @@ namespace Xcelerator.ViewModels
         private bool _isRefreshing;
         private string _machineName = string.Empty;
         private string _machineItemName = string.Empty;
+        private double _loadTimeSeconds;
+        private bool _isRefreshDropdownEnabled;
 
         /// <summary>
         /// Initializes a new instance of the LogTabViewModel class
@@ -64,12 +66,13 @@ namespace Xcelerator.ViewModels
             const int maxRetries = 3;
             int attemptNumber = 0;
             Exception? lastException = null;
-            
+
             var stopwatch = System.Diagnostics.Stopwatch.StartNew();
-            
+
             try
             {
                 IsLoading = true;
+                IsRefreshDropdownEnabled = false;
                 
                 while (attemptNumber < maxRetries)
                 {
@@ -134,7 +137,10 @@ namespace Xcelerator.ViewModels
             }
             finally
             {
+                stopwatch.Stop();
+                LoadTimeSeconds = stopwatch.Elapsed.TotalSeconds;
                 IsLoading = false;
+                IsRefreshDropdownEnabled = true;
             }
         }
 
@@ -365,6 +371,37 @@ namespace Xcelerator.ViewModels
         {
             get => _isRefreshing;
             private set => SetProperty(ref _isRefreshing, value);
+        }
+
+        /// <summary>
+        /// The time it took to load logs in seconds
+        /// </summary>
+        public double LoadTimeSeconds
+        {
+            get => _loadTimeSeconds;
+            private set => SetProperty(ref _loadTimeSeconds, value);
+        }
+
+        /// <summary>
+        /// Indicates whether the refresh interval dropdown is enabled (after initial load)
+        /// </summary>
+        public bool IsRefreshDropdownEnabled
+        {
+            get => _isRefreshDropdownEnabled;
+            private set => SetProperty(ref _isRefreshDropdownEnabled, value);
+        }
+
+        /// <summary>
+        /// Gets the minimum refresh interval in minutes based on load time (load time + 1 minute)
+        /// </summary>
+        public int MinimumRefreshIntervalMinutes
+        {
+            get
+            {
+                // Convert load time to minutes and round up, then add 1 minute buffer
+                int loadTimeMinutes = (int)Math.Ceiling(LoadTimeSeconds / 60.0);
+                return loadTimeMinutes + 1;
+            }
         }
 
         /// <summary>

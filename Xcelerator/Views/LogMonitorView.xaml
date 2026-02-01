@@ -8,6 +8,7 @@
          d:DesignHeight="450" d:DesignWidth="800">
 <UserControl.Resources>
     <converters:LogLineToColoredSegmentsConverter x:Key="LogLineToColoredSegmentsConverter"/>
+    <converters:RefreshIntervalItemVisibilityConverter x:Key="RefreshIntervalItemVisibilityConverter"/>
     <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
 </UserControl.Resources>
     <Grid x:Name="MainGrid">
@@ -71,10 +72,19 @@
                           VerticalContentAlignment="Center"
                           SelectedValue="{Binding RefreshIntervalMinutes, Mode=TwoWay}"
                           SelectedValuePath="Tag"
+                          IsEnabled="{Binding IsRefreshDropdownEnabled}"
                           ToolTip="Auto-refresh interval (minutes)">
                     <ComboBox.ItemContainerStyle>
                         <Style TargetType="ComboBoxItem">
                             <Setter Property="HorizontalContentAlignment" Value="Center"/>
+                            <Setter Property="Visibility">
+                                <Setter.Value>
+                                    <MultiBinding Converter="{StaticResource RefreshIntervalItemVisibilityConverter}">
+                                        <Binding Path="Tag" RelativeSource="{RelativeSource Self}"/>
+                                        <Binding Path="DataContext.LoadTimeSeconds" RelativeSource="{RelativeSource AncestorType=ComboBox}"/>
+                                    </MultiBinding>
+                                </Setter.Value>
+                            </Setter>
                         </Style>
                     </ComboBox.ItemContainerStyle>
                     <ComboBoxItem Content="Off" Tag="0" IsSelected="True"/>
