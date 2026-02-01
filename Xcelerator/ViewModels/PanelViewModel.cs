@@ -238,28 +238,40 @@ namespace Xcelerator.ViewModels
         {
             if (cluster == null) return;
 
-            if (!SelectedClusters.Any(c => c.Name == cluster.Name))
-            {
-                // Ensure the cluster starts completely clean when first selected
-                cluster.AccessKey = string.Empty;
-                cluster.SecretKey = string.Empty;
-                cluster.AuthToken = string.Empty;
-                cluster.TokenType = string.Empty;
-                cluster.RefreshToken = string.Empty;
-                cluster.ResourceServerBaseUri = string.Empty;
-                cluster.TokenExpirationTime = null;
-                cluster.SelectedModule = string.Empty;
-                cluster.IsInDashboardMode = false;
-                
-                cluster.IsSelected = true;
-                SelectedClusters.Add(cluster);
-                _mainViewModel.Credentials.SelectedClusters.Add(cluster);
+            // Check if cluster is already selected
+            if (SelectedClusters.Any(c => c.Name == cluster.Name))
+                return;
 
-                // Navigate directly to Dashboard when cluster is selected
-                SelectedClusterForLogin = cluster;
-                cluster.IsInDashboardMode = true;
-                NavigateToDashboard();
+            // Check if another cluster is already selected
+            if (SelectedClusters.Count > 0)
+            {
+                System.Windows.MessageBox.Show(
+                    "Only one cluster can be worked on at a time. Please deselect the current cluster before selecting a new one.",
+                    "Single Cluster Selection",
+                    System.Windows.MessageBoxButton.OK,
+                    System.Windows.MessageBoxImage.Information);
+                return;
             }
+
+            // Ensure the cluster starts completely clean when first selected
+            cluster.AccessKey = string.Empty;
+            cluster.SecretKey = string.Empty;
+            cluster.AuthToken = string.Empty;
+            cluster.TokenType = string.Empty;
+            cluster.RefreshToken = string.Empty;
+            cluster.ResourceServerBaseUri = string.Empty;
+            cluster.TokenExpirationTime = null;
+            cluster.SelectedModule = string.Empty;
+            cluster.IsInDashboardMode = false;
+
+            cluster.IsSelected = true;
+            SelectedClusters.Add(cluster);
+            _mainViewModel.Credentials.SelectedClusters.Add(cluster);
+
+            // Navigate directly to Dashboard when cluster is selected
+            SelectedClusterForLogin = cluster;
+            cluster.IsInDashboardMode = true;
+            NavigateToDashboard();
         }
 
         /// <summary>
