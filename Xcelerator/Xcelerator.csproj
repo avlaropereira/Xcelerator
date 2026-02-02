@@ -6,18 +6,43 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
+    <!-- Disable trimming to prevent JSON serialization issues in published apps -->
+    <PublishTrimmed>false</PublishTrimmed>
+    <TrimMode>none</TrimMode>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="MaterialDesignColors" Version="2.1.4" />
     <PackageReference Include="MaterialDesignThemes" Version="4.9.0" />
-    <PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.1" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.1" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.2" />
     <PackageReference Include="Microsoft.Xaml.Behaviors.Wpf" Version="1.1.77" />
+    <PackageReference Include="System.Diagnostics.DiagnosticSource" Version="10.0.1" />
+    <PackageReference Include="Velopack" Version="0.0.1298" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Xcelerator.NiceClient\Xcelerator.NiceClient.csproj" />
     <ProjectReference Include="..\Xcelerator.LogEngine\Xcelerator.LogEngine.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <None Update="Resources\**\*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <Target Name="CopyConfigToExe" AfterTargets="Build">
+    <Copy SourceFiles="$(OutputPath)\$(AssemblyName).dll.config" DestinationFiles="$(OutputPath)\$(AssemblyName).exe.config" Condition="Exists('$(OutputPath)\$(AssemblyName).dll.config')" />
+  </Target>
+
+  <!-- Copy resource files from C:\XceleratorTool\Resources to publish output if they exist -->
+  <Target Name="CopyExternalResources" AfterTargets="Publish" Condition="Exists('C:\XceleratorTool\Resources')">
+    <ItemGroup>
+      <ExternalResourceFiles Include="C:\XceleratorTool\Resources\*.json" />
+    </ItemGroup>
+    <Copy SourceFiles="@(ExternalResourceFiles)" DestinationFolder="$(PublishDir)Resources\" SkipUnchangedFiles="true" Condition="'@(ExternalResourceFiles)' != ''" />
+    <Message Text="Copied external resource files to $(PublishDir)Resources\" Importance="high" Condition="'@(ExternalResourceFiles)' != ''" />
+  </Target>
 
 </Project>

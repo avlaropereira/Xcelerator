@@ -135,7 +135,7 @@
 
                                     <!-- Help Menu -->
                                     <MenuItem Header="_Help" Padding="8,4">
-                                        <MenuItem Header="_Check Updates"/>
+                                        <MenuItem Header="_Check Updates" Click="CheckUpdates_Click"/>
                                     </MenuItem>
                                 </Menu>
 

@@ -1,6 +1,8 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using System.Windows;
+using Velopack;
 using Xcelerator.NiceClient.Services.Auth;
 using Xcelerator.Services;
 using Xcelerator.ViewModels;
@@ -17,6 +19,11 @@ namespace Xcelerator
         public App()
         {
             var builder = Host.CreateApplicationBuilder();
+
+            // Clear default logging providers and reconfigure without EventLog
+            builder.Logging.ClearProviders();
+            builder.Logging.AddConsole();
+            builder.Logging.AddDebug();
 
             // --- 1. Register the NICE Services ---
             builder.Services.AddHttpClient<IAuthService, AuthService>();
@@ -37,6 +44,9 @@ namespace Xcelerator
 
         protected override async void OnStartup(StartupEventArgs e)
         {
+            // Velopack must be initialized first, before anything else
+            VelopackApp.Build().Run();
+
             await AppHost!.StartAsync();
 
             var startupForm = AppHost.Services.GetRequiredService<MainWindow>();

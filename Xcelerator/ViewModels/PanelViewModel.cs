@@ -138,43 +138,119 @@ namespace Xcelerator.ViewModels
         #region Private Methods
 
         /// <summary>
+        /// Resolve the path to a resource file, checking multiple locations
+        /// </summary>
+        private static string? ResolveResourcePath(string filename)
+        {
+            DiagnosticHelper.Log($"[ResolveResourcePath] Looking for: {filename}");
+            DiagnosticHelper.Log($"[ResolveResourcePath] Base Directory: {AppDomain.CurrentDomain.BaseDirectory}");
+
+            // List of locations to check
+            var locationsToCheck = new List<string>
+            {
+                // 1. Resources folder relative to base directory
+                Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Resources", filename),
+
+                // 2. Resources folder relative to executable location
+                Path.Combine(Path.GetDirectoryName(System.Diagnostics.Process.GetCurrentProcess().MainModule?.FileName ?? "") ?? "", "Resources", filename),
+
+                // 3. Directly in base directory
+                Path.Combine(AppDomain.CurrentDomain.BaseDirectory, filename),
+
+                // 4. Fallback to C:\XceleratorTool\Resources
+                Path.Combine(@"C:\XceleratorTool\Resources", filename)
+            };
+
+            foreach (var path in locationsToCheck)
+            {
+                DiagnosticHelper.Log($"[ResolveResourcePath] Checking: {path}");
+                System.Diagnostics.Debug.WriteLine($"[ResolveResourcePath] Checking: {path}");
+
+                if (!string.IsNullOrEmpty(path) && File.Exists(path))
+                {
+                    DiagnosticHelper.Log($"[ResolveResourcePath] ✓ FOUND at: {path}");
+                    System.Diagnostics.Debug.WriteLine($"[ResolveResourcePath] Found at: {path}");
+                    return path;
+                }
+                else
+                {
+                    DiagnosticHelper.Log($"[ResolveResourcePath] ✗ Not found: {path}");
+                }
+            }
+
+            DiagnosticHelper.Log($"[ResolveResourcePath] ❌ NOT FOUND: {filename}");
+            System.Diagnostics.Debug.WriteLine($"[ResolveResourcePath] NOT FOUND: {filename}");
+            return null;
+        }
+
+        /// <summary>
         /// Initialize available clusters with sample data
         /// </summary>
         private void InitializeClusters()
         {
             AvailableClusters.Clear();
+            DiagnosticHelper.Log("[InitializeClusters] Starting cluster initialization");
 
             try
             {
-                string clusterJsonPath = @"C:\XceleratorTool\Resources\cluster.json";
+                string? clusterJsonPath = ResolveResourcePath("cluster.json");
 
-                if (File.Exists(clusterJsonPath))
+                if (string.IsNullOrEmpty(clusterJsonPath) || !File.Exists(clusterJsonPath))
                 {
-                    string jsonContent = File.ReadAllText(clusterJsonPath);
-                    var clusterConfigs = JsonSerializer.Deserialize<List<ClusterConfig>>(jsonContent);
+                    DiagnosticHelper.Log("[InitializeClusters] ❌ ERROR: cluster.json not found!");
+                    System.Diagnostics.Debug.WriteLine($"[InitializeClusters] ERROR: cluster.json not found!");
 
-                    if (clusterConfigs != null)
+                    var logPath = DiagnosticHelper.GetLogFilePath();
+                    System.Windows.MessageBox.Show(
+                        $"Unable to load cluster configuration.\n\ncluster.json not found in any expected location.\n\nCheck diagnostic log at:\n{logPath}",
+                        "Configuration Error",
+                        System.Windows.MessageBoxButton.OK,
+                        System.Windows.MessageBoxImage.Error);
+
+                    DiagnosticHelper.OpenLogFile();
+                    return;
+                }
+
+                DiagnosticHelper.Log($"[InitializeClusters] Reading file: {clusterJsonPath}");
+                string jsonContent = File.ReadAllText(clusterJsonPath);
+                DiagnosticHelper.Log($"[InitializeClusters] File read successfully, length: {jsonContent.Length} chars");
+
+                var clusterConfigs = JsonSerializer.Deserialize<List<ClusterConfig>>(jsonContent);
+                DiagnosticHelper.Log($"[InitializeClusters] Deserialized {clusterConfigs?.Count ?? 0} cluster configs");
+
+                if (clusterConfigs != null)
+                {
+                    foreach (var config in clusterConfigs)
                     {
-                        foreach (var config in clusterConfigs)
+                        var cluster = new Cluster(config.Name, config.Name)
                         {
-                            var cluster = new Cluster(config.Name, config.Name)
-                            {
-                                ApiBaseURL = config.ApiBaseURL,
-                                Login = config.Login,
-                                TypeOfCluster = config.TypeOfCluster
-                            };
-                            AvailableClusters.Add(cluster);
-                        }
-
-                        // Load and map infrastructure topology
-                        LoadAndMapTopology();
+                            ApiBaseURL = config.ApiBaseURL,
+                            Login = config.Login,
+                            TypeOfCluster = config.TypeOfCluster
+                        };
+                        AvailableClusters.Add(cluster);
+                        DiagnosticHelper.Log($"[InitializeClusters] Added cluster: {config.Name}");
                     }
+
+                    DiagnosticHelper.Log($"[InitializeClusters] ✓ Successfully loaded {AvailableClusters.Count} clusters");
+
+                    // Load and map infrastructure topology
+                    LoadAndMapTopology();
                 }
             }
             catch (Exception ex)
             {
-                // Log error and use fallback data
+                DiagnosticHelper.Log($"[InitializeClusters] ❌ EXCEPTION: {ex.GetType().Name}: {ex.Message}");
+                DiagnosticHelper.Log($"[InitializeClusters] Stack trace: {ex.StackTrace}");
                 System.Diagnostics.Debug.WriteLine($"Error loading clusters from JSON: {ex.Message}");
+
+                System.Windows.MessageBox.Show(
+                    $"Error loading cluster configuration:\n\n{ex.Message}\n\nCheck diagnostic log at:\n{DiagnosticHelper.GetLogFilePath()}",
+                    "Configuration Error",
+                    System.Windows.MessageBoxButton.OK,
+                    System.Windows.MessageBoxImage.Error);
+
+                DiagnosticHelper.OpenLogFile();
             }
         }
 
@@ -185,11 +261,11 @@ namespace Xcelerator.ViewModels
         {
             try
             {
-                string topologyJsonPath = @"C:\XceleratorTool\Resources\servers.json";
+                string? topologyJsonPath = ResolveResourcePath("servers.json");
 
-                if (!File.Exists(topologyJsonPath))
+                if (string.IsNullOrEmpty(topologyJsonPath) || !File.Exists(topologyJsonPath))
                 {
-                    System.Diagnostics.Debug.WriteLine($"Topology file not found: {topologyJsonPath}");
+                    System.Diagnostics.Debug.WriteLine($"[LoadAndMapTopology] servers.json not found");
                     return;
                 }
 
