@@ -34,11 +34,12 @@
                             <Grid>
                                 <Grid.RowDefinitions>
                                     <RowDefinition Height="32"/>
+                                    <RowDefinition Height="Auto"/>
                                     <RowDefinition Height="*"/>
                                 </Grid.RowDefinitions>
-                                
+
                                 <!-- Title Bar -->
-                                <Border Grid.Row="0" 
+                                <Border Grid.Row="0"
                                         Background="#FFF8F9FA" 
                                         CornerRadius="12,12,0,0"
                                         MouseLeftButtonDown="TitleBar_MouseLeftButtonDown">
@@ -89,9 +90,57 @@
                                         </StackPanel>
                                     </Grid>
                                 </Border>
-                                
+
+                                <!-- Menu Bar -->
+                                <Menu Grid.Row="1" 
+                                      Background="#FFF8F9FA"
+                                      BorderBrush="#FFE0E0E0"
+                                      BorderThickness="0,1,0,1">
+                                    <!-- File Menu -->
+                                    <MenuItem Header="_File" Padding="8,4" Visibility="Collapsed">
+                                        <MenuItem Header="_Open"/>
+                                        <MenuItem Header="_Save As"/>
+                                        <Separator/>
+                                        <MenuItem Header="E_xit"/>
+                                    </MenuItem>
+
+                                    <!-- Edit Menu -->
+                                    <MenuItem Header="_Edit" Padding="8,4" Visibility="Collapsed">
+                                        <MenuItem Header="_Copy"/>
+                                        <MenuItem Header="Copy as _HTML"/>
+                                    </MenuItem>
+
+                                    <!-- Search Menu -->
+                                    <MenuItem Header="_Search" Padding="8,4" Visibility="Collapsed">
+                                        <MenuItem Header="Find _Next"/>
+                                        <MenuItem Header="Find _Previous"/>
+                                        <Separator/>
+                                        <MenuItem Header="_Mark All Matches"/>
+                                        <MenuItem Header="_Unmark All Matches"/>
+                                        <Separator/>
+                                        <MenuItem Header="Next _Bookmark"/>
+                                        <MenuItem Header="Previous B_ookmark"/>
+                                        <MenuItem Header="_Toggle Bookmark"/>
+                                        <MenuItem Header="_Invert All Bookmarks"/>
+                                        <MenuItem Header="_Clean Bookmarks"/>
+                                        <Separator/>
+                                        <MenuItem Header="_Hide Bookmarked Lines"/>
+                                        <MenuItem Header="Hide _Non-Bookmarked Lines"/>
+                                        <MenuItem Header="Toggle _Hidden Lines"/>
+                                        <MenuItem Header="_Show All Hidden Lines"/>
+                                        <Separator/>
+                                        <MenuItem Header="Hide _Selected Lines"/>
+                                        <MenuItem Header="U_nhide Selected Lines"/>
+                                    </MenuItem>
+
+                                    <!-- Help Menu -->
+                                    <MenuItem Header="_Help" Padding="8,4">
+                                        <MenuItem Header="_Check Updates"/>
+                                    </MenuItem>
+                                </Menu>
+
                                 <!-- Content -->
-                                <ContentPresenter Grid.Row="1" 
+                                <ContentPresenter Grid.Row="2"
                                                   Content="{TemplateBinding Content}"/>
                             </Grid>
                         </Border>
