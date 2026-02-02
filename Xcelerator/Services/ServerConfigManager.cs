@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using Xcelerator.Models.Topology;
+using Xcelerator.Utilities;
 
 namespace Xcelerator.Services
 {
@@ -13,45 +14,7 @@ namespace Xcelerator.Services
     /// </summary>
     public static class ServerConfigManager
     {
-        /// <summary>
-        /// Gets the path to servers.json, checking multiple locations
-        /// </summary>
-        private static string GetServersJsonPath()
-        {
-            // List of locations to check
-            var locationsToCheck = new List<string>
-            {
-                // 1. Resources folder relative to base directory
-                Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Resources", "servers.json"),
-
-                // 2. Resources folder relative to executable location
-                Path.Combine(Path.GetDirectoryName(System.Diagnostics.Process.GetCurrentProcess().MainModule?.FileName ?? "") ?? "", "Resources", "servers.json"),
-
-                // 3. Directly in base directory
-                Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "servers.json"),
-
-                // 4. Fallback to C:\XceleratorTool\Resources
-                @"C:\XceleratorTool\Resources\servers.json"
-            };
-
-            System.Diagnostics.Debug.WriteLine($"[ServerConfigManager] Looking for servers.json");
-
-            foreach (var path in locationsToCheck)
-            {
-                System.Diagnostics.Debug.WriteLine($"[ServerConfigManager] Checking: {path}");
-                if (!string.IsNullOrEmpty(path) && File.Exists(path))
-                {
-                    System.Diagnostics.Debug.WriteLine($"[ServerConfigManager] Found at: {path}");
-                    return path;
-                }
-            }
-
-            System.Diagnostics.Debug.WriteLine($"[ServerConfigManager] WARNING: servers.json not found in any location!");
-            // Return fallback path even if it doesn't exist - let caller handle the error
-            return @"C:\XceleratorTool\Resources\servers.json";
-        }
-
-        private static string ServersJsonPath => GetServersJsonPath();
+        private static string ServersJsonPath => ConfigurationPathHelper.GetServersJsonPath();
 
         /// <summary>
         /// Parses a server name to extract cluster identifier and server type

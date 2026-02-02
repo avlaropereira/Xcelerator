@@ -7,6 +7,7 @@ using System.Windows;
 using System.Windows.Input;
 using Xcelerator.Models;
 using Xcelerator.Services;
+using Xcelerator.Utilities;
 
 namespace Xcelerator.ViewModels
 {
@@ -309,7 +310,7 @@ namespace Xcelerator.ViewModels
                 // Reload topology for the cluster
                 if (_cluster != null)
                 {
-                    string topologyJsonPath = @"C:\XceleratorTool\Resources\servers.json";
+                    string topologyJsonPath = ConfigurationPathHelper.GetServersJsonPath();
 
                     if (File.Exists(topologyJsonPath))
                     {

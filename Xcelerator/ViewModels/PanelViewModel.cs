@@ -7,6 +7,7 @@ using System.Windows.Input;
 using Xcelerator.Models;
 using Xcelerator.NiceClient.Services.Auth;
 using Xcelerator.Services;
+using Xcelerator.Utilities;
 
 namespace Xcelerator.ViewModels
 {
@@ -138,52 +139,6 @@ namespace Xcelerator.ViewModels
         #region Private Methods
 
         /// <summary>
-        /// Resolve the path to a resource file, checking multiple locations
-        /// </summary>
-        private static string? ResolveResourcePath(string filename)
-        {
-            DiagnosticHelper.Log($"[ResolveResourcePath] Looking for: {filename}");
-            DiagnosticHelper.Log($"[ResolveResourcePath] Base Directory: {AppDomain.CurrentDomain.BaseDirectory}");
-
-            // List of locations to check
-            var locationsToCheck = new List<string>
-            {
-                // 1. Resources folder relative to base directory
-                Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Resources", filename),
-
-                // 2. Resources folder relative to executable location
-                Path.Combine(Path.GetDirectoryName(System.Diagnostics.Process.GetCurrentProcess().MainModule?.FileName ?? "") ?? "", "Resources", filename),
-
-                // 3. Directly in base directory
-                Path.Combine(AppDomain.CurrentDomain.BaseDirectory, filename),
-
-                // 4. Fallback to C:\XceleratorTool\Resources
-                Path.Combine(@"C:\XceleratorTool\Resources", filename)
-            };
-
-            foreach (var path in locationsToCheck)
-            {
-                DiagnosticHelper.Log($"[ResolveResourcePath] Checking: {path}");
-                System.Diagnostics.Debug.WriteLine($"[ResolveResourcePath] Checking: {path}");
-
-                if (!string.IsNullOrEmpty(path) && File.Exists(path))
-                {
-                    DiagnosticHelper.Log($"[ResolveResourcePath] ✓ FOUND at: {path}");
-                    System.Diagnostics.Debug.WriteLine($"[ResolveResourcePath] Found at: {path}");
-                    return path;
-                }
-                else
-                {
-                    DiagnosticHelper.Log($"[ResolveResourcePath] ✗ Not found: {path}");
-                }
-            }
-
-            DiagnosticHelper.Log($"[ResolveResourcePath] ❌ NOT FOUND: {filename}");
-            System.Diagnostics.Debug.WriteLine($"[ResolveResourcePath] NOT FOUND: {filename}");
-            return null;
-        }
-
-        /// <summary>
         /// Initialize available clusters with sample data
         /// </summary>
         private void InitializeClusters()
@@ -193,7 +148,7 @@ namespace Xcelerator.ViewModels
 
             try
             {
-                string? clusterJsonPath = ResolveResourcePath("cluster.json");
+                string clusterJsonPath = ConfigurationPathHelper.GetClusterJsonPath();
 
                 if (string.IsNullOrEmpty(clusterJsonPath) || !File.Exists(clusterJsonPath))
                 {
@@ -261,7 +216,7 @@ namespace Xcelerator.ViewModels
         {
             try
             {
-                string? topologyJsonPath = ResolveResourcePath("servers.json");
+                string topologyJsonPath = ConfigurationPathHelper.GetServersJsonPath();
 
                 if (string.IsNullOrEmpty(topologyJsonPath) || !File.Exists(topologyJsonPath))
                 {
