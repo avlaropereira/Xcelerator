@@ -52,7 +52,7 @@ namespace Xcelerator
             try
             {
                 // Create update manager with the deployment path
-                var updateManager = new UpdateManager(@"C:\Xcelerator-App");
+                var updateManager = new UpdateManager(@"\\SOA-QACTL01Xcelerator\Remote");
 
                 // Check for updates
                 var newVersion = await updateManager.CheckForUpdatesAsync();
