@@ -1,178 +1,147 @@
-# Xcelerator WPF Application
+# Xcelerator Documentation
 
-A modern Windows-inspired WPF application built with C# and .NET 8, featuring a multi-step workflow for cluster selection, authentication, and dashboard navigation.
+Welcome to the Xcelerator project documentation. This folder contains comprehensive documentation for all features, bug fixes, configurations, and guides related to the Xcelerator application.
 
-## Features
+## 📁 Documentation Structure
 
-### 🎨 Modern UI Design
-- **Windows-inspired styling** with rounded corners, subtle gradients, and soft shadows
-- **Custom window chrome** with minimize and close buttons
-- **Responsive layout** that adapts to window resizing
-- **Light theme** with modern color palette
+### [Features](./Features/)
+Documentation for new features and enhancements implemented in the application.
 
-### 🔄 Multi-Step Workflow
-1. **Cluster Selection Page**
-   - Multi-select dropdown for clusters (sc1, sc10, etc.)
-   - Selected clusters displayed as pill-shaped tags
-   - Continue button enabled only when clusters are selected
+- **ADD_SERVER_FEATURE.md** - Dynamic server addition to topology
+- **ADD_SERVER_VALIDATION_UPDATE.md** - Server validation improvements
+- **AUTO_REFRESH_SMART_FILTERING.md** - Smart filtering for auto-refresh intervals
+- **AUTO_RELOAD_TOPOLOGY.md** - Automatic topology reloading
+- **CLEANUP_FEATURE_DOCUMENTATION.md** - Log cleanup features
+- **CLUSTER_LOG_CLEANUP_FEATURE.md** - Cluster-specific log cleanup
+- **CODE_CLEANUP_LOGTAB.md** - LogTab code improvements
+- **COLLAPSE_EXPAND_FEATURE.md** - Tree view collapse/expand functionality
+- **HIERARCHICAL_SEARCH_IMPLEMENTATION.md** - Hierarchical search in logs
+- **LOG_LOADING_OPTIMIZATIONS.md** - Performance optimizations for log loading
+- **MODULE_SINGLE_SELECTION_FEATURE.md** - Single module selection enforcement
+- **SEARCH_NAVIGATION_IMPLEMENTATION.md** - Search result navigation
+- **SEARCH_RESULT_NAVIGATION.md** - Navigation within search results
 
-2. **Login Page**
-   - Access key and Secret key input fields
-   - Password masking for secret key
-   - Sign in button with validation
-   - Selected clusters displayed in left panel
+### [BugFixes](./BugFixes/)
+Documentation for bug fixes and corrections.
 
-3. **Dashboard Page**
-   - Navigation buttons for different modules:
-     - ContactOrchestrator
-     - ContactForge
-     - AgentForge
-     - ConnectGrid
-     - PulseOps
-   - Go back functionality
-   - Content placeholder area
+- **ASSEMBLY_DEPENDENCY_FIX.md** - Assembly dependency resolution fixes
+- **CLUSTER_MAPPING_FIX.md** - Cluster mapping corrections
+- **CRITICAL_BUG_FIX.md** - Critical bug resolutions
+- **FINAL_SOLUTION_TRIMMING_FIX.md** - String trimming fixes
+- **JSON_DESERIALIZATION_FIX.md** - JSON deserialization corrections
+- **MODULES_DISABLED_STATUS.md** - Module state management fixes
+- **OFF_BY_ONE_FIX.md** - Index calculation corrections
+- **SEARCH_FREEZE_FIX.md** - Search freezing issue resolution
+- **WPF_BINDING_ERRORS_FIXED.md** - WPF binding error corrections
 
-### 🏗️ Architecture
-- **MVVM Pattern** with proper separation of concerns
-- **Data binding** with INotifyPropertyChanged
-- **Command pattern** for user interactions
-- **Navigation system** with smooth transitions
+### [UI](./UI/)
+Documentation for user interface improvements and fixes.
 
-## Project Structure
+- **DETAIL_PANEL_SCROLL_FIX.md** - Detail panel scrolling improvements
+- **GRID_SPLITTER_RESPONSIVE_UPDATE.md** - GridSplitter responsiveness enhancements
 
-```
-Xcelerator/
-├── Models/
-│   ├── Cluster.cs              # Cluster data model
-│   └── LoginCredentials.cs     # Login credentials model
-├── ViewModels/
-│   ├── BaseViewModel.cs        # Base ViewModel with INotifyPropertyChanged
-│   ├── MainViewModel.cs        # Main navigation ViewModel
-│   ├── ClusterSelectionViewModel.cs
-│   ├── LoginViewModel.cs
-│   └── DashboardViewModel.cs
-├── Views/
-│   ├── ClusterSelectionView.xaml
-│   ├── LoginView.xaml
-│   └── DashboardView.xaml
-├── MainWindow.xaml             # Main application window
-└── App.xaml                    # Application entry point
-```
+### [Topology](./Topology/)
+Documentation related to infrastructure topology mapping and integration.
 
-## Getting Started
+- **AUTO_CLUSTER_CREATION.md** - Automatic cluster creation
+- **LIVELOGMONITOR_TOPOLOGY_INTEGRATION.md** - Topology integration in LiveLogMonitor
+- **LOGTAB_TOPOLOGY_INTEGRATION.md** - Topology integration in LogTab
+- **QUICK_START_TOPOLOGY.md** - Quick start guide for topology
+- **TOPOLOGY_IMPLEMENTATION_GUIDE.md** - Complete topology implementation guide
 
-### Prerequisites
-- .NET 8.0 SDK or later
-- Visual Studio 2022 or VS Code with C# extension
+### [Configuration](./Configuration/)
+Documentation for configuration management and authentication.
 
-### Building and Running
+- **AUTHENTICATION_USAGE.md** - Using authenticated API calls
+- **CONFIGURATION_PATH_FIX.md** - Configuration path resolution and LocalAppData support
 
-1. **Clone or download the project**
-2. **Navigate to the project directory**
-   ```bash
-   cd Xcelerator
-   ```
+### [Deployment](./Deployment/)
+Documentation for publishing and deploying the application.
 
-3. **Build the project**
-   ```bash
-   dotnet build
-   ```
+- **PUBLISH_QUICK_FIX.md** - Quick fixes for publishing with resources
+- **RESOURCE_FILES_FIX.md** - Resource file deployment fixes
 
-4. **Run the application**
-   ```bash
-   dotnet run
-   ```
+### [Diagnostics](./Diagnostics/)
+Documentation for troubleshooting and diagnostics.
 
-### Usage Instructions
+- **DIAGNOSTIC_GUIDE.md** - Diagnostic logging and troubleshooting guide
 
-1. **Cluster Selection**
-   - Double-click on clusters from the list to select them
-   - Selected clusters appear as blue tags below
-   - Click the "✕" button on tags to remove them
-   - Click "Continue" when ready
+### [LogEngine](./LogEngine/)
+Documentation specific to the Xcelerator.LogEngine library.
 
-2. **Login**
-   - Enter your Access Key (username)
-   - Enter your Secret Key (password)
-   - Click "Sign in" to proceed
-   - For demo purposes, any non-empty credentials are accepted
+- **IMPLEMENTATION_GUIDE.md** - LogEngine implementation guide
+- **LOG_OPTIMIZATION_SUMMARY.md** - Summary of log optimization improvements
+- **PERFORMANCE_OPTIMIZATION_PLAN.md** - Performance optimization strategies
 
-3. **Dashboard**
-   - Click on any module button to select it
-   - Use "Go Back" to return to previous screens
-   - The selected module is displayed at the bottom
+### [Testing](./Testing/)
+Documentation related to testing and test projects.
 
-## Technical Details
+- **LogEngine.Tests.md** - LogEngine test documentation
 
-### Dependencies
-- **Microsoft.Xaml.Behaviors.Wpf** - For advanced XAML behaviors
-- **.NET 8.0** - Target framework
+## 🔍 Finding Documentation
 
-### Key Features
-- **Custom Window Styling** - Rounded corners, custom title bar
-- **Responsive Design** - Grid-based layout with proportional sizing
-- **Data Validation** - Input validation and button state management
-- **Smooth Navigation** - Seamless transitions between pages
+### By Category
+Browse the folders above based on the type of documentation you need:
+- New features → **Features**
+- Bug fixes → **BugFixes**
+- UI changes → **UI**
+- Infrastructure setup → **Topology**
+- Configuration → **Configuration**
+- Publishing → **Deployment**
+- Troubleshooting → **Diagnostics**
+- LogEngine library → **LogEngine**
 
-### Design Patterns
-- **MVVM (Model-View-ViewModel)** - Clean separation of UI and business logic
-- **Command Pattern** - Decoupled user interactions
-- **Observer Pattern** - Property change notifications
-- **Factory Pattern** - ViewModel creation
+### By Feature Area
+Common feature areas and their documentation:
 
-## Customization
+#### Server Management
+- [ADD_SERVER_FEATURE.md](./Features/ADD_SERVER_FEATURE.md)
+- [ADD_SERVER_VALIDATION_UPDATE.md](./Features/ADD_SERVER_VALIDATION_UPDATE.md)
+- [AUTO_CLUSTER_CREATION.md](./Topology/AUTO_CLUSTER_CREATION.md)
 
-### Adding New Clusters
-Edit the `InitializeClusters()` method in `ClusterSelectionViewModel.cs`:
+#### Log Management
+- [LOG_LOADING_OPTIMIZATIONS.md](./Features/LOG_LOADING_OPTIMIZATIONS.md)
+- [CLUSTER_LOG_CLEANUP_FEATURE.md](./Features/CLUSTER_LOG_CLEANUP_FEATURE.md)
+- [AUTO_REFRESH_SMART_FILTERING.md](./Features/AUTO_REFRESH_SMART_FILTERING.md)
 
-```csharp
-private void InitializeClusters()
-{
-    AvailableClusters.Clear();
-    // Add your clusters here
-    for (int i = 1; i <= 20; i++)
-    {
-        AvailableClusters.Add(new Cluster($"sc{i}", $"SC{i}"));
-    }
-}
-```
+#### Search Functionality
+- [HIERARCHICAL_SEARCH_IMPLEMENTATION.md](./Features/HIERARCHICAL_SEARCH_IMPLEMENTATION.md)
+- [SEARCH_NAVIGATION_IMPLEMENTATION.md](./Features/SEARCH_NAVIGATION_IMPLEMENTATION.md)
+- [SEARCH_RESULT_NAVIGATION.md](./Features/SEARCH_RESULT_NAVIGATION.md)
+- [SEARCH_FREEZE_FIX.md](./BugFixes/SEARCH_FREEZE_FIX.md)
 
-### Adding New Modules
-Edit the `AvailableModules` array in `DashboardViewModel.cs`:
+#### Topology System
+- [TOPOLOGY_IMPLEMENTATION_GUIDE.md](./Topology/TOPOLOGY_IMPLEMENTATION_GUIDE.md)
+- [QUICK_START_TOPOLOGY.md](./Topology/QUICK_START_TOPOLOGY.md)
+- [LIVELOGMONITOR_TOPOLOGY_INTEGRATION.md](./Topology/LIVELOGMONITOR_TOPOLOGY_INTEGRATION.md)
+- [LOGTAB_TOPOLOGY_INTEGRATION.md](./Topology/LOGTAB_TOPOLOGY_INTEGRATION.md)
 
-```csharp
-public string[] AvailableModules { get; } = new[]
-{
-    "ContactOrchestrator",
-    "ContactForge", 
-    "AgentForge",
-    "ConnectGrid",
-    "PulseOps",
-    "YourNewModule"  // Add here
-};
-```
+#### Deployment & Configuration
+- [CONFIGURATION_PATH_FIX.md](./Configuration/CONFIGURATION_PATH_FIX.md)
+- [PUBLISH_QUICK_FIX.md](./Deployment/PUBLISH_QUICK_FIX.md)
+- [DIAGNOSTIC_GUIDE.md](./Diagnostics/DIAGNOSTIC_GUIDE.md)
 
-### Styling
-All styles are defined in the XAML files. Key style resources:
-- `ModernButtonStyle` - Primary action buttons
-- `ModernTextBoxStyle` - Input fields
-- `NavigationButtonStyle` - Dashboard navigation
-- `ClusterTagStyle` - Selected cluster tags
+## 📝 Documentation Standards
 
-## Future Enhancements
+All documentation in this repository follows these standards:
+- Clear, descriptive titles
+- Overview section explaining the purpose
+- Detailed implementation details with code examples
+- Files affected and changes made
+- Usage examples where applicable
 
-- [ ] Dark mode support
-- [ ] Real authentication integration
-- [ ] Module-specific content pages
-- [ ] Settings and configuration
-- [ ] Data persistence
-- [ ] Animation transitions
-- [ ] Accessibility improvements
+## 🤝 Contributing
 
-## License
+When adding new documentation:
+1. Place it in the appropriate category folder
+2. Use a clear, descriptive filename in UPPERCASE_WITH_UNDERSCORES.md format
+3. Follow the existing documentation structure
+4. Update this README.md with a reference to your new document
 
-This project is created for demonstration purposes.
+## 📅 Last Updated
 
-## Support
+This documentation structure was organized on: **2024**
 
-For issues or questions, please refer to the code comments or create an issue in the repository.
+---
+
+For questions or clarifications, please refer to the specific documentation files or contact the development team.
