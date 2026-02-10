@@ -26,7 +26,8 @@ namespace Xcelerator.ViewModels
         private string _searchText = string.Empty;
         private int _matchCount = 0;
         private ICollectionView? _filteredClusters;
-        
+        private bool _isPanelCollapsed = false;
+
         // Track downloaded log files per cluster for cleanup (legacy, kept for backward compatibility)
         private static readonly Dictionary<string, HashSet<string>> _clusterLogFiles = new Dictionary<string, HashSet<string>>();
 
@@ -53,6 +54,7 @@ namespace Xcelerator.ViewModels
             SelectClusterCommand = new RelayCommand<Cluster>(SelectCluster);
             DeselectClusterCommand = new RelayCommand<Cluster>(DeselectCluster);
             TagClickCommand = new RelayCommand<Cluster>(TagClick);
+            TogglePanelCommand = new RelayCommand(TogglePanel);
         }
 
         #region Properties
@@ -126,6 +128,15 @@ namespace Xcelerator.ViewModels
             private set => SetProperty(ref _filteredClusters, value);
         }
 
+        /// <summary>
+        /// Indicates whether the left panel is collapsed
+        /// </summary>
+        public bool IsPanelCollapsed
+        {
+            get => _isPanelCollapsed;
+            set => SetProperty(ref _isPanelCollapsed, value);
+        }
+
         #endregion
 
         #region Commands
@@ -133,6 +144,7 @@ namespace Xcelerator.ViewModels
         public ICommand SelectClusterCommand { get; }
         public ICommand DeselectClusterCommand { get; }
         public ICommand TagClickCommand { get; }
+        public ICommand TogglePanelCommand { get; }
 
         #endregion
 
@@ -395,6 +407,14 @@ namespace Xcelerator.ViewModels
                 var loginViewModel = new LoginViewModel(_mainViewModel, SelectedClusterForLogin, _authService);
                 CurrentViewModel = loginViewModel;
             }
+        }
+
+        /// <summary>
+        /// Toggle the panel collapsed state
+        /// </summary>
+        private void TogglePanel()
+        {
+            IsPanelCollapsed = !IsPanelCollapsed;
         }
 
         #endregion

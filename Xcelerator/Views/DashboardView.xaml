@@ -75,8 +75,17 @@
                 <!-- Left Side: Agent & Cluster Info (Vertical Layout) -->
                 <StackPanel Grid.Column="0" 
                             Orientation="Vertical"
-                            VerticalAlignment="Center"
-                            Margin="0,0,20,0">
+                            VerticalAlignment="Center">
+                    <StackPanel.Style>
+                        <Style TargetType="StackPanel">
+                            <Setter Property="Margin" Value="0,0,20,0"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding IsPanelCollapsed}" Value="True">
+                                    <Setter Property="Margin" Value="60,0,20,0"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </StackPanel.Style>
                     <TextBlock Text="Agent &amp; Cluster Info"
                                FontSize="11"
                                FontWeight="SemiBold"

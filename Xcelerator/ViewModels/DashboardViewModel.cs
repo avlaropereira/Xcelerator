@@ -25,8 +25,17 @@ namespace Xcelerator.ViewModels
             _panelViewModel = panelViewModel;
             _cluster = cluster;
             _logFileManager = logFileManager ?? throw new ArgumentNullException(nameof(logFileManager));
-            
+
             SelectModuleCommand = new RelayCommand<string>(SelectModule, CanSelectModule);
+
+            // Subscribe to PanelViewModel property changes to reflect panel state
+            _panelViewModel.PropertyChanged += (s, e) =>
+            {
+                if (e.PropertyName == nameof(PanelViewModel.IsPanelCollapsed))
+                {
+                    OnPropertyChanged(nameof(IsPanelCollapsed));
+                }
+            };
 
             // Decode token if cluster is provided
             if (_cluster != null && !string.IsNullOrEmpty(_cluster.AuthToken))
@@ -124,6 +133,11 @@ namespace Xcelerator.ViewModels
             get => _currentModuleViewModel;
             set => SetProperty(ref _currentModuleViewModel, value);
         }
+
+        /// <summary>
+        /// Gets whether the left panel is collapsed (from PanelViewModel)
+        /// </summary>
+        public bool IsPanelCollapsed => _panelViewModel.IsPanelCollapsed;
 
         public ICommand SelectModuleCommand { get; }
 

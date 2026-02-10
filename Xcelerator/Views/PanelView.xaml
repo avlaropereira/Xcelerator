@@ -127,8 +127,19 @@
     <Grid>
         <!-- Column Definitions -->
         <Grid.ColumnDefinitions>
-            <!-- Fixed-width left panel for cluster selection -->
-            <ColumnDefinition Width="250"/>
+            <!-- Dynamic-width left panel for cluster selection (collapses to 0) -->
+            <ColumnDefinition>
+                <ColumnDefinition.Style>
+                    <Style TargetType="ColumnDefinition">
+                        <Setter Property="Width" Value="250"/>
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding IsPanelCollapsed}" Value="True">
+                                <Setter Property="Width" Value="0"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </ColumnDefinition.Style>
+            </ColumnDefinition>
             <!-- Flexible right panel for dynamic content -->
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
@@ -139,8 +150,35 @@
                 BorderBrush="#FFE0E0E0" 
                 BorderThickness="0,0,1,0" 
                 Margin="0,0,5,0">
+            <Border.Style>
+                <Style TargetType="Border">
+                    <Setter Property="Visibility" Value="Visible"/>
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding IsPanelCollapsed}" Value="True">
+                            <DataTrigger.EnterActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                                                       To="0" Duration="0:0:0.3"/>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </DataTrigger.EnterActions>
+                            <DataTrigger.ExitActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                                                       To="1" Duration="0:0:0.3"/>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </DataTrigger.ExitActions>
+                            <Setter Property="Visibility" Value="Collapsed"/>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </Border.Style>
             <Grid Margin="16">
                 <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
@@ -149,13 +187,61 @@
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
 
-                <!-- App Title -->
-                <TextBlock Grid.Row="0" 
-                           Text="Xcelerator" 
-                           FontSize="20" 
-                           FontWeight="Bold" 
-                           Foreground="#FF2D2D30"
-                           Margin="0,0,0,16"/>
+                <!-- App Title with Collapse Button -->
+                <Grid Grid.Row="0" Margin="0,0,0,16">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <TextBlock Grid.Column="0"
+                               Text="Xcelerator" 
+                               FontSize="20" 
+                               FontWeight="Bold" 
+                               Foreground="#FF2D2D30"
+                               VerticalAlignment="Center"/>
+
+                    <!-- Collapse Button -->
+                    <Button Grid.Column="1"
+                            Command="{Binding TogglePanelCommand}"
+                            Width="32"
+                            Height="32"
+                            Background="Transparent"
+                            BorderThickness="1"
+                            BorderBrush="#FFE0E0E0"
+                            Cursor="Hand"
+                            ToolTip="Collapse Panel">
+                        <Button.Style>
+                            <Style TargetType="Button">
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border Background="{TemplateBinding Background}" 
+                                                    CornerRadius="4"
+                                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                                    BorderBrush="{TemplateBinding BorderBrush}">
+                                                <ContentPresenter HorizontalAlignment="Center" 
+                                                                  VerticalAlignment="Center"/>
+                                            </Border>
+                                            <ControlTemplate.Triggers>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter Property="Background" Value="#FFF0F0F0"/>
+                                                </Trigger>
+                                                <Trigger Property="IsPressed" Value="True">
+                                                    <Setter Property="Background" Value="#FFE0E0E0"/>
+                                                </Trigger>
+                                            </ControlTemplate.Triggers>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                            </Style>
+                        </Button.Style>
+                        <materialDesign:PackIcon Kind="ChevronLeft" 
+                                               Width="20" 
+                                               Height="20"
+                                               Foreground="#FF2D2D30"/>
+                    </Button>
+                </Grid>
 
                 <!-- Cluster Label -->
                 <TextBlock Grid.Row="1" 
@@ -177,7 +263,7 @@
                             <ColumnDefinition Width="Auto"/>
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
-                        
+
                         <!-- Search Icon -->
                         <TextBlock Grid.Column="0"
                                    Text="??"
@@ -185,7 +271,7 @@
                                    Foreground="#FF999999"
                                    VerticalAlignment="Center"
                                    Margin="6,0,4,0"/>
-                        
+
                         <!-- Search TextBox -->
                         <TextBox Grid.Column="1"
                                  x:Name="SearchTextBox"
@@ -227,7 +313,7 @@
                 </ListBox>
 
                                  <!-- Selected Clusters -->
-                 <ScrollViewer Grid.Row="5" 
+                 <ScrollViewer Grid.Row="5"
                                VerticalScrollBarVisibility="Auto"
                                Margin="0,0,0,16">
                      <WrapPanel>
@@ -283,7 +369,62 @@
         <!-- Right Area - Dynamic content that fills all available space -->
         <Grid Grid.Column="1" 
                Background="Transparent">
-            
+
+            <!-- Expand Panel Button (shown when panel is collapsed) -->
+            <Button HorizontalAlignment="Left"
+                    VerticalAlignment="Top"
+                    Margin="16,16,0,0"
+                    Width="40"
+                    Height="40"
+                    Command="{Binding TogglePanelCommand}"
+                    Background="#FF0078D4"
+                    BorderThickness="0"
+                    Cursor="Hand"
+                    ToolTip="Expand Panel"
+                    Panel.ZIndex="999">
+                <Button.Style>
+                    <Style TargetType="Button">
+                        <Setter Property="Visibility" Value="Collapsed"/>
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="Button">
+                                    <Border Background="{TemplateBinding Background}" 
+                                            CornerRadius="20"
+                                            BorderThickness="{TemplateBinding BorderThickness}"
+                                            BorderBrush="{TemplateBinding BorderBrush}">
+                                        <Border.Effect>
+                                            <DropShadowEffect Color="Black" 
+                                                            Opacity="0.3" 
+                                                            BlurRadius="8" 
+                                                            ShadowDepth="2"/>
+                                        </Border.Effect>
+                                        <ContentPresenter HorizontalAlignment="Center" 
+                                                          VerticalAlignment="Center"/>
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter Property="Background" Value="#FF106EBE"/>
+                                        </Trigger>
+                                        <Trigger Property="IsPressed" Value="True">
+                                            <Setter Property="Background" Value="#FF005A9E"/>
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding IsPanelCollapsed}" Value="True">
+                                <Setter Property="Visibility" Value="Visible"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Button.Style>
+                <materialDesign:PackIcon Kind="Menu" 
+                                       Width="24" 
+                                       Height="24"
+                                       Foreground="White"/>
+            </Button>
+
             <!-- Dynamic Content Area - Stretches to fill entire right panel -->
             <ContentControl Content="{Binding CurrentViewModel}"
                             HorizontalAlignment="Stretch"
