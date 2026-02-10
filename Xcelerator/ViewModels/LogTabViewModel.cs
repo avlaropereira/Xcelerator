@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Windows;
+using System.Xml.Serialization;
 using Xcelerator.LogEngine.Services;
 using Xcelerator.Models;
 using Xcelerator.Services;
@@ -29,6 +30,11 @@ namespace Xcelerator.ViewModels
         private string _machineItemName = string.Empty;
         private double _loadTimeSeconds;
         private bool _isRefreshDropdownEnabled;
+        private ObservableCollection<HighlightSetting> _highlightSettings;
+        private bool _isHighlightPanelVisible;
+        private HighlightSetting? _selectedHighlight;
+        private string _searchText = string.Empty;
+        private int _matchCount;
 
         /// <summary>
         /// Initializes a new instance of the LogTabViewModel class
@@ -51,6 +57,10 @@ namespace Xcelerator.ViewModels
 
             _machineName = machineName ?? string.Empty;
             _machineItemName = machineItemName ?? string.Empty;
+
+            // Initialize highlight settings
+            _highlightSettings = new ObservableCollection<HighlightSetting>();
+            LoadHighlightSettings();
 
             // Load logs asynchronously
             _ = LoadLogsAsync(machineName, machineItemName);
@@ -392,6 +402,64 @@ namespace Xcelerator.ViewModels
         }
 
         /// <summary>
+        /// Collection of highlight settings for color-coded log filtering
+        /// </summary>
+        public ObservableCollection<HighlightSetting> HighlightSettings
+        {
+            get => _highlightSettings;
+            set => SetProperty(ref _highlightSettings, value);
+        }
+
+        /// <summary>
+        /// Indicates whether the highlight panel is visible
+        /// </summary>
+        public bool IsHighlightPanelVisible
+        {
+            get => _isHighlightPanelVisible;
+            set => SetProperty(ref _isHighlightPanelVisible, value);
+        }
+
+        /// <summary>
+        /// The currently selected highlight setting
+        /// </summary>
+        public HighlightSetting? SelectedHighlight
+        {
+            get => _selectedHighlight;
+            set
+            {
+                if (SetProperty(ref _selectedHighlight, value))
+                {
+                    UpdateHighlightSelection(value);
+                    UpdateMatchCount();
+                }
+            }
+        }
+
+        /// <summary>
+        /// The search text for highlighting matches in log lines
+        /// </summary>
+        public string SearchText
+        {
+            get => _searchText;
+            set
+            {
+                if (SetProperty(ref _searchText, value))
+                {
+                    UpdateMatchCount();
+                }
+            }
+        }
+
+        /// <summary>
+        /// The number of lines matching the search text
+        /// </summary>
+        public int MatchCount
+        {
+            get => _matchCount;
+            private set => SetProperty(ref _matchCount, value);
+        }
+
+        /// <summary>
         /// Gets the minimum refresh interval in minutes based on load time (load time + 1 minute)
         /// </summary>
         public int MinimumRefreshIntervalMinutes
@@ -566,6 +634,151 @@ namespace Xcelerator.ViewModels
 
             // Set the selected log line to the target line
             SelectedLogLine = LogLines[lineNumber];
+        }
+
+        /// <summary>
+        /// Loads highlight settings from embedded XML or default configuration
+        /// </summary>
+        private void LoadHighlightSettings()
+        {
+            try
+            {
+                // For now, use the hardcoded XML from the requirement
+                // In production, this could load from a file or user preferences
+                string xmlContent = @"<?xml version=""1.0""?>
+<HighlightSettingContainer xmlns:xsd=""http://www.w3.org/2001/XMLSchema"" xmlns:xsi=""http://www.w3.org/2001/XMLSchema-instance"">
+  <Items>
+    <HighlightSetting>
+      <BackColor>-7876870</BackColor>
+      <BorderColor>-7876885</BorderColor>
+      <MarkerColor>-7876885</MarkerColor>
+      <Flags>5</Flags>
+    </HighlightSetting>
+    <HighlightSetting>
+      <BackColor>-13447886</BackColor>
+      <BorderColor>-16744448</BorderColor>
+      <MarkerColor>-16744448</MarkerColor>
+      <Flags>5</Flags>
+    </HighlightSetting>
+    <HighlightSetting>
+      <BackColor>-18751</BackColor>
+      <BorderColor>-65536</BorderColor>
+      <MarkerColor>-65536</MarkerColor>
+      <Flags>5</Flags>
+    </HighlightSetting>
+    <HighlightSetting>
+      <BackColor>-2894893</BackColor>
+      <BorderColor>-8355712</BorderColor>
+      <MarkerColor>-8355712</MarkerColor>
+      <Flags>5</Flags>
+    </HighlightSetting>
+    <HighlightSetting>
+      <BackColor>-32</BackColor>
+      <BorderColor>-256</BorderColor>
+      <MarkerColor>-256</MarkerColor>
+      <Flags>5</Flags>
+    </HighlightSetting>
+    <HighlightSetting>
+      <BackColor>-7876870</BackColor>
+      <BorderColor>-7876885</BorderColor>
+      <MarkerColor>-7876885</MarkerColor>
+      <Flags>5</Flags>
+    </HighlightSetting>
+    <HighlightSetting>
+      <BackColor>-13447886</BackColor>
+      <BorderColor>-16744448</BorderColor>
+      <MarkerColor>-16744448</MarkerColor>
+      <Flags>5</Flags>
+    </HighlightSetting>
+    <HighlightSetting>
+      <BackColor>-18751</BackColor>
+      <BorderColor>-65536</BorderColor>
+      <MarkerColor>-65536</MarkerColor>
+      <Flags>5</Flags>
+    </HighlightSetting>
+    <HighlightSetting>
+      <BackColor>-2894893</BackColor>
+      <BorderColor>-8355712</BorderColor>
+      <MarkerColor>-8355712</MarkerColor>
+      <Flags>5</Flags>
+    </HighlightSetting>
+    <HighlightSetting>
+      <BackColor>-32</BackColor>
+      <BorderColor>-256</BorderColor>
+      <MarkerColor>-256</MarkerColor>
+      <Flags>5</Flags>
+    </HighlightSetting>
+  </Items>
+</HighlightSettingContainer>";
+
+                var serializer = new XmlSerializer(typeof(HighlightSettingContainer));
+                using var stringReader = new StringReader(xmlContent);
+                var container = (HighlightSettingContainer?)serializer.Deserialize(stringReader);
+
+                if (container?.Items != null)
+                {
+                    foreach (var xmlSetting in container.Items)
+                    {
+                        HighlightSettings.Add(xmlSetting.ToHighlightSetting());
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error loading highlight settings: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Updates the selection state of highlights (only one can be selected at a time)
+        /// </summary>
+        private void UpdateHighlightSelection(HighlightSetting? newSelection)
+        {
+            foreach (var setting in HighlightSettings)
+            {
+                setting.IsSelected = setting == newSelection;
+            }
+
+            OnPropertyChanged(nameof(HighlightSettings));
+        }
+
+        /// <summary>
+        /// Toggles the visibility of the highlight panel
+        /// </summary>
+        public void ToggleHighlightPanel()
+        {
+            IsHighlightPanelVisible = !IsHighlightPanelVisible;
+        }
+
+        /// <summary>
+        /// Updates the match count based on current search text
+        /// </summary>
+        private void UpdateMatchCount()
+        {
+            if (string.IsNullOrWhiteSpace(SearchText))
+            {
+                MatchCount = 0;
+                return;
+            }
+
+            int count = 0;
+            foreach (var line in LogLines)
+            {
+                if (line.Contains(SearchText, StringComparison.OrdinalIgnoreCase))
+                {
+                    count++;
+                }
+            }
+            MatchCount = count;
+        }
+
+        /// <summary>
+        /// Clears the search and highlights
+        /// </summary>
+        public void ClearSearch()
+        {
+            SearchText = string.Empty;
+            SelectedHighlight = null;
         }
 
         /// <summary>

@@ -64,6 +64,11 @@ namespace Xcelerator.Views
                         System.Windows.Threading.DispatcherPriority.Loaded);
                 }
             }
+            else if (e.PropertyName == nameof(LogTabViewModel.IsHighlightPanelVisible) && sender is LogTabViewModel viewModel3)
+            {
+                // Update highlight panel column width based on visibility
+                UpdateHighlightPanelColumnWidth(viewModel3.IsHighlightPanelVisible);
+            }
         }
 
         private void ScrollToSelectedItem()
@@ -110,6 +115,53 @@ namespace Xcelerator.Views
             {
                 viewModel.SelectedLogLine = null;
                 viewModel.IsDetailPanelVisible = false;
+            }
+        }
+
+        /// <summary>
+        /// Handles the toggle button click to show/hide the highlight panel
+        /// </summary>
+        private void ToggleHighlightPanel_Click(object sender, RoutedEventArgs e)
+        {
+            if (DataContext is LogTabViewModel viewModel)
+            {
+                viewModel.ToggleHighlightPanel();
+                UpdateHighlightPanelColumnWidth(viewModel.IsHighlightPanelVisible);
+            }
+        }
+
+        /// <summary>
+        /// Handles the close button click to hide the highlight panel
+        /// </summary>
+        private void CloseHighlightPanel_Click(object sender, RoutedEventArgs e)
+        {
+            if (DataContext is LogTabViewModel viewModel)
+            {
+                viewModel.IsHighlightPanelVisible = false;
+                UpdateHighlightPanelColumnWidth(false);
+            }
+        }
+
+        /// <summary>
+        /// Handles the clear search button click
+        /// </summary>
+        private void ClearSearch_Click(object sender, RoutedEventArgs e)
+        {
+            if (DataContext is LogTabViewModel viewModel)
+            {
+                viewModel.ClearSearch();
+            }
+        }
+
+        /// <summary>
+        /// Updates the highlight panel column width based on visibility
+        /// </summary>
+        private void UpdateHighlightPanelColumnWidth(bool isVisible)
+        {
+            var column = FindName("HighlightPanelColumn") as ColumnDefinition;
+            if (column != null)
+            {
+                column.Width = isVisible ? new GridLength(200) : new GridLength(0);
             }
         }
     }

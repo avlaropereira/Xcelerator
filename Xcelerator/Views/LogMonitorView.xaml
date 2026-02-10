@@ -8,7 +8,12 @@
          d:DesignHeight="450" d:DesignWidth="800">
 <UserControl.Resources>
     <converters:LogLineToColoredSegmentsConverter x:Key="LogLineToColoredSegmentsConverter"/>
+    <converters:LogLineHighlightConverter x:Key="LogLineHighlightConverter"/>
     <converters:RefreshIntervalItemVisibilityConverter x:Key="RefreshIntervalItemVisibilityConverter"/>
+    <converters:HighlightSelectedToVisibilityConverter x:Key="HighlightSelectedToVisibilityConverter"/>
+    <converters:CountToVisibilityConverter x:Key="CountToVisibilityConverter"/>
+    <converters:StringToVisibilityConverter x:Key="StringToVisibilityConverter"/>
+    <converters:StringToVisibilityInvertedConverter x:Key="StringToVisibilityInvertedConverter"/>
     <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
 </UserControl.Resources>
     <Grid x:Name="MainGrid">
@@ -18,9 +23,15 @@
             <RowDefinition Height="Auto"/>
             <RowDefinition x:Name="DetailPanelRow" Height="0" MinHeight="0" MaxHeight="{Binding ActualHeight, ElementName=LogLinesListBox, FallbackValue=350}"/>
         </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition x:Name="HighlightPanelColumn" Width="0"/>
+        </Grid.ColumnDefinitions>
         
         <!-- Status Bar -->
         <Border Grid.Row="0"
+                Grid.Column="0"
                 Background="#FFF5F5F5"
                 BorderBrush="#FFE0E0E0"
                 BorderThickness="0,0,0,1"
@@ -29,6 +40,7 @@
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
                 
@@ -95,12 +107,56 @@
                     <ComboBoxItem Content="5 min" Tag="5"/>
                     <ComboBoxItem Content="7 min" Tag="7"/>
                 </ComboBox>
+
+                <!-- Highlight Panel Toggle Button -->
+                <Button Grid.Column="3"
+                        Width="28"
+                        Height="24"
+                        FontSize="14"
+                        FontWeight="Bold"
+                        Background="Transparent"
+                        BorderThickness="1"
+                        BorderBrush="#FFCCCCCC"
+                        Foreground="#FF0078D4"
+                        Cursor="Hand"
+                        ToolTip="Toggle highlight panel"
+                        Margin="10,0,0,0"
+                        Click="ToggleHighlightPanel_Click">
+                    <TextBlock Text="?" FontFamily="Segoe MDL2 Assets" FontSize="14"/>
+                    <Button.Style>
+                        <Style TargetType="Button">
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="Button">
+                                        <Border Background="{TemplateBinding Background}"
+                                                BorderBrush="{TemplateBinding BorderBrush}"
+                                                BorderThickness="{TemplateBinding BorderThickness}"
+                                                CornerRadius="3">
+                                            <ContentPresenter HorizontalAlignment="Center"
+                                                              VerticalAlignment="Center"/>
+                                        </Border>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter Property="Background" Value="#FFEEEEEE"/>
+                                                <Setter Property="BorderBrush" Value="#FF0078D4"/>
+                                            </Trigger>
+                                            <Trigger Property="IsPressed" Value="True">
+                                                <Setter Property="Background" Value="#FFE1E1E1"/>
+                                            </Trigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+                    </Button.Style>
+                </Button>
             </Grid>
         </Border>
         
         <!-- Virtualized Log Lines with Syntax Highlighting -->
         <ListBox x:Name="LogLinesListBox"
                  Grid.Row="1"
+                 Grid.Column="0"
                  ItemsSource="{Binding LogLines}"
                  SelectedItem="{Binding SelectedLogLine, Mode=TwoWay}"
                  VirtualizingPanel.IsVirtualizing="True"
@@ -141,7 +197,14 @@
             </ListBox.ItemContainerStyle>
             <ListBox.ItemTemplate>
                 <DataTemplate>
-                    <ItemsControl ItemsSource="{Binding Converter={StaticResource LogLineToColoredSegmentsConverter}}">
+                    <ItemsControl>
+                        <ItemsControl.ItemsSource>
+                            <MultiBinding Converter="{StaticResource LogLineHighlightConverter}">
+                                <Binding/>
+                                <Binding Path="DataContext.SearchText" RelativeSource="{RelativeSource AncestorType=UserControl}"/>
+                                <Binding Path="DataContext.SelectedHighlight" RelativeSource="{RelativeSource AncestorType=UserControl}"/>
+                            </MultiBinding>
+                        </ItemsControl.ItemsSource>
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>
                                 <WrapPanel/>
@@ -149,10 +212,12 @@
                         </ItemsControl.ItemsPanel>
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
-                                <TextBlock Text="{Binding Text}"
-                                           Foreground="{Binding Brush}"
-                                           FontFamily="Consolas"
-                                           FontSize="11"/>
+                                <Border Background="{Binding BackgroundBrush}" CornerRadius="2" Padding="0">
+                                    <TextBlock Text="{Binding Text}"
+                                               Foreground="{Binding Brush}"
+                                               FontFamily="Consolas"
+                                               FontSize="11"/>
+                                </Border>
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
@@ -162,6 +227,7 @@
         
         <!-- Empty State -->
         <TextBlock Grid.Row="1"
+                   Grid.Column="0"
                    Text="No logs loaded yet. Loading..."
                    FontSize="14"
                    Foreground="#FF999999"
@@ -181,6 +247,7 @@
         
         <!-- GridSplitter for resizing detail panel -->
         <GridSplitter Grid.Row="2"
+                      Grid.Column="0"
                       HorizontalAlignment="Stretch"
                       VerticalAlignment="Center"
                       Background="Transparent"
@@ -202,7 +269,8 @@
         </GridSplitter>
         
         <!-- Detail Panel -->
-        <Border Grid.Row="3">
+        <Border Grid.Row="3"
+                Grid.Column="0">
             <Border.Style>
                 <Style TargetType="Border">
                     <Setter Property="Background" Value="#FFF8F9FA"/>
@@ -318,6 +386,283 @@
                         </TextBox>
                     </ScrollViewer>
                 </Border>
+            </Grid>
+        </Border>
+
+        <!-- GridSplitter for resizing highlight panel -->
+        <GridSplitter Grid.Row="0"
+                      Grid.RowSpan="4"
+                      Grid.Column="1"
+                      Width="5"
+                      HorizontalAlignment="Center"
+                      VerticalAlignment="Stretch"
+                      Background="Transparent"
+                      Cursor="SizeWE"
+                      ResizeBehavior="PreviousAndNext"
+                      ResizeDirection="Columns">
+            <GridSplitter.Style>
+                <Style TargetType="GridSplitter">
+                    <Setter Property="Visibility" Value="Visible"/>
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding IsHighlightPanelVisible}" Value="False">
+                            <Setter Property="Visibility" Value="Collapsed"/>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </GridSplitter.Style>
+        </GridSplitter>
+
+        <!-- Highlight Panel - Modern Card Style -->
+        <Border Grid.Row="0"
+                Grid.RowSpan="4"
+                Grid.Column="2"
+                Background="#FFFAFAFA"
+                BorderBrush="#FFE0E0E0"
+                BorderThickness="1,0,0,0"
+                Padding="15">
+            <Border.Style>
+                <Style TargetType="Border">
+                    <Setter Property="Visibility" Value="Collapsed"/>
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding IsHighlightPanelVisible}" Value="True">
+                            <Setter Property="Visibility" Value="Visible"/>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </Border.Style>
+
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <!-- Header -->
+                <Grid Grid.Row="0" Margin="0,0,0,15">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <TextBlock Grid.Column="0"
+                               Text="Highlights"
+                               FontSize="14"
+                               FontWeight="SemiBold"
+                               Foreground="#FF2D2D30"
+                               VerticalAlignment="Center"/>
+
+                    <!-- Close Button -->
+                    <Button Grid.Column="1"
+                            Content="?"
+                            Width="24"
+                            Height="24"
+                            FontSize="12"
+                            FontWeight="Bold"
+                            Background="Transparent"
+                            BorderThickness="1"
+                            BorderBrush="#FFCCCCCC"
+                            Foreground="#FF666666"
+                            Cursor="Hand"
+                            ToolTip="Close highlight panel"
+                            Click="CloseHighlightPanel_Click">
+                        <Button.Style>
+                            <Style TargetType="Button">
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border Background="{TemplateBinding Background}"
+                                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                                    CornerRadius="3">
+                                                <ContentPresenter HorizontalAlignment="Center"
+                                                                  VerticalAlignment="Center"/>
+                                            </Border>
+                                            <ControlTemplate.Triggers>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter Property="Background" Value="#FFEEEEEE"/>
+                                                    <Setter Property="BorderBrush" Value="#FF999999"/>
+                                                </Trigger>
+                                                <Trigger Property="IsPressed" Value="True">
+                                                    <Setter Property="Background" Value="#FFDDDDDD"/>
+                                                </Trigger>
+                                            </ControlTemplate.Triggers>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                            </Style>
+                        </Button.Style>
+                    </Button>
+                </Grid>
+
+                <!-- Search Box -->
+                <StackPanel Grid.Row="1" Margin="0,0,0,15">
+                    <TextBlock Text="Search Text"
+                               FontSize="11"
+                               FontWeight="SemiBold"
+                               Foreground="#FF666666"
+                               Margin="0,0,0,5"/>
+
+                    <Border Background="White"
+                            BorderBrush="#FFE0E0E0"
+                            BorderThickness="1"
+                            CornerRadius="4">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+
+                            <!-- Search Icon -->
+                            <TextBlock Grid.Column="0"
+                                       Text="?"
+                                       FontFamily="Segoe MDL2 Assets"
+                                       FontSize="12"
+                                       Foreground="#FF999999"
+                                       VerticalAlignment="Center"
+                                       Margin="8,0,5,0"/>
+
+                            <!-- Search TextBox -->
+                            <TextBox Grid.Column="1"
+                                     Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
+                                     BorderThickness="0"
+                                     Background="Transparent"
+                                     VerticalAlignment="Center"
+                                     Padding="0,8"
+                                     FontSize="12"
+                                     Foreground="#FF2D2D30"/>
+
+                            <!-- Clear Button -->
+                            <Button Grid.Column="2"
+                                    Content="?"
+                                    Width="20"
+                                    Height="20"
+                                    FontSize="10"
+                                    FontFamily="Segoe MDL2 Assets"
+                                    Background="Transparent"
+                                    BorderThickness="0"
+                                    Foreground="#FF999999"
+                                    Cursor="Hand"
+                                    ToolTip="Clear search"
+                                    Margin="0,0,5,0"
+                                    Visibility="{Binding SearchText, Converter={StaticResource StringToVisibilityConverter}}"
+                                    Click="ClearSearch_Click">
+                                <Button.Style>
+                                    <Style TargetType="Button">
+                                        <Setter Property="Template">
+                                            <Setter.Value>
+                                                <ControlTemplate TargetType="Button">
+                                                    <Border Background="{TemplateBinding Background}"
+                                                            CornerRadius="10">
+                                                        <ContentPresenter HorizontalAlignment="Center"
+                                                                          VerticalAlignment="Center"/>
+                                                    </Border>
+                                                    <ControlTemplate.Triggers>
+                                                        <Trigger Property="IsMouseOver" Value="True">
+                                                            <Setter Property="Background" Value="#FFEEEEEE"/>
+                                                            <Setter Property="Foreground" Value="#FF666666"/>
+                                                        </Trigger>
+                                                    </ControlTemplate.Triggers>
+                                                </ControlTemplate>
+                                            </Setter.Value>
+                                        </Setter>
+                                    </Style>
+                                </Button.Style>
+                            </Button>
+                        </Grid>
+                    </Border>
+
+                    <!-- Match Count -->
+                    <TextBlock Margin="0,5,0,0"
+                               FontSize="11"
+                               Foreground="#FF666666"
+                               Visibility="{Binding SearchText, Converter={StaticResource StringToVisibilityConverter}}">
+                        <Run Text="{Binding MatchCount, Mode=OneWay}"/>
+                        <Run Text=" matches found"/>
+                    </TextBlock>
+                </StackPanel>
+
+                <!-- Color Swatches -->
+                <ScrollViewer Grid.Row="2"
+                              VerticalScrollBarVisibility="Auto"
+                              HorizontalScrollBarVisibility="Disabled">
+                    <ListBox ItemsSource="{Binding HighlightSettings}"
+                             SelectedItem="{Binding SelectedHighlight, Mode=TwoWay}"
+                             Background="Transparent"
+                             BorderThickness="0"
+                             Padding="0">
+                        <ListBox.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <WrapPanel Orientation="Horizontal" />
+                            </ItemsPanelTemplate>
+                        </ListBox.ItemsPanel>
+                        <ListBox.ItemContainerStyle>
+                            <Style TargetType="ListBoxItem">
+                                <Setter Property="Padding" Value="0"/>
+                                <Setter Property="Margin" Value="0,0,8,8"/>
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="ListBoxItem">
+                                            <Grid>
+                                                <!-- Swatch Card -->
+                                                <Border x:Name="SwatchBorder"
+                                                        Width="56"
+                                                        Height="56"
+                                                        Background="{Binding BackgroundBrush}"
+                                                        BorderBrush="{Binding BorderBrush}"
+                                                        BorderThickness="2"
+                                                        CornerRadius="6"
+                                                        Cursor="Hand">
+                                                    <Border.Effect>
+                                                        <DropShadowEffect Color="#40000000" 
+                                                                          BlurRadius="6" 
+                                                                          ShadowDepth="2" 
+                                                                          Opacity="0.2"/>
+                                                    </Border.Effect>
+
+                                                    <!-- Selected Checkmark -->
+                                                    <Grid>
+                                                        <Ellipse Width="20" 
+                                                                 Height="20"
+                                                                 Fill="White"
+                                                                 HorizontalAlignment="Right"
+                                                                 VerticalAlignment="Top"
+                                                                 Margin="0,4,4,0"
+                                                                 Visibility="{Binding IsSelected, Converter={StaticResource HighlightSelectedToVisibilityConverter}}"/>
+                                                        <TextBlock Text="?"
+                                                                   FontFamily="Segoe MDL2 Assets"
+                                                                   FontSize="12"
+                                                                   Foreground="{Binding BorderBrush}"
+                                                                   HorizontalAlignment="Right"
+                                                                   VerticalAlignment="Top"
+                                                                   Margin="0,6,6,0"
+                                                                   Visibility="{Binding IsSelected, Converter={StaticResource HighlightSelectedToVisibilityConverter}}"/>
+                                                    </Grid>
+                                                </Border>
+                                            </Grid>
+                                            <ControlTemplate.Triggers>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter TargetName="SwatchBorder" Property="Effect">
+                                                        <Setter.Value>
+                                                            <DropShadowEffect Color="#40000000" 
+                                                                              BlurRadius="10" 
+                                                                              ShadowDepth="4" 
+                                                                              Opacity="0.3"/>
+                                                        </Setter.Value>
+                                                    </Setter>
+                                                </Trigger>
+                                                <Trigger Property="IsSelected" Value="True">
+                                                    <Setter TargetName="SwatchBorder" Property="BorderThickness" Value="3"/>
+                                                </Trigger>
+                                            </ControlTemplate.Triggers>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                            </Style>
+                        </ListBox.ItemContainerStyle>
+                    </ListBox>
+                </ScrollViewer>
             </Grid>
         </Border>
     </Grid>
