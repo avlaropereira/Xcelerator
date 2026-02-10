@@ -14,6 +14,28 @@ namespace Xcelerator.Views
         {
             InitializeComponent();
             DataContextChanged += LogMonitorView_DataContextChanged;
+            Loaded += LogMonitorView_Loaded;
+            IsVisibleChanged += LogMonitorView_IsVisibleChanged;
+        }
+
+        private void LogMonitorView_Loaded(object sender, RoutedEventArgs e)
+        {
+            // Ensure panel states are correct when view is loaded
+            if (DataContext is LogTabViewModel viewModel)
+            {
+                UpdateHighlightPanelColumnWidth(viewModel.IsHighlightPanelVisible);
+                UpdateDetailPanelRowHeight(viewModel.IsDetailPanelVisible);
+            }
+        }
+
+        private void LogMonitorView_IsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e)
+        {
+            // When tab becomes visible, restore its panel states
+            if (e.NewValue is bool isVisible && isVisible && DataContext is LogTabViewModel viewModel)
+            {
+                UpdateHighlightPanelColumnWidth(viewModel.IsHighlightPanelVisible);
+                UpdateDetailPanelRowHeight(viewModel.IsDetailPanelVisible);
+            }
         }
 
         private void LogMonitorView_DataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
@@ -28,6 +50,12 @@ namespace Xcelerator.Views
             if (e.NewValue is LogTabViewModel newViewModel)
             {
                 newViewModel.PropertyChanged += ViewModel_PropertyChanged;
+
+                // Restore the tab's highlight panel state when switching to this tab
+                UpdateHighlightPanelColumnWidth(newViewModel.IsHighlightPanelVisible);
+
+                // Restore detail panel state
+                UpdateDetailPanelRowHeight(newViewModel.IsDetailPanelVisible);
             }
         }
 

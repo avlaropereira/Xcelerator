@@ -90,6 +90,51 @@ The highlight panel is separate from the virtualized log list, ensuring:
 - **Secondary Panel**: Highlights in sidebar (Grid Column 2)
 - **Resizable**: GridSplitter allows user-controlled width
 - **Collapsible**: Panel can be hidden to maximize log viewing area
+- **Tab Independent**: Each tab maintains its own panel visibility state
+
+### Tab Independence
+
+Each tab maintains its own independent highlight panel state, ensuring a consistent user experience:
+
+**Per-Tab State Management:**
+- Each `LogTabViewModel` instance stores its own `IsHighlightPanelVisible` property
+- Switching tabs automatically restores the correct panel state for that tab
+- Users can have the panel open in one tab and closed in another
+
+**Implementation:**
+The `LogMonitorView` code-behind handles tab switching through event handlers:
+
+```csharp
+private void LogMonitorView_DataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
+{
+    if (e.NewValue is LogTabViewModel newViewModel)
+    {
+        // Restore the tab's panel states when switching to this tab
+        UpdateHighlightPanelColumnWidth(newViewModel.IsHighlightPanelVisible);
+        UpdateDetailPanelRowHeight(newViewModel.IsDetailPanelVisible);
+    }
+}
+
+private void LogMonitorView_IsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e)
+{
+    // When tab becomes visible, restore its panel states
+    if (e.NewValue is bool isVisible && isVisible && DataContext is LogTabViewModel viewModel)
+    {
+        UpdateHighlightPanelColumnWidth(viewModel.IsHighlightPanelVisible);
+        UpdateDetailPanelRowHeight(viewModel.IsDetailPanelVisible);
+    }
+}
+```
+
+**Events Monitored:**
+1. `DataContextChanged` - Fires when switching between tabs
+2. `Loaded` - Fires when the view is first loaded
+3. `IsVisibleChanged` - Fires when tab visibility changes
+
+This ensures:
+- Consistent UI layout across tab switches
+- No "sticky" panel state from other tabs
+- Each tab feels like an independent workspace
 
 ## Usage
 

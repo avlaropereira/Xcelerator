@@ -152,6 +152,32 @@ public class TextSegment
 - Compatible with detail panel selection
 - Doesn't interfere with auto-refresh functionality
 - Persists during log refresh operations
+- **Tab Independent**: Each tab maintains its own search text and highlight selection
+
+### Tab Independence
+
+The search and highlight feature is fully independent per tab:
+
+**Per-Tab Search State:**
+- Each tab has its own `SearchText`, `MatchCount`, and `SelectedHighlight`
+- Switching tabs preserves search state for each individual tab
+- You can search for "ERROR" in one tab and "WARNING" in another simultaneously
+
+**Automatic State Restoration:**
+When you switch between tabs, the view automatically:
+1. Restores the search text for that tab
+2. Updates the match count
+3. Reapplies the selected highlight color
+4. Shows/hides the highlight panel based on that tab's state
+
+**Implementation Details:**
+The `LogMonitorView` handles tab switching through event handlers that restore both the highlight panel visibility and the search state. Since `SearchText` and `SelectedHighlight` are bound to the ViewModel, they automatically update when the `DataContext` changes.
+
+**User Experience:**
+- Open Tab A, search for "ERROR", select red highlight
+- Switch to Tab B, search for "INFO", select blue highlight  
+- Switch back to Tab A - "ERROR" search with red highlight is still active
+- Switch to Tab B - "INFO" search with blue highlight is still active
 
 ## Future Enhancements
 
