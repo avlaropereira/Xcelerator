@@ -182,6 +182,84 @@ namespace Xcelerator.Views
         }
 
         /// <summary>
+        /// Handles the Paint/Select All button click
+        /// </summary>
+        private void PaintAll_Click(object sender, RoutedEventArgs e)
+        {
+            if (DataContext is LogTabViewModel viewModel)
+            {
+                // TODO: Implement paint all matches functionality
+                // This should highlight all matches with the selected color
+                MessageBox.Show("Paint All functionality - Coming soon!", "Feature", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+        }
+
+        /// <summary>
+        /// Handles the Unpaint/Clear All button click
+        /// </summary>
+        private void UnpaintAll_Click(object sender, RoutedEventArgs e)
+        {
+            if (DataContext is LogTabViewModel viewModel)
+            {
+                // TODO: Implement unpaint all matches functionality
+                // This should clear all highlights
+                MessageBox.Show("Unpaint All functionality - Coming soon!", "Feature", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+        }
+
+        /// <summary>
+        /// Handles the Go Up button click to navigate to previous match
+        /// </summary>
+        private void GoUp_Click(object sender, RoutedEventArgs e)
+        {
+            if (DataContext is LogTabViewModel viewModel)
+            {
+                // TODO: Implement navigation to previous match
+                // Find the previous log line that matches the search/highlight criteria
+                MessageBox.Show("Go to Previous Match - Coming soon!", "Feature", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+        }
+
+        /// <summary>
+        /// Handles the Go Down button click to navigate to next match
+        /// </summary>
+        private void GoDown_Click(object sender, RoutedEventArgs e)
+        {
+            if (DataContext is LogTabViewModel viewModel)
+            {
+                // TODO: Implement navigation to next match
+                // Find the next log line that matches the search/highlight criteria
+                MessageBox.Show("Go to Next Match - Coming soon!", "Feature", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+        }
+
+        /// <summary>
+        /// Handles the Collapse Logs button click to collapse matching lines
+        /// </summary>
+        private void CollapseLogs_Click(object sender, RoutedEventArgs e)
+        {
+            if (DataContext is LogTabViewModel viewModel)
+            {
+                // TODO: Implement collapse matching lines functionality
+                // This should hide all lines that match the current search/highlight
+                MessageBox.Show("Collapse Matching Lines - Coming soon!", "Feature", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+        }
+
+        /// <summary>
+        /// Handles the Undo Collapse button click to expand matching lines
+        /// </summary>
+        private void UndoCollapse_Click(object sender, RoutedEventArgs e)
+        {
+            if (DataContext is LogTabViewModel viewModel)
+            {
+                // TODO: Implement undo collapse functionality
+                // This should show all previously collapsed lines
+                MessageBox.Show("Expand Matching Lines - Coming soon!", "Feature", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+        }
+
+        /// <summary>
         /// Updates the highlight panel column width based on visibility
         /// </summary>
         private void UpdateHighlightPanelColumnWidth(bool isVisible)
@@ -189,7 +267,7 @@ namespace Xcelerator.Views
             var column = FindName("HighlightPanelColumn") as ColumnDefinition;
             if (column != null)
             {
-                column.Width = isVisible ? new GridLength(200) : new GridLength(0);
+                column.Width = isVisible ? new GridLength(300) : new GridLength(0);
             }
         }
     }

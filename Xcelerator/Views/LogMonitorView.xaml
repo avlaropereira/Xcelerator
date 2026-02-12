@@ -4,6 +4,7 @@
          xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
          xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
          xmlns:converters="clr-namespace:Xcelerator.Converters"
+         xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
          mc:Ignorable="d" 
          d:DesignHeight="450" d:DesignWidth="800">
 <UserControl.Resources>
@@ -600,7 +601,7 @@
                         <ListBox.ItemContainerStyle>
                             <Style TargetType="ListBoxItem">
                                 <Setter Property="Padding" Value="0"/>
-                                <Setter Property="Margin" Value="0,0,0,6"/>
+                                <Setter Property="Margin" Value="0,0,0,4"/>
                                 <Setter Property="Template">
                                     <Setter.Value>
                                         <ControlTemplate TargetType="ListBoxItem">
@@ -609,10 +610,12 @@
                                                     BorderBrush="#FFE0E0E0"
                                                     BorderThickness="1"
                                                     CornerRadius="4"
-                                                    Padding="8,6"
+                                                    Padding="6,4"
                                                     Cursor="Hand">
+                                                <!-- Single Row Layout -->
                                                 <Grid>
                                                     <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="Auto"/>
                                                         <ColumnDefinition Width="Auto"/>
                                                         <ColumnDefinition Width="*"/>
                                                         <ColumnDefinition Width="Auto"/>
@@ -627,7 +630,8 @@
                                                             BorderBrush="{Binding BorderBrush}"
                                                             BorderThickness="1"
                                                             CornerRadius="2"
-                                                            VerticalAlignment="Center">
+                                                            VerticalAlignment="Center"
+                                                            Margin="0,0,6,0">
                                                         <Border.Effect>
                                                             <DropShadowEffect Color="#40000000" 
                                                                               BlurRadius="2" 
@@ -639,18 +643,136 @@
                                                     <!-- Label -->
                                                     <TextBlock Grid.Column="1"
                                                                Text="{Binding Name}"
-                                                               FontSize="11"
+                                                               FontSize="10"
+                                                               FontWeight="SemiBold"
                                                                Foreground="#FF2D2D30"
                                                                VerticalAlignment="Center"
-                                                               Margin="8,0,0,0"/>
+                                                               Margin="0,0,8,0"/>
+
+                                                    <!-- Action Buttons -->
+                                                    <StackPanel Grid.Column="2"
+                                                                Orientation="Horizontal"
+                                                                HorizontalAlignment="Right"
+                                                                VerticalAlignment="Center">
+                                                        <!-- Paint/Select All -->
+                                                        <Button Width="20" Height="20"
+                                                                Padding="0" Margin="1,0"
+                                                                ToolTip="Paint/Select all matches"
+                                                                Click="PaintAll_Click"
+                                                                Background="#FFF0F0F0"
+                                                                BorderBrush="#FFCCCCCC"
+                                                                BorderThickness="1">
+                                                            <Button.Style>
+                                                                <Style TargetType="Button">
+                                                                    <Setter Property="Template">
+                                                                        <Setter.Value>
+                                                                            <ControlTemplate TargetType="Button">
+                                                                                <Border Background="{TemplateBinding Background}"
+                                                                                        BorderBrush="{TemplateBinding BorderBrush}"
+                                                                                        BorderThickness="{TemplateBinding BorderThickness}"
+                                                                                        CornerRadius="2">
+                                                                                    <ContentPresenter HorizontalAlignment="Center"
+                                                                                                      VerticalAlignment="Center"/>
+                                                                                </Border>
+                                                                                <ControlTemplate.Triggers>
+                                                                                    <Trigger Property="IsMouseOver" Value="True">
+                                                                                        <Setter Property="Background" Value="#FF0078D4"/>
+                                                                                        <Setter Property="BorderBrush" Value="#FF0078D4"/>
+                                                                                    </Trigger>
+                                                                                    <Trigger Property="IsPressed" Value="True">
+                                                                                        <Setter Property="Background" Value="#FF005A9E"/>
+                                                                                    </Trigger>
+                                                                                </ControlTemplate.Triggers>
+                                                                            </ControlTemplate>
+                                                                        </Setter.Value>
+                                                                    </Setter>
+                                                                </Style>
+                                                            </Button.Style>
+                                                            <materialDesign:PackIcon Kind="FormatPaint" Width="10" Height="10"/>
+                                                        </Button>
+
+                                                        <!-- Unpaint/Unselect All -->
+                                                        <Button Width="20" Height="20"
+                                                                Padding="0" Margin="1,0"
+                                                                ToolTip="Clear all matches"
+                                                                Click="UnpaintAll_Click"
+                                                                Background="#FFF0F0F0"
+                                                                BorderBrush="#FFCCCCCC"
+                                                                BorderThickness="1">
+                                                            <Button.Style>
+                                                                <Style TargetType="Button">
+                                                                    <Setter Property="Template">
+                                                                        <Setter.Value>
+                                                                            <ControlTemplate TargetType="Button">
+                                                                                <Border Background="{TemplateBinding Background}"
+                                                                                        BorderBrush="{TemplateBinding BorderBrush}"
+                                                                                        BorderThickness="{TemplateBinding BorderThickness}"
+                                                                                        CornerRadius="2">
+                                                                                    <ContentPresenter HorizontalAlignment="Center"
+                                                                                                      VerticalAlignment="Center"/>
+                                                                                </Border>
+                                                                                <ControlTemplate.Triggers>
+                                                                                    <Trigger Property="IsMouseOver" Value="True">
+                                                                                        <Setter Property="Background" Value="#FF0078D4"/>
+                                                                                        <Setter Property="BorderBrush" Value="#FF0078D4"/>
+                                                                                    </Trigger>
+                                                                                    <Trigger Property="IsPressed" Value="True">
+                                                                                        <Setter Property="Background" Value="#FF005A9E"/>
+                                                                                    </Trigger>
+                                                                                </ControlTemplate.Triggers>
+                                                                            </ControlTemplate>
+                                                                        </Setter.Value>
+                                                                    </Setter>
+                                                                </Style>
+                                                            </Button.Style>
+                                                            <materialDesign:PackIcon Kind="FormatClear" Width="10" Height="10"/>
+                                                        </Button>
+
+                                                        <!-- Go Up -->
+                                                        <Button Style="{StaticResource MaterialDesignFlatButton}"
+                                                                Width="20" Height="20"
+                                                                Padding="0" Margin="1,0"
+                                                                ToolTip="Navigate to previous match"
+                                                                Click="GoUp_Click">
+                                                            <materialDesign:PackIcon Kind="ChevronUp" Width="10" Height="10"/>
+                                                        </Button>
+
+                                                        <!-- Go Down -->
+                                                        <Button Style="{StaticResource MaterialDesignFlatButton}"
+                                                                Width="20" Height="20"
+                                                                Padding="0" Margin="1,0"
+                                                                ToolTip="Navigate to next match"
+                                                                Click="GoDown_Click">
+                                                            <materialDesign:PackIcon Kind="ChevronDown" Width="10" Height="10"/>
+                                                        </Button>
+
+                                                        <!-- Collapse Logs -->
+                                                        <Button Style="{StaticResource MaterialDesignFlatButton}"
+                                                                Width="20" Height="20"
+                                                                Padding="0" Margin="1,0"
+                                                                ToolTip="Collapse matching lines"
+                                                                Click="CollapseLogs_Click">
+                                                            <materialDesign:PackIcon Kind="ChevronDoubleUp" Width="10" Height="10"/>
+                                                        </Button>
+
+                                                        <!-- Undo Collapse -->
+                                                        <Button Style="{StaticResource MaterialDesignFlatButton}"
+                                                                Width="20" Height="20"
+                                                                Padding="0" Margin="1,0"
+                                                                ToolTip="Expand matching lines"
+                                                                Click="UndoCollapse_Click">
+                                                            <materialDesign:PackIcon Kind="ChevronDoubleDown" Width="10" Height="10"/>
+                                                        </Button>
+                                                    </StackPanel>
 
                                                     <!-- Selected Checkmark -->
-                                                    <TextBlock Grid.Column="2"
+                                                    <TextBlock Grid.Column="3"
                                                                Text="?"
                                                                FontFamily="Segoe MDL2 Assets"
                                                                FontSize="10"
                                                                Foreground="{Binding BorderBrush}"
                                                                VerticalAlignment="Center"
+                                                               Margin="4,0,0,0"
                                                                Visibility="{Binding IsSelected, Converter={StaticResource HighlightSelectedToVisibilityConverter}}"/>
                                                 </Grid>
                                             </Border>

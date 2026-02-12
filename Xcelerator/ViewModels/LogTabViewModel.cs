@@ -717,9 +717,13 @@ namespace Xcelerator.ViewModels
 
                 if (container?.Items != null)
                 {
+                    int index = 1;
                     foreach (var xmlSetting in container.Items)
                     {
-                        HighlightSettings.Add(xmlSetting.ToHighlightSetting());
+                        var setting = xmlSetting.ToHighlightSetting();
+                        setting.Name = $"Color {index}";
+                        HighlightSettings.Add(setting);
+                        index++;
                     }
                 }
             }

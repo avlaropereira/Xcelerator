@@ -11,11 +11,28 @@ namespace Xcelerator.Models
     public class HighlightSetting : INotifyPropertyChanged
     {
         private bool _isSelected;
+        private string _name = string.Empty;
 
         public Color BackColor { get; set; }
         public Color BorderColor { get; set; }
         public Color MarkerColor { get; set; }
         public int Flags { get; set; }
+
+        /// <summary>
+        /// Display name for the highlight setting
+        /// </summary>
+        public string Name
+        {
+            get => _name;
+            set
+            {
+                if (_name != value)
+                {
+                    _name = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
 
         public bool IsSelected
         {
